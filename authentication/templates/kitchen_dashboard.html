@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель управления менеджера</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1>Добро пожаловать, менеджер!</h1>
+        <p>Здесь вы можете управлять проектами и задачами.</p>
+        <ul class="menu">
+            <li><a href="#">Просмотр задач</a></li>
+            <li><a href="#">Создание отчетов</a></li>
+            <li><a href="#">Управление командой</a></li>
+        </ul>
+        <a href="{% url 'logout' %}" class="logout">Выйти</a>
+    </div>
+</body>
+</html>
