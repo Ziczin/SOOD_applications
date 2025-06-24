@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, login_form_builder, registration_form_builder
 
 def register(request):
     if request.method == 'POST':
@@ -8,9 +8,8 @@ def register(request):
         if form.is_valid():
             form.save()
             return redirect('login')
-    else:
-        form = CustomUserCreationForm()
-    return render(request, 'register.html', {'form': form})
+    
+    return render(request, 'users/form_builder.html', {'form': registration_form_builder})
 
 def login_view(request):
     if request.method == 'POST':
@@ -19,23 +18,19 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            if user.role == 'admin':
-                return redirect('admin_dashboard')
-            elif user.role == 'kitchen':
+            if user.role == 'kitchen':
                 return redirect('kitchen_dashboard')
             else:
                 return redirect('user_dashboard')
-    return render(request, 'login.html')
+        else: login_form_builder['warnline'] = 'Неправильный логин или пароль!'
+    
+    return render(request, 'users/form_builder.html', {'form': login_form_builder})
 
 def logout_view(request):
     logout(request)
     return redirect('/')
 
 from django.contrib.auth.decorators import login_required
-
-@login_required
-def admin_dashboard(request):
-    return render(request, 'admin_dashboard.html')
 
 @login_required
 def kitchen_dashboard(request):

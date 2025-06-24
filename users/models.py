@@ -4,9 +4,8 @@ from django.contrib.auth.hashers import make_password, check_password
 
 class CustomUser(AbstractUser):
     ROLE_CHOICES = (
-        ('admin', 'Admin'),
         ('user', 'User'),
-        ('manager', 'Manager'),
+        ('kitchen', 'Kitchen'),
     )
     
     department = models.CharField(max_length=100, blank=True, null=True)

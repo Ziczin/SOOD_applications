@@ -1,4 +1,5 @@
 body {
+    font-size: 20px;
     font-family: Arial, sans-serif;
     background-color: #f4f4f4;
     display: flex;
@@ -9,6 +10,7 @@ body {
 }
 
 .container {
+    font-size: 20px;
     background: white;
     padding: 20px;
     border-radius: 12px;
@@ -18,61 +20,70 @@ body {
 }
 
 h1 {
-    margin-bottom: 20px;
     font-size: 20px;
+    margin-bottom: 20px;
 }
 
 .form-group {
+    font-size: 20px;
     margin-bottom: 15px;
     text-align: left;
-    width: 100%;;
+    width: 100%;
 }
 
 label {
+    font-size: 20px;
     display: block;
     margin-bottom: 5px;
-    font-size: 20px;
 }
 
-input, select {
+input, select, textarea {
+    font-size: 20px;
     width: 100%;
     padding: 1%;
     border: 1px solid #ccc;
     border-radius: 12px;
-    font-size: 20px;
     box-sizing: border-box;
 }
 
 button {
+    font-size: 20px;
+    border: 0;
     width: 100%;
     padding: 10px;
     color: white;
     border-radius: 12px;
     cursor: pointer;
-    font-size: 20px;
 }
 
 .confirm {
-    background-color: #32a34a;
+    background-color: #026670;
+    transition: background-color 0.3s ease;
 }
 
 .confirm:hover {
-    background-color: #218838;
+    background-color: #027788;
 }
 
-.redir {
-    background-color: #999;
+.redir, .redir:visited {
+    font-size: 16px;
+    padding: 10px;
+    color: #666;
+    text-decoration: none;
+    transition: color 0.5s ease, background-color 0.3s ease;
 }
 
-.redir:hover {
-    background-color: #aaa;
+.redir:hover, .redir:visited:hover {
+    color: #222;
+    transition: color 0.5s ease, background-color 0.3s ease;
+    background-color: #eee;
 }
 
 .error {
     color: red;
-    font-size: 0.9em;
+    font-size: 16px;
 }
 
-.m-t-10px{
+.m-t-10px {
     margin-top: 10px;
 }

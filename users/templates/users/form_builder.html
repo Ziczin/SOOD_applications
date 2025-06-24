@@ -1,0 +1,26 @@
+{% extends "users/form_base.html" %}
+
+{% load static %}
+
+{% block title %} {{ form.title }} {% endblock %}
+
+{% block css%} 
+    <link rel="stylesheet" href="{% static form.css %}">
+{% endblock %}
+
+{% block form_name %} {{ form.name }} {% endblock %}
+
+{% block content %}
+    {% for field in form.fields %}
+        {% include "users/form_group.html" with
+            id=field.id type=field.type
+            label=field.label
+            placeholder=field.placeholder
+        %}
+    {% endfor %}
+{% endblock %}
+
+{% block confirm_btn_text %} {{ form.confirm_btn_text }} {% endblock %}
+
+{% block redir_btn_route %} {{ form.redirect.route }} {% endblock %}
+{% block redir_btn_text %} {{ form.redirect.text }} {% endblock %}
