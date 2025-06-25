@@ -1,0 +1,25 @@
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_custom }}
+    <button type="submit" class="confirm"> {{ form.btn_confirm }} </button>
+</form>
+<div class="mt-10">
+    <a href="{{ form.sub_btn_link }}"
+    class="sub_btn_act"
+    >{{ form.sub_btn_link_text }}</a>
+</div>
+{% if form.errors %}
+    <div class="errors">
+        <h2>Ошибки:</h2>
+        <ul>
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}

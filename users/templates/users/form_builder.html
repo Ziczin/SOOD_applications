@@ -1,26 +1,55 @@
-{% extends "users/form_base.html" %}
-
 {% load static %}
 
-{% block title %} {{ form.title }} {% endblock %}
-
-{% block css%} 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ form.title }}</title>
     <link rel="stylesheet" href="{% static form.css %}">
-{% endblock %}
+</head>
+<body>
+    <div class='container'>
+        <h1>{{ form.form_name }}</h1>
 
-{% block form_name %} {{ form.name }} {% endblock %}
+        <div class="tabs">
+            <button id="request-button" class="tab-button active" onclick="showTab('request')">Запрос</button>
+            <button id="services-button" class="tab-button" onclick="showTab('services')">Услуги</button>
+        </div>
+        <div id='request' class="tab-content active">
+            {% include "users/request_form.html" %}
+        </div>
+        <div id='services' class="tab-content">
+            <p>Тестовый текст</p>
+        </div>
+    </div>
+    <script>
+        function showTab(tabId) {
+            const tabs = document.querySelectorAll('.tab-content');
+            const container = document.querySelector('.container');
+            const activeTab = document.getElementById(tabId);
+            const previousActiveTab = document.querySelector('.tab-content.active');
 
-{% block content %}
-    {% for field in form.fields %}
-        {% include "users/form_group.html" with
-            id=field.id type=field.type
-            label=field.label
-            placeholder=field.placeholder
-        %}
-    {% endfor %}
-{% endblock %}
+            if (previousActiveTab) {
+                previousActiveTab.classList.remove('active');
+            }
 
-{% block confirm_btn_text %} {{ form.confirm_btn_text }} {% endblock %}
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(button => {
+                button.classList.remove('active');
+            });
 
-{% block redir_btn_route %} {{ form.redirect.route }} {% endblock %}
-{% block redir_btn_text %} {{ form.redirect.text }} {% endblock %}
+            activeTab.classList.add('active');
+            const activeButton = document.getElementById(tabId + '-button');
+            if (activeButton) {
+                activeButton.classList.add('active');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const initialTab = 'request';
+            showTab(initialTab);
+        });
+    </script>
+</body>
+</html>

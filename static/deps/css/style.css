@@ -13,14 +13,21 @@ body {
     font-size: 20px;
     background: white;
     padding: 20px;
+    padding-bottom: 12px;
     border-radius: 12px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
     width: 50%;
+    max-width: 800px;
     text-align: center;
+    transition: height 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+        
 }
 
 h1 {
-    font-size: 20px;
+    font-size: 24px;
     margin-bottom: 20px;
 }
 
@@ -65,7 +72,7 @@ button {
     background-color: #027788;
 }
 
-.redir, .redir:visited {
+.sub_btn_act, .sub_btn_act:visited {
     font-size: 16px;
     padding: 10px;
     color: #666;
@@ -73,10 +80,9 @@ button {
     transition: color 0.5s ease, background-color 0.3s ease;
 }
 
-.redir:hover, .redir:visited:hover {
+.sub_btn_act:hover, .sub_btn_act:visited:hover {
     color: #222;
     transition: color 0.5s ease, background-color 0.3s ease;
-    background-color: #eee;
 }
 
 .error {
@@ -84,6 +90,29 @@ button {
     font-size: 16px;
 }
 
-.m-t-10px {
+.mt-10 {
     margin-top: 10px;
+}
+
+.tabs {
+    display: flex;
+    margin-bottom: 10px;
+}
+.tab-button {
+    padding: 10px 20px;
+    border: none;
+    background-color: #e8e8e8;
+    color:#555;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+.tab-button.active {
+    background-color: #ccc;
+    color: #222;
+}
+.tab-content {
+    display: none;
+}
+.tab-content.active {
+    display: block;
 }
