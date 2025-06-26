@@ -24,7 +24,7 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            if user.service == 'kitchen':
+            if user.department == 'kitchen':
                 return redirect('kitchen_dashboard')
             else:
                 return redirect('user_dashboard')

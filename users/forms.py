@@ -1,6 +1,6 @@
 from django.forms import PasswordInput as PassIn
 from django.forms import TextInput as TextIn
-from .models import CustomUser, Service
+from .models import CustomUser, Department
 from django.forms import ModelForm, ModelChoiceField
 from django.contrib.auth.forms import UserCreationForm
 
@@ -38,12 +38,41 @@ builder_data = {
                 'required': True,
             },
             {
-                'id': 'service', 'type': [Service, ],
+                'id': 'department', 'type': [Department, ],
                 'label': 'Выберите ваш отдел',
                 'placeholder': 'Без отдела',
                 'required': True,
             },
-        ]
+        ],
+        'services': [
+            {
+                'count': int,
+                'data': 
+                {
+                    'name': 'Наименование услуги',
+                    'description': 'Описание услуги',
+                    'price': 10
+                }
+            },
+            {
+                'count': int,
+                'data': 
+                {
+                    'name': 'Наименование услуги2',
+                    'description': 'Описание услуги2',
+                    'some_field': int,
+                    'some_field2': '<datetime>'
+                }
+            }
+        ],
+        'services_agregation': [
+            {
+                'label': 'К оплате',
+                'field': 'price',
+                'escape_null': None, # if skip, or <default value>
+                'func': sum,
+            },
+        ],
     },
     'login': {
         'form_object_name': 'LoginForm',

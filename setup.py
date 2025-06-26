@@ -5,13 +5,13 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'your_project.settings')
 django.setup()
 
 from django.contrib.auth import get_user_model
-from users.models import CustomUser, Service
+from users.models import CustomUser, Department
 
 def create_superuser_and_populate():
     User = get_user_model()
     
-    user_service, created = Service.objects.get_or_create(name='User')
-    kitchen_service, created = Service.objects.get_or_create(name='Kitchen')
+    user_department, created = Department.objects.get_or_create(name='User')
+    kitchen_department, created = Department.objects.get_or_create(name='Kitchen')
 
     if not User.objects.filter(username='toster').exists():
         print("Создание суперюзера...")
@@ -22,16 +22,14 @@ def create_superuser_and_populate():
     CustomUser.objects.get_or_create(
         username='testuser',
         password='test',
-        department='user',
         full_name='test simple user',
-        service=user_service,
+        department=user_department,
     )
     CustomUser.objects.get_or_create(
         username='testkitchen',
         password='test',
-        department='kitchen',
         full_name='test kitchen manager',
-        service=kitchen_service,
+        department=kitchen_department,
     )
         
     print("База данных заполнена начальными данными.")

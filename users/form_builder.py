@@ -11,7 +11,7 @@ def form_builder(form_data):
             field['id']: field['type'](attrs={'placeholder': field['placeholder']})
             for field in form_data['fields'] if type(field['type']) != list
         }
-
+        
     form_class = type(form_name, (base_form_class,), {'Meta': Meta})
 
     def __init__(self, *args, **kwargs):
