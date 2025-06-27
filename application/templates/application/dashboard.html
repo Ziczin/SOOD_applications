@@ -5,17 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Панель управления пользователя</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'deps/css/style.css' %}">
 </head>
 <body>
     <div class="container">
         <h1>Добро пожаловать!</h1>
-        <p>Здесь вы можете просматривать свои данные и настройки.</p>
-        <ul class="menu">
-            <li><a href="#">Просмотр профиля</a></li>
-            <li><a href="#">Изменение пароля</a></li>
-            <li><a href="#">Обратная связь</a></li>
-        </ul>
+        <p>Выберите форму заявки:</p>
+        <a href="#">Просмотр профиля</a></li>
+        <a href="#">Изменение пароля</a></li>
+        <a href="#">Обратная связь</a></li>
         <a href="{% url 'logout' %}" class="logout">Выйти</a>
     </div>
 </body>

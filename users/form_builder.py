@@ -1,11 +1,11 @@
 from django.utils.safestring import mark_safe
 
 def form_builder(form_data):
-    base_form_class = form_data['parent']
-    form_name = form_data['form_object_name']
+    base_form_class = form_data['meta']['parent']
+    form_name = form_data['meta']['name']
     
     class Meta:
-        model = form_data['model']
+        model = form_data['meta']['model']
         fields = [field['id'] for field in form_data['fields']]
         widgets = {
             field['id']: field['type'](attrs={'placeholder': field['placeholder']})
@@ -37,11 +37,11 @@ def form_builder(form_data):
 
     form_class.as_custom = as_custom
 
-    form_class.css = form_data['css']
-    form_class.title = form_data['title']
-    form_class.form_name = form_data['form_name']
-    form_class.btn_confirm = form_data['btn_confirm']
-    form_class.sub_btn_link = form_data['sub_btn_link']
-    form_class.sub_btn_link_text = form_data['sub_btn_link_text']
+    form_class.css = form_data['meta']['css']
+    form_class.title = form_data['form']['page_title']
+    form_class.form_name = form_data['form']['form_title']
+    form_class.btn_confirm = form_data['form']['btn_confirm']
+    form_class.sub_btn_link = form_data['form']['sub_btn_link']
+    form_class.sub_btn_link_text = form_data['form']['sub_btn_link_text']
 
     return form_class

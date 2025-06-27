@@ -11,7 +11,7 @@ def create_superuser_and_populate():
     User = get_user_model()
     
     user_department, created = Department.objects.get_or_create(name='User')
-    kitchen_department, created = Department.objects.get_or_create(name='Kitchen')
+    remont_department, created = Department.objects.get_or_create(name='Remont')
 
     if not User.objects.filter(username='toster').exists():
         print("Создание суперюзера...")
@@ -26,10 +26,10 @@ def create_superuser_and_populate():
         department=user_department,
     )
     CustomUser.objects.get_or_create(
-        username='testkitchen',
+        username='testremont',
         password='test',
-        full_name='test kitchen manager',
-        department=kitchen_department,
+        full_name='test remont manager',
+        department=remont_department,
     )
         
     print("База данных заполнена начальными данными.")

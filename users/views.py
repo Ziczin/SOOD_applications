@@ -1,10 +1,13 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from .form_builder import form_builder
-from .forms import builder_data
 
-registration_form = form_builder(builder_data['registration'])
-login_form = form_builder(builder_data['login'])
+from .forms import login_form_data, registration_form_data
+
+import json
+
+registration_form = form_builder(registration_form_data)
+login_form = form_builder(login_form_data)
 
 def register(request):
     if request.method == 'POST':
@@ -24,23 +27,12 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            if user.department == 'kitchen':
-                return redirect('kitchen_dashboard')
-            else:
-                return redirect('user_dashboard')
-    
+            return redirect('dashboard')
+            
     return render(request, 'users/form_builder.html', {'form': login_form})
 
 def logout_view(request):
     logout(request)
     return redirect('/')
 
-from django.contrib.auth.decorators import login_required
 
-@login_required
-def kitchen_dashboard(request):
-    return render(request, 'kitchen_dashboard.html')
-
-@login_required
-def user_dashboard(request):
-    return render(request, 'user_dashboard.html')
