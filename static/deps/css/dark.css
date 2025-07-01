@@ -1,0 +1,133 @@
+body {
+    font-size: 20px;
+    font-family: Arial, sans-serif;
+    color: #fff;
+    background-color: #2b2b2b;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.container {
+    font-size: 20px;
+    background: #222;
+    padding: 20px;
+    padding-bottom: 12px;
+    border-radius: 12px;
+    box-shadow: 0 0 20px #111;
+    width: 50%;
+    max-width: 800px;
+    text-align: center;
+    transition: height 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+        
+}
+
+h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    font-size: 20px;
+    margin-bottom: 15px;
+    text-align: left;
+    width: 100%;
+}
+
+label {
+    font-size: 20px;
+    display: block;
+    margin-bottom: 5px;
+}
+
+input, select, textarea {
+    font-size: 20px;
+    color: #eee;
+    background-color: #333;
+    width: 100%;
+    padding: 1%;
+    border: 1px solid #445;
+    border-radius: 12px;
+    box-sizing: border-box;
+}
+
+input:hover, select:hover, textarea:hover {
+    background-color: #373737;
+}
+
+input:focus, select:focus, textarea:focus {
+    background-color: #3b3b3b;
+}
+input:-webkit-autofill, select:-webkit-autofill, textarea:-webkit-autofill,
+input:auto-fill, select:auto-fill, textarea:auto-fill {
+    background-color: #732;
+}
+
+button {
+    font-size: 20px;
+    border: 0;
+    width: 100%;
+    padding: 10px;
+    color: white;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.confirm {
+    background-color: #156;
+    transition: background-color 0.3s ease;
+}
+
+.confirm:hover {
+    background-color: #167;
+}
+
+.sub_btn_act, .sub_btn_act:visited {
+    font-size: 16px;
+    padding: 10px;
+    color: #888;
+    text-decoration: none;
+    transition: color 0.5s ease, background-color 0.3s ease;
+}
+
+.sub_btn_act:hover, .sub_btn_act:visited:hover {
+    color: #bbb;
+    transition: color 0.5s ease, background-color 0.3s ease;
+}
+
+.error {
+    color: red;
+    font-size: 16px;
+}
+
+.mt-10 {
+    margin-top: 10px;
+}
+
+.tabs {
+    display: flex;
+    margin-bottom: 10px;
+}
+.tab-button {
+    padding: 10px 20px;
+    border: none;
+    background-color: #e8e8e8;
+    color:#555;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+.tab-button.active {
+    background-color: #ccc;
+    color: #222;
+}
+.tab-content {
+    display: none;
+}
+.tab-content.active {
+    display: block;
+}

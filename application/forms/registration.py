@@ -8,7 +8,7 @@ from django.forms import TextInput
 registration_form_data = {
     'meta': {
         'name': 'Registration',
-        'css': 'deps/css/style.css',
+        'css': 'deps/css/dark.css',
         'model': CustomUser,
         'parent': UserCreationForm,
     },

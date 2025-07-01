@@ -8,7 +8,7 @@ from django.forms import TextInput
 login_form_data = {
     'meta': {
         'name': 'Login',
-        'css': 'deps/css/style.css',
+        'css': 'deps/css/bright.css',
         'model': CustomUser,
         'parent': ModelForm,
     },

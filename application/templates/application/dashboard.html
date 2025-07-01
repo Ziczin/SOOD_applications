@@ -5,16 +5,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Панель управления пользователя</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'deps/css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'deps/css/bright.css' %}">
 </head>
 <body>
-    <div class="container">
-        <h1>Добро пожаловать!</h1>
-        <p>Выберите форму заявки:</p>
-        <a href="#">Просмотр профиля</a></li>
-        <a href="#">Изменение пароля</a></li>
-        <a href="#">Обратная связь</a></li>
-        <a href="{% url 'logout' %}" class="logout">Выйти</a>
+    <div class="page-container">
+        <div class="side-container main">
+            <h1>Иванов Иван Иванович</h1>
+            <p>Логин</p>
+            <p>Отдел</p>
+            <p>Статус (верифицирован или нет)</p>
+        </div>
+        <div class="container vh-90">
+            <h1>Добро пожаловать!</h1>
+            
+            <div class="tabs">
+                <button id="forms-button" class="tab-button active" onclick="showTab('forms')">Формы заявок</button>
+                <button id="manage-button" class="tab-button" onclick="showTab('manage')">Управление</button>
+            </div>
+            <div id='forms' class="tab-content active">
+                <p>Выберите форму заявки:</p>
+                <div class="button-list">
+                    {% for form in forms %}
+                        <form method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" id="form" name="form_name" value="{{ form.form_name }}">
+                            <button type="submit" class="redir">{{ form.form_label }}</button>
+                        </form>
+                    {% endfor %}
+                </div>
+            </div>
+            <div id='manage' class="tab-content">
+                <p> Тестовый текст управления</p>
+            </div>
+            <a href="{% url 'logout' %}" class="logout">Выйти</a>
+        </div>
+        <div class="side-container filler"></div>
     </div>
+    <script>
+        function showTab(tabId) {
+            const tabs = document.querySelectorAll('.tab-content');
+            const container = document.querySelector('.container');
+            const activeTab = document.getElementById(tabId);
+            const previousActiveTab = document.querySelector('.tab-content.active');
+
+            if (previousActiveTab) {
+                previousActiveTab.classList.remove('active');
+            }
+
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(button => {
+                button.classList.remove('active');
+            });
+
+            activeTab.classList.add('active');
+            const activeButton = document.getElementById(tabId + '-button');
+            if (activeButton) {
+                activeButton.classList.add('active');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const initialTab = 'forms';
+            showTab(initialTab);
+        });
+    </script>
 </body>
 </html>

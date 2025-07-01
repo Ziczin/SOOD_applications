@@ -6,6 +6,11 @@ django.setup()
 
 from django.contrib.auth import get_user_model
 from users.models import CustomUser, Department
+from application.models import Application, ApplicationField, ApplicationService
+from application.models import Enum, EnumTag
+from application.models import Field, FieldType, Form
+from application.models import Model, ParentForm, Style
+from application.models import Service, ServiceValue
 
 def create_superuser_and_populate():
     User = get_user_model()
@@ -32,6 +37,49 @@ def create_superuser_and_populate():
         department=remont_department,
     )
         
+    obj1, created = EnumTag.objects.get_or_create(name='Принтер')
+    obj2, created = EnumTag.objects.get_or_create(name='Блюда')
+
+    Enum.objects.get_or_create(value='Принтер п-1', enum_tag=obj1)
+    Enum.objects.get_or_create(value='Принтер Lenovo', enum_tag=obj1)
+    Enum.objects.get_or_create(value='Мьясо', enum_tag=obj2)
+    Enum.objects.get_or_create(value='Пирожки с пирожками', enum_tag=obj2)
+
+    t1, created = FieldType.objects.get_or_create(name='Int')
+    t2, created = FieldType.objects.get_or_create(name='Float')
+    t3, created = FieldType.objects.get_or_create(name='Str')
+    t4, created = FieldType.objects.get_or_create(name='Enum')
+
+    f1, created = Field.objects.get_or_create(label='Количество', field_type=t1)
+    f2, created = Field.objects.get_or_create(label='Новое количество', field_type=t1)
+    f3, created = Field.objects.get_or_create(label='Цена', field_type=t2)
+    f4, created = Field.objects.get_or_create(label='Стоимость', field_type=t2)
+    f5, created = Field.objects.get_or_create(label='Наименование', field_type=t3)
+    f6, created = Field.objects.get_or_create(label='Описание', field_type=t3)
+    f7, created = Field.objects.get_or_create(label='Отдел', field_type=t4, enum_tag=obj1)
+    f8, created = Field.objects.get_or_create(label='Имя принтера', field_type=t4, enum_tag=obj2)
+
+    m1, created = Model.objects.get_or_create(name='CustomUser')
+    m2, created = Model.objects.get_or_create(name='Application')
+
+    s1, created = Style.objects.get_or_create(name='Common', path='deps/css/style.css')
+
+    po1, created = ParentForm.objects.get_or_create(name='UserCreationForm')
+    po2, created = ParentForm.objects.get_or_create(name='ModelForm')
+
+    form1, created = Form.objects.get_or_create(
+        form_name='TestForm1',
+        department=remont_department,
+        style=s1,
+        model=m2,
+        parent_form=po1,
+        page_label='Test',
+        form_label='Testovaya Forma',
+        confirm_button_text='Confirm Button Text',
+        sub_button_link_text='#',
+        sub_button_link_route='#',
+        )
+
     print("База данных заполнена начальными данными.")
 
 if __name__ == '__main__':

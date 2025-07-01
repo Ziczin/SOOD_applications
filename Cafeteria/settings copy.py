@@ -2,9 +2,11 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+SECRET_KEY = 'django-insecure-8jky7&(pdei0t6_vxw51o%-+la%j_wndx9gf84&d@okm-os1j2'
+
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['192.168.101.102', 'localhost', '127.0.0.1']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -13,13 +15,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
 
-    'django.contrib.sites',  # Для django-allauth
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-
-    'authentication', # Сервисы
+    'users', # Сервисы
+    'application'
 ]
 
 MIDDLEWARE = [
@@ -30,7 +29,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'Cafeteria.urls'
@@ -81,15 +79,20 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [
-    BASE_DIR / "your_app/static",
+    BASE_DIR / "static",
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTH_USER_MODEL = 'authentication.CustomUser'
+AUTH_USER_MODEL = 'users.CustomUser'
 AUTHENTICATION_BACKENDS = [
-    'allauth.account.auth_backends.AuthenticationBackend',
+    'django.contrib.auth.backends.ModelBackend',
 ]
+
+SITE_ID = 1
+
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
 
 SITE_ID = 1
 
