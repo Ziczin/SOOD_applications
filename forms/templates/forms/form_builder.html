@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ form.title }}</title>
-    <link rel="stylesheet" href="{% static form.css %}">
+    <link rel="stylesheet" href="{% static 'deps/css/bright.css' %}">
 </head>
 <body>
     <div class='container'>
@@ -18,7 +18,7 @@
             </div>
         {% endif %}
         <div id='request' class="tab-content active">
-            {% include "users/request_form.html" %}
+            {% include "forms/request_form.html" %}
         </div>
         <div id='services' class="tab-content">
             <p>Тестовый текст</p>

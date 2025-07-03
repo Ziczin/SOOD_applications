@@ -1,6 +1,6 @@
 from django.forms import ModelForm
 
-from users.models import CustomUser, Department
+from users.models import CustomUser
 
 from django.forms import PasswordInput
 from django.forms import TextInput

@@ -5,11 +5,12 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'your_project.settings')
 django.setup()
 
 from django.contrib.auth import get_user_model
+from django.forms import ModelForm
+
 from users.models import CustomUser, Department
 from application.models import Application, ApplicationField, ApplicationService
-from application.models import Enum, EnumTag
-from application.models import Field, FieldType, Form
-from application.models import Model, ParentForm, Style
+from forms.models import Enum, EnumTag, FieldType
+from application.models import Field, Form
 from application.models import Service, ServiceValue
 
 def create_superuser_and_populate():
@@ -59,20 +60,9 @@ def create_superuser_and_populate():
     f7, created = Field.objects.get_or_create(label='Отдел', field_type=t4, enum_tag=obj1)
     f8, created = Field.objects.get_or_create(label='Имя принтера', field_type=t4, enum_tag=obj2)
 
-    m1, created = Model.objects.get_or_create(name='CustomUser')
-    m2, created = Model.objects.get_or_create(name='Application')
-
-    s1, created = Style.objects.get_or_create(name='Common', path='deps/css/style.css')
-
-    po1, created = ParentForm.objects.get_or_create(name='UserCreationForm')
-    po2, created = ParentForm.objects.get_or_create(name='ModelForm')
-
     form1, created = Form.objects.get_or_create(
         form_name='TestForm1',
         department=remont_department,
-        style=s1,
-        model=m2,
-        parent_form=po1,
         page_label='Test',
         form_label='Testovaya Forma',
         confirm_button_text='Confirm Button Text',

@@ -8,7 +8,7 @@ from django.forms import TextInput
 registration_form_data = {
     'meta': {
         'name': 'Registration',
-        'css': 'deps/css/dark.css',
+        'css': 'deps/css/bright.css',
         'model': CustomUser,
         'parent': UserCreationForm,
     },
@@ -34,6 +34,7 @@ registration_form_data = {
             'id': 'password2', 'type': PasswordInput,
             'label': 'Повторите пароль',
             'placeholder': 'Введите пароль. Снова',
+            'error_messages': {'password_mismatch': 'Gfhj'},
         },
         {
             'id': 'full_name', 'type': TextInput,
