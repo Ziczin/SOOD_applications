@@ -16,7 +16,7 @@ login_form_data = {
         'page_title': 'Вход',
         'form_title': 'Вход',
         'btn_confirm': 'Войти',
-        'sub_btn_link': '/auth/register',
+        'sub_btn_link': '/users/register',
         'sub_btn_link_text': 'Нет аккаунта? Зарегистрироваться',
     },
     'fields': [

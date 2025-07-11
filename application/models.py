@@ -2,11 +2,20 @@ from django.db import models
 from users.models import CustomUser
 from forms.models import Form, Field
 
-class Service(models.Model):
-    def __str__(self): return self.name
+
+class ServiceGroup(models.Model):
+    def __str__(self): return str(self.application) + ' | ' + str(self.service)
     form = models.ForeignKey(Form, on_delete=models.SET_NULL, null=True)
     name = models.CharField(max_length=50)
+    available = models.BooleanField(default=False)
+
+class Service(models.Model):
+    def __str__(self): return self.name
+    group = models.ForeignKey(ServiceGroup, on_delete=models.SET_NULL, null=True)
+    name = models.CharField(max_length=50)
     description = models.CharField(max_length=200)
+    available = models.BooleanField(default=False)
+
 
 class ServiceValue(models.Model):
     def __str__(self): return self.label

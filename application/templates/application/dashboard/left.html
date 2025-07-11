@@ -1,0 +1,25 @@
+<form method="POST" action="{% url 'logout' %}">
+    {% csrf_token %}
+    <button type="submit" class="content exit flex">Сменить аккаунт</button>
+</form>
+
+<div class="content">
+    <h1>{{ data.user.full_name}}</h1>
+    <p>Логин: {{ data.user.username }}</p>
+    <p>Отдел: {{ data.user.department }}</p>
+    {% if data.user.role == "ADMIN" %}
+        <p style='color: purple;'>
+            <div id="animatedText">
+                <strong>Вы администратор</strong>
+            </div>
+        </p>
+        <script>
+            const animatedText = document.getElementById('animatedText');
+            animatedText.addEventListener('click', function() {
+                this.classList.toggle('admin');
+            });
+        </script>
+    {% elif data.user.role == "MODERATOR" %}
+        <p style='color: red;'>Вы модератор</p>
+    {% endif %}
+</div>

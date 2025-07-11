@@ -1,0 +1,136 @@
+<form method="POST" action="{% url 'dashboard' %}">
+    {% csrf_token %}
+    <button type="submit" class="content back flex">Вернуться в аккаунт</button>
+</form>
+
+<div class="content">
+    <h2>Формы:</h2>
+    {% for form in data.forms %}
+        <button class='redir' onclick="fillFormData('{{form.form_name}}')">
+            {{ form.form_label }}
+        </button>
+    {% endfor %}
+    <script>
+        function fillFormData(formName) {
+            getFormData(formName).then(data => {
+                const formContentDiv = document.getElementById('form-content');
+                formContentDiv.classList.add('scrollbox');
+                var div = `
+                    <h2>Конструктор формы</h2>
+                    <div class="accordion">
+                `;
+                div += fillFormMainFields(data);
+                div += fillFormFields(data);
+                div += `
+                    </div>
+                    <button type="submit" class="confirm">Сохранить изменения</button><br>
+                `;
+                formContentDiv.innerHTML = div
+                setAccordionEvents()
+            });
+        }
+
+        function getFormData(formName) {
+            return fetch(`/forms/get-form-data?form_name=${formName}`)
+                .then(response => response.json());
+        }
+
+        function fillFormMainFields(data) {
+            return `
+            <div class="accordion-back bg-red">
+                <button class="accordion-header">Обязательные поля формы</button>
+                <div class="accordion-content">
+                    <div class="form-data main-field margin-on-hover">
+                        <label for="page_label">Заголовок вкладки при заполнении формы:</label>
+                        <input type="text"
+                                name="page_label"
+                                value="${data.form.page_label}"
+                                placeholder="Например: Заявление"
+                        >
+                    </div>
+                    <div class="form-data main-field margin-on-hover">
+                        <label for="form_label">Заголовок формы:</label>
+                        <input type="text"
+                                name="form_label"
+                                value="${data.form.form_label}"
+                                placeholder="Например: Заявка на замену картриджа"
+                        >
+                    </div>
+                    <div class="form-data main-field margin-on-hover">
+                        <label for="confirm_button_text">Текст кнопки подтверждения:</label>
+                        <input type="text"
+                                name="confirm_button_text"
+                                value="${data.form.confirm_button_text}"
+                                placeholder="Например: Нажми на меня, чтобы получить печенье"
+                        >
+                    </div>
+                </div>
+            </div>
+            `;
+        }
+
+        function fillFormFields(data) {
+            var selectsHTML = `
+                <div class="accordion-back bg-blue">
+                    <button class="accordion-header">Дополнительные поля формы</button>
+                    <div class="accordion-content flex-column gap-5px">
+            `;
+            data.fields.forEach(field => {
+                selectsHTML += `<div class="form-data field margin-on-hover flex-column gap-5px">
+                    <label for="field_label">Наименование поля:</label>
+                    <input type="text" value="${field.label}">
+                    <label for="field">Тип поля:</label>
+                    <div class="tooltip-container">
+                        <select name="field" disabled>
+                `;
+                field.type.list.forEach(type => {
+                    selectsHTML += `
+                        <option value="${type}" ${type === field.type.selected ? 'selected' : ''}>
+                            ${type}
+                        </option>
+                    `;
+                });
+                selectsHTML += `
+                        </select>
+                        <span class="tooltip">
+                            Тип поля изменить нельзя, но если ОЧЕНЬ нужно - обратитесь в отдел программирования.
+                        </span>
+                    </div>
+                    <div class="flex-row gap-10px enabler">
+                        <label for="toggle">Достуность для пользователя:</label>
+                        <button type="button" class="toggle-button ${field.available ? 'enabled' : 'disabled'}" onclick="toggleState(this)">
+                            ${field.available ? 'доступно' : 'недоступно'}
+                        </button>
+                    </div>
+                </div>`;
+            });
+            selectsHTML += "</div></div>";
+            return selectsHTML;
+        }
+
+        function setAccordionEvents(){
+            var acc = document.getElementsByClassName("accordion-header");
+            for (let i = 0; i < acc.length; i++) {
+            acc[i].addEventListener("click", function() {
+                event.preventDefault();
+                this.classList.toggle("active");
+                var panel = this.nextElementSibling;
+                if (panel.style.maxHeight){
+                panel.style.maxHeight = null;
+                } else {
+                panel.style.maxHeight = panel.scrollHeight + "px";
+                } 
+            });}
+        }
+
+        function toggleState(button) {
+            const isEnabled = button.classList.toggle('enabled');
+            button.classList.toggle('disabled', !isEnabled);
+            
+            button.textContent = isEnabled ? 'доступно' : 'недоступно';
+            
+            const fieldData = button.closest('.enabler');
+            fieldData.dataset.available = isEnabled;
+        }
+    </script>
+</div>

@@ -1,17 +1,20 @@
 from django.utils.safestring import mark_safe
 
+import uuid
+
 def form_builder(form_data):
     base_form_class = form_data['meta']['parent']
-    form_name = form_data['meta']['name']
+    form_name = f'cls_{uuid.uuid4()}'
     
     class Meta:
         if 'model' in form_data['meta']:
             model = form_data['meta']['model']
         fields = [field['id'] for field in form_data['fields']]
-        widgets = {
-            field['id']: field['type'](attrs={'placeholder': field['placeholder']})
-            for field in form_data['fields'] if type(field['type']) != list
-        }
+        widgets = {}
+        for field in form_data['fields']:
+            if type(field['type']) != list:
+                attrs = {'placeholder': field['placeholder']} if 'placeholder' in field else {}
+                widgets[field['id']] = field['type'](attrs=attrs)
         
     form_class = type(form_name, (base_form_class,), {'Meta': Meta})
 

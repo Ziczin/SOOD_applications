@@ -10,6 +10,7 @@ class Form(models.Model):
     confirm_button_text = models.CharField(max_length=100)
     sub_button_link_text = models.CharField(max_length=100)
     sub_button_link_route = models.CharField(max_length=100)
+    available = models.BooleanField(default=False)
 
 class FieldType(models.Model):
     def __str__(self): return self.name
@@ -18,15 +19,17 @@ class FieldType(models.Model):
 class EnumTag(models.Model):
     def __str__(self): return self.name
     name = models.CharField(max_length=50)
+    available = models.BooleanField(default=False)
 
 class Enum(models.Model):
     def __str__(self): return str(self.enum_tag) + ' | ' + str(self.value) 
     value = models.CharField(max_length=50)
     enum_tag = models.ForeignKey(EnumTag, on_delete=models.SET_NULL, null=True)
+    available = models.BooleanField(default=False)
 
 class Field(models.Model):
-    def __str__(self): return str(self.field_type) + ' | ' + str(self.label)
+    def __str__(self): return str(self.type) + ' | ' + str(self.label)
     form = models.ForeignKey(Form, on_delete=models.SET_NULL, null=True, default=None)
-    field_type = models.ForeignKey(FieldType, on_delete=models.SET_NULL, null=True)
+    type = models.ForeignKey(FieldType, on_delete=models.SET_NULL, null=True)
     label = models.CharField(max_length=50)
     enum_tag = models.ForeignKey(EnumTag, on_delete=models.SET_NULL, null=True, default=None)

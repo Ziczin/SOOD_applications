@@ -1,5 +1,7 @@
 from django.shortcuts import render, redirect
+from django.http import JsonResponse
 from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.decorators import login_required
 from forms.form_builder import form_builder
 from users.models import CustomUser
 
@@ -43,5 +45,15 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect('/')
+
+@login_required
+def change_role(request):
+    username = request.POST['username']
+    new_role = request.POST['role']
+    user = CustomUser.objects.get(username=username)
+    user.role = new_role
+    user.save()
+    return JsonResponse({'status': 'success', 'message': 'Роль успешно изменена.'})
+
 
 

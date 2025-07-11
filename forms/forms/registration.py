@@ -16,7 +16,7 @@ registration_form_data = {
         'page_title': 'Регистрация',
         'form_title': 'Регистрация',
         'btn_confirm': 'Зарегистрироваться',
-        'sub_btn_link': '/auth/login',
+        'sub_btn_link': '/users/login',
         'sub_btn_link_text': 'Уже есть аккаунт? Войти',
     },
     'fields': [

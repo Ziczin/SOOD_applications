@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель управления</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'deps/css/bright.css' %}">
+</head>
+<body>
+    <div class="page-container">
+        <div class="side-container gap-10px"> 
+            {% include 'application/'|add:variant|add:"/left.html" with data=data %}
+        </div>
+        <div class="center-container content force-white"> 
+            {% include 'application/'|add:variant|add:"/center.html" with data=data %}
+        </div>
+        <div class="side-container gap-10px"> 
+            {% include 'application/'|add:variant|add:"/right.html" with data=data %}
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!-- Вкладки -->
+{% if not data.user.role == "USER" %}
+    <div class="tabs tabs-menu">
+        <button id="forms-button" class="tab-button active" onclick="showTab('forms')">Создать заявку</button>
+        {% if data.user.role == "ADMIN" or data.user.role == "MODERATOR" %}
+            <button id="manage-button" class="tab-button" onclick="showTab('manage')">Поступившие заявки</button>
+        {% endif %}
+        {% if data.user.role == "ADMIN" %}
+            <button id="admin-button" class="tab-button" onclick="showTab('admin')">Администрирование</button>
+        {% endif %}
+    </div>
+{% endif %}
+
+<!-- Вкладка форм -->
+<div id='forms' class="tab-content active">
+    <p>Выберите форму заявки:</p>
+    <div class="button-list">
+        {% for form in data.forms %}
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" id="form" name="form_name" value="{{ form.form_name }}">
+                <button type="submit" class="redir margin-on-hover">{{ form.form_label }}</button>
+            </form>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Вкладка работника -->
+{% if data.user.role == "MODERATOR" or data.user.role == "ADMIN" %}
+<div id='manage' class="tab-content">
+    <p>ЭТО МОДЕРСКАЯ ФОРМА</p>
+    {% for form in manager %}
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" id="manager" name="form_name" value="{{ form_name }}">
+            <button type="submit" class="redir">{{ form.text }}</button>
+        </form>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Вкладка админа -->
+{% if data.user.role == "ADMIN" %}
+<div id='admin' class="tab-content">
+    <div class="flex-column gap-10px mb-2p mt-2p">
+        <form method="POST" action="{% url 'form-manager' %}">
+            {% csrf_token %}
+            <button type="submit" class="redir margin-on-hover flex">Менеджер форм</button>
+        </form>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create_new_service">
+            <button type="submit" class="redir margin-on-hover flex">Услуги</button>
+        </form>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create_new_form">
+            <button type="submit" class="redir margin-on-hover flex">Перечисления</button>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<!-- Скрипт-ходилка по формам -->
+{% if not data.user.role == "USER" %}
+<script>
+    function showTab(tabId) {
+        const tabs = document.querySelectorAll('.tab-content');
+        const container = document.querySelector('.container');
+        const activeTab = document.getElementById(tabId);
+        const previousActiveTab = document.querySelector('.tab-content.active');
+
+        if (previousActiveTab) {
+            previousActiveTab.classList.remove('active');
+        }
+
+        const buttons = document.querySelectorAll('.tab-button');
+        buttons.forEach(button => {
+            button.classList.remove('active');
+        });
+
+        activeTab.classList.add('active');
+        const activeButton = document.getElementById(tabId + '-button');
+        if (activeButton) {
+            activeButton.classList.add('active');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const initialTab = 'forms';
+        showTab(initialTab);
+    });
+</script>
+{% endif %}
