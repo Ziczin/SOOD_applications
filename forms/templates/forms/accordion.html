@@ -1,0 +1,627 @@
+<div id="accordion" class="container mt-3 m-30"></div>
+
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+    // ================== КОНФИГУРАЦИЯ ==================
+    const css = {
+        bs: {
+            card: 'card',
+            cardHeader: 'card-header',
+            cardBody: 'card-body',
+            btn: 'btn',
+            btnLink: 'btn-link',
+            collapse: 'collapse',
+            mb2: 'mb-2',
+            show: 'show',
+            collapsed: 'collapsed',
+            btnPrimary: 'btn-primary',
+            mt3: 'mt-3',
+            formControl: 'form-control',
+            btnDanger: 'btn-danger',
+            btnWarning: 'btn-warning',
+            btnSm: 'btn-sm',
+            disabled: 'disabled'
+        },
+        custom: {
+            accordion: 'accordion',
+            fieldItem: 'field-item',
+            addButton: 'add-field-btn',
+            flexContainer: 'flex-container',
+
+            formHeader: 'form-header'
+
+            fieldsHeader: 'fields-header'
+            fieldsContainer: 'fields-container',
+            fieldsSection: 'fields-section',
+            fieldControls: 'field-controls',
+            disabledField: 'disabled-field',
+
+            servicesHeader: 'services-header'
+            serviceAvailable: 'service-available',
+            serviceUnavailable: 'service-unavailable',
+            servicesControls: 'services-controls',
+            groupControls: 'group-controls',
+            disabledGroup: 'disabled-group',
+
+            mainMargin: 'main-margin'
+        }
+    };
+
+    const data = {
+        form: {
+            confirm_button_text: "Confirm Button Text",
+            form_label: "Testovaya Forma",
+            page_label: "Test"
+        },
+        fields: [
+            { label: "Количество", selected_type: "Int", isInitial: true, disabled: false },
+            { label: "Цена", selected_type: "Float", isInitial: true, disabled: false },
+            { label: "Наименование", selected_type: "Str", isInitial: true, disabled: false },
+            { label: "Описание", selected_type: "Str", isInitial: true, disabled: false }
+        ],
+        service_groups: {
+            available: {
+                group1: {
+                    name: "Группа сервисов 1",
+                    services: [
+                        { name: "Сервис 1.1", available: true },
+                        { name: "Сервис 1.2", available: false },
+                        { name: "Сервис 1.3", available: true }
+                    ],
+                    disabled: false
+                },
+                group2: {
+                    name: "Группа сервисов 2",
+                    services: [
+                        { name: "Сервис 2.1", available: false },
+                        { name: "Сервис 2.2", available: true }
+                    ],
+                    disabled: false
+                },
+                group3: {
+                    name: "Группа сервисов 3",
+                    services: [
+                        { name: "Сервис 3.1", available: true },
+                        { name: "Сервис 3.2", available: true },
+                        { name: "Сервис 3.3", available: false }
+                    ],
+                    disabled: false
+                },
+                group4: {
+                    name: "Группа сервисов 4",
+                    services: [
+                        { name: "Сервис 4.1", available: false }
+                    ],
+                    disabled: false
+                },
+                group5: {
+                    name: "Группа сервисов 5",
+                    services: [
+                        { name: "Сервис 5.1", available: true },
+                        { name: "Сервис 5.2", available: true }
+                    ],
+                    disabled: false
+                },
+                group6: {
+                    name: "Группа сервисов 6",
+                    services: [
+                        { name: "Сервис 6.1", available: false },
+                        { name: "Сервис 6.2", available: false }
+                    ],
+                    disabled: false
+                }
+            },
+            selected: ['group2', 'group5']
+        }
+    };
+
+    // ================== ОСНОВНЫЕ ФУНКЦИИ ==================
+    document.addEventListener('DOMContentLoaded', initAccordion);
+
+    function initAccordion() {
+        const accordionContainer = document.getElementById('accordion');
+        accordionContainer.classList.add(css.custom.accordion, css.custom.mainMargin);
+        
+        renderFormSection(data.form, accordionContainer);
+        renderFieldsSection(data.fields, accordionContainer);
+        renderServicesSection(data.service_groups, accordionContainer);
+    }
+
+    // ================== КОМПОНЕНТЫ ИНТЕРФЕЙСА ==================
+    function createAccordionItem({id, title, content, isOpen = false, controls = null, additionalClasses = []}) {
+        const card = makeDiv(
+            makeItCard,
+            withCss(css.bs.mb2, ...additionalClasses)
+        );
+        
+        const header = makeDiv(makeItHeader);
+        const button = makeButton(
+            withCss(isOpen ? '' : css.bs.collapsed),
+            withText(title),
+            withAttributes({
+                'data-toggle': 'collapse',
+                'data-target': `#${id}`,
+                'aria-expanded': isOpen,
+                'style': 'flex-grow: 1; text-align: left;',
+                'data-header-toggler': '',
+            })
+        );
+        header.appendChild(button);
+        
+        if (controls) header.appendChild(controls);
+
+        const collapse = createCollapseSection(id, isOpen);
+        collapse.appendChild(createCardBody(content));
+
+        card.appendChild(header);
+        card.appendChild(collapse);
+        return card;
+    }
+
+    function createCollapseSection(id, isShow = false) {
+        const collapse = makeDiv(
+            withCss(css.bs.collapse),
+            withCss(isShow ? css.bs.show : '')
+        );
+        collapse.id = id;
+        return collapse;
+    }
+
+    function createCardBody(content) {
+        const body = makeDiv(withCss(css.bs.cardBody));
+        
+        if (typeof content === 'string') {
+            body.appendChild(document.createTextNode(content));
+        } else {
+            body.appendChild(content);
+        }
+        
+        return body;
+    }
+
+    function createServiceItem(service) {
+        const item = makeDiv(withText(service.name));
+        item.className = service.available 
+            ? css.custom.serviceAvailable 
+            : css.custom.serviceUnavailable;
+        return item;
+    }
+
+    // ================== РЕНДЕР ФОРМЫ ==================
+    function renderFormSection(formData, container) {
+        const card = createAccordionItem({
+            id: 'formPanel',
+            title: 'Форма',
+            content: [
+                `Название формы: ${formData.form_label}`,
+                `Кнопка подтверждения: ${formData.confirm_button_text}`,
+                `Название страницы: ${formData.page_label}`
+            ].join('\n'),
+            css.custom.formHeader
+        });
+        container.appendChild(card);
+    }
+
+    // ================== РЕНДЕР ПОЛЕЙ ==================
+    function createFieldControls(fieldData) {
+        const controls = makeDiv(withCss(css.custom.fieldControls));
+        controls.style.display = 'flex';
+        controls.style.gap = '5px';
+        controls.style.marginLeft = '10px';
+
+        const disableBtn = makeButton(
+            makeItWarning,
+            withText(fieldData.disabled ? 'Включить' : 'Отключить'),
+            withClickHandler(e => toggleFieldDisabled(e, fieldData))
+        );
+        controls.appendChild(disableBtn);
+
+        if (!fieldData.isInitial) {
+            const deleteBtn = makeButton(
+                makeItDanger, 
+                withText('Удалить'),
+                withClickHandler(e => deleteField(e, fieldData))
+            );
+            controls.appendChild(deleteBtn);
+        }
+
+        return controls;
+    }
+
+    function toggleFieldDisabled(e, fieldData) {
+        e.stopPropagation();
+        fieldData.disabled = !fieldData.disabled;
+        e.target.textContent = fieldData.disabled ? 'Включить' : 'Отключить';
+        e.target.closest('.card').classList.toggle(css.custom.disabledField, fieldData.disabled);
+    }
+
+    function deleteField(e, fieldData) {
+        e.stopPropagation();
+        const index = data.fields.findIndex(f => 
+            f.label === fieldData.label && 
+            f.selected_type === fieldData.selected_type
+        );
+        if (index !== -1) data.fields.splice(index, 1);
+        e.target.closest('.card').remove();
+    }
+
+    function renderFieldItem(field, index, openStates) {
+        return createAccordionItem({
+            id: `field${index}`,
+            title: `Поле ${index + 1}: ${field.label}`,
+            content: `Тип: ${field.selected_type}`,
+            isOpen: openStates[`field${index}`],
+            controls: createFieldControls(field),
+            additionalClasses: [
+                css.custom.fieldItem,
+                field.disabled ? css.custom.disabledField : ''
+            ]
+        });
+    }
+
+    function renderFieldsContent(fields, container) {
+        const openStates = getOpenStates(container);
+        container.innerHTML = '';
+        
+        fields.forEach((field, index) => {
+            container.appendChild(renderFieldItem(field, index, openStates));
+        });
+    }
+
+    function renderFieldsSection(fields, container) {
+        const card = createAccordionItem({
+            id: 'fieldsPanel',
+            title: 'Поля',
+            content: (() => {
+                const body = makeDiv();
+                const fieldsContainer = makeDiv(
+                    withCss(
+                        css.custom.fieldsContainer,
+                        css.custom.fieldsSection,
+                        css.custom.flexContainer,
+                    )
+                );
+                
+                renderFieldsContent(fields, fieldsContainer);
+                
+                const addButton = makeButton(
+                    withCss(css.bs.btn, css.bs.btnPrimary, css.bs.mt3, css.custom.addButton),
+                    withText('Добавить поле'),
+                    withClickHandler(e => {
+                        e.stopPropagation();
+                        data.fields.push({
+                            label: "Новое поле " + (data.fields.filter(f => !f.isInitial).length + 1),
+                            selected_type: "Str",
+                            isInitial: false,
+                            disabled: false
+                        });
+                        renderFieldsContent(data.fields, document.querySelector('.fields-section'));
+                    })
+                );
+                
+                body.appendChild(fieldsContainer);
+                body.appendChild(addButton);
+                return body;
+            })()
+        });
+        container.appendChild(card);
+    }
+
+    // ================== РЕНДЕР СЕРВИСОВ ==================
+    function createServiceGroupControls(group, groupId, services) {
+        const controls = makeDiv(withCss(css.custom.groupControls));
+        controls.style.display = 'flex';
+        controls.style.gap = '5px';
+
+        const disableBtn = makeButton(
+            makeItWarning,
+            withText(group.disabled ? 'Включить' : 'Отключить'),
+            withClickHandler(e => toggleGroupDisabled(e, group, services))
+        );
+        controls.appendChild(disableBtn);
+
+        const deleteBtn = makeButton(
+            makeItDanger, 
+            withText('Удалить'),
+            withClickHandler(e => deleteServiceGroup(e, groupId, services))
+        );
+        controls.appendChild(deleteBtn);
+
+        return controls;
+    }
+
+    function toggleGroupDisabled(e, group, services) {
+        e.stopPropagation();
+        group.disabled = !group.disabled;
+        e.target.textContent = group.disabled ? 'Включить' : 'Отключить';
+        
+        const card = e.target.closest('.card');
+        card.classList.toggle(css.custom.disabledGroup, group.disabled);
+        card.querySelector('.btn-link').classList.toggle(css.bs.disabled, group.disabled);
+        card.querySelector('.btn-link').style.pointerEvents = group.disabled ? 'none' : '';
+        
+        updateGroupSelect(document.querySelector('.services-controls select'), services);
+    }
+
+    function deleteServiceGroup(e, groupId, services) {
+        e.stopPropagation();
+        const index = services.selected.indexOf(groupId);
+        if (index !== -1) services.selected.splice(index, 1);
+        
+        const container = e.target.closest('.services-content');
+        renderServicesContent(services, container);
+        updateGroupSelect(document.querySelector('.services-controls select'), services);
+    }
+
+    function renderServiceGroup(group, groupId, openStates, services) {
+        const content = makeDiv();
+        group.services.forEach(service => {
+            content.appendChild(createServiceItem(service));
+        });
+
+        return createAccordionItem({
+            id: `serviceGroup${groupId}`,
+            title: group.name,
+            content: content,
+            isOpen: openStates[`serviceGroup${groupId}`],
+            controls: createServiceGroupControls(group, groupId, services),
+            additionalClasses: [
+                group.disabled ? css.custom.disabledGroup : ''
+            ]
+        });
+    }
+
+    function renderServicesContent(services, container) {
+        const openStates = getOpenStates(container);
+        container.innerHTML = '';
+        
+        services.selected.forEach(groupId => {
+            const group = services.available[groupId];
+            if (group) {
+                container.appendChild(renderServiceGroup(group, groupId, openStates, services));
+            }
+        });
+    }
+
+    function renderServicesSection(services, container) {
+        const card = createAccordionItem({
+            id: 'servicesPanel',
+            title: 'Сервисы',
+            content: (() => {
+                const body = makeDiv();
+                const controlsContainer = makeDiv(withCss(css.custom.servicesControls));
+
+                const groupSelect = makeSelect(withCss(css.bs.formControl));
+                updateGroupSelect(groupSelect, services);
+
+                const addGroupButton = makeButton(
+                    withCss(css.bs.btn, css.bs.btnPrimary),
+                    withText('Добавить группу'),
+                    withClickHandler(() => {
+                        const selectedGroup = groupSelect.value;
+                        if (selectedGroup && !services.selected.includes(selectedGroup)) {
+                            services.selected.push(selectedGroup);
+                            renderServicesContent(services, document.querySelector('.services-content'));
+                            updateGroupSelect(groupSelect, services);
+                        }
+                    })
+                );
+
+                controlsContainer.appendChild(groupSelect);
+                controlsContainer.appendChild(addGroupButton);
+                body.appendChild(controlsContainer);
+
+                const servicesContainer = makeDiv(
+                    withCss(css.custom.flexContainer, 'services-content')
+                );
+                body.appendChild(servicesContainer);
+
+                renderServicesContent(services, servicesContainer);
+                return body;
+            })()
+        });
+        container.appendChild(card);
+    }
+
+    // ================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==================
+    function getOpenStates(container) {
+        const states = {};
+        (container || document).querySelectorAll('.collapse').forEach(collapse => {
+            states[collapse.id] = collapse.classList.contains('show');
+        });
+        return states;
+    }
+
+    function updateGroupSelect(selectElement, services) {
+        selectElement.innerHTML = '';
+        
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = 'Выберите группу';
+        defaultOption.disabled = true;
+        defaultOption.selected = true;
+        selectElement.appendChild(defaultOption);
+        
+        Object.keys(services.available).forEach(groupId => {
+            if (!services.selected.includes(groupId) && !services.available[groupId].disabled) {
+                const option = document.createElement('option');
+                option.value = groupId;
+                option.textContent = services.available[groupId].name;
+                selectElement.appendChild(option);
+            }
+        });
+    }
+
+    // ================== УТИЛИТЫ ДЛЯ СОЗДАНИЯ ЭЛЕМЕНТОВ ==================
+    function withCss(...clss) {
+        return (element) => {
+            clss.forEach(cls => cls && element.classList.add(cls));
+            return element;
+        }
+    }
+
+    function withText(text) {
+        return (element) => {
+            element.textContent = text;
+            return element;
+        }
+    }
+
+    function withAttributes(attrs) {
+        return (element) => {
+            Object.entries(attrs).forEach(([key, value]) => {
+                element.setAttribute(key, value);
+            });
+            return element;
+        };
+    }
+
+    function withClickHandler(handler) {
+        return (element) => {
+            element.addEventListener('click', handler);
+            return element;
+        };
+    }
+
+    function makeElement(elementType, ...methods) {
+        const element = document.createElement(elementType);
+        return methods.reduce((el, method) => method(el) || el, element);
+    }
+
+    // Div
+    function makeDiv(...methods) {
+        return makeElement('div', ...methods);
+    }
+
+    function makeItCard(card) {
+        card.classList.add(css.bs.card);
+        return card;
+    }
+
+    function makeItHeader(header) {
+        header.classList.add(css.bs.cardHeader);
+        header.style.display = 'flex';
+        header.style.justifyContent = 'space-between';
+        header.style.alignItems = 'center';
+        return header;
+    }
+
+    function makeItBody(body) {
+        body.classList.add(css.bs.cardBody);
+        return body;
+    }
+
+    // Button
+    function makeButton(...methods) {
+        return makeElement('button', ...methods);
+    }
+
+    function makeItWarning(btn) {
+        btn.classList.add(css.bs.btn, css.bs.btnWarning, css.bs.btnSm);
+        return btn;
+    }
+
+    function makeItDanger(btn) {
+        btn.classList.add(css.bs.btn, css.bs.btnDanger, css.bs.btnSm);
+        return btn;
+    }
+
+    function makeItLink(btn) {
+        btn.classList.add(css.bs.btn, css.bs.btnLink);
+        return btn;
+    }
+
+    // Select
+    function makeSelect(...methods) {
+        return makeElement('select', ...methods);
+    }
+</script>
+
+<style>
+    button[data-header-toggler]:active,
+    button[data-header-toggler] {
+        background-color: transparent;
+        border: none !important;
+        outline: none !important;
+    }
+    .accordion > .card {
+        border-radius: 5rem !important;}
+
+    .card-header {
+        border: none !important;
+    }
+    #accordion.accordion {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;}
+    #accordion .card {
+        margin-bottom: 0 !important;
+        border-radius: 12px !important;
+        border: none !important;
+        overflow: hidden;}
+    #accordion .card:last-child {
+        margin-bottom: 0;}
+    .card-header .btn-link,
+    .card-header .btn-link:hover {
+        text-decoration: none !important;}
+    .card-body .card-header .btn-link,
+    .card-body .card-header .btn-link:hover {
+        color: black !important;}
+    .card {
+        border: 0px !important;} 
+    .form-card-header {
+        background-color: #edd;}
+    .fields-card-header {
+        background-color: #dde;}
+    .services-card-header {
+        background-color: #ded;}
+    .flex-container {
+        display: flex;
+        gap: 12px;
+        flex-direction: column}
+    .service-available {
+        color: green;
+        margin: 5px 0;}
+    .service-unavailable {
+        color: gray;
+        margin: 5px 0;
+        opacity: 0.7;}
+    .services-controls {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 15px;}
+    .services-controls select {
+        flex-grow: 1;
+        max-width: 300px;}
+    .field-controls {
+        display: flex;
+        justify-content: flex-end;}
+    .group-controls {
+        display: flex;
+        gap: 5px;}
+    .disabled-field,
+    .disabled-group {
+        opacity: 0.6;}
+    .main-margin {
+        margin: 50px;
+        margin-bottom: 200px;}
+    .accordion > .card {
+        margin-bottom: 5px;}
+    .accordion > .card:last-child {
+        margin-bottom: 0;}
+
+    .form-header {
+        background-color: #fee
+    }
+    .fields-header {
+        background-color: #eef
+    }
+    .services-header {
+        background-color: #efe
+    }
+</style>

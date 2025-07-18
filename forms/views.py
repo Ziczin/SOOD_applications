@@ -38,12 +38,10 @@ def get_form_data(request):
         }
     }
     # Получаем поля и их типы
+    data['field_types'] = [elem.name for elem in FieldType.objects.filter()]
     data['fields'] = [{
             'label': field.label,
-            'type': {
-                'selected': field.type.name,
-                'list': [elem.name for elem in FieldType.objects.filter()],
-            },
+            'selected_type': field.type.name,
             'enum_tag': field.enum_tag
         } for field in Field.objects.filter(form=form)]
 

@@ -16,10 +16,10 @@
     <p>Выберите форму заявки:</p>
     <div class="button-list">
         {% for form in data.forms %}
-            <form method="POST">
+            <form class="margin-on-hover" method="POST">
                 {% csrf_token %}
                 <input type="hidden" id="form" name="form_name" value="{{ form.form_name }}">
-                <button type="submit" class="redir margin-on-hover">{{ form.form_label }}</button>
+                <button type="submit" class="redir">{{ form.form_label }}</button>
             </form>
         {% endfor %}
     </div>
@@ -43,19 +43,18 @@
 {% if data.user.role == "ADMIN" %}
 <div id='admin' class="tab-content">
     <div class="flex-column gap-10px mb-2p mt-2p">
-        <form method="POST" action="{% url 'form-manager' %}">
+        <form class="margin-on-hover" method="POST" action="{% url 'form-manager' %}">
             {% csrf_token %}
-            <button type="submit" class="redir margin-on-hover flex">Менеджер форм</button>
+            <button type="submit" class="redir">Менеджер форм</button>
         </form>
-        <form method="POST">
+        <form class="margin-on-hover" method="POST" action="{% url 'demo-form-manager' %}">
             {% csrf_token %}
-            <input type="hidden" name="action" value="create_new_service">
-            <button type="submit" class="redir margin-on-hover flex">Услуги</button>
+            <button type="submit" class="redir">Демоверсия менеджера</button>
         </form>
-        <form method="POST">
+        <form class="margin-on-hover" method="POST">
             {% csrf_token %}
             <input type="hidden" name="action" value="create_new_form">
-            <button type="submit" class="redir margin-on-hover flex">Перечисления</button>
+            <button type="submit" class="redir">Перечисления</button>
         </form>
     </div>
 </div>

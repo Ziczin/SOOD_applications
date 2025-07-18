@@ -1,11 +1,12 @@
 
 {% if user.role == "ADMIN" %}
     <div class="content">
+    <h2>Мой отдел</h2>
     <div class="accordion">
     {% for user in data.users %}
         <div class="accordion-back bg-red">
         <button class="accordion-header">{{ user.full_name }}</button>
-        <div class="accordion-content">
+        <div class="accordion-content margin">
             <p class="ml-2p">Логин: {{ user.username }}</p>
             <form method="post" action="/users/change-role/" style="display:inline;"> {% csrf_token %}
                 <select class="ml-2p mb-2p acc-select" name="role" onchange="roleChange()">

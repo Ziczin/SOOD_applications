@@ -30,3 +30,10 @@ def form_manager(request):
             'data': {'forms': forms_list}
         }
     )
+
+@login_required
+def demo_form_manager(request):
+    
+    return render(
+        request, 'forms/accordion.html',
+    )

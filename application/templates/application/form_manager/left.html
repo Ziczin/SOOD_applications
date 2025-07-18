@@ -6,123 +6,274 @@
 <div class="content">
     <h2>Формы:</h2>
     {% for form in data.forms %}
+    <div class="margin-on-hover">
         <button class='redir' onclick="fillFormData('{{form.form_name}}')">
             {{ form.form_label }}
         </button>
+    </div>
     {% endfor %}
     <script>
+        // Метод отрисовки данных формы                   //
+        // Отрабатывает по нажатию на имя формы в списке  //
+        // Использует большую часть нижеуказанных методов //
         function fillFormData(formName) {
             getFormData(formName).then(data => {
                 const formContentDiv = document.getElementById('form-content');
                 formContentDiv.classList.add('scrollbox');
-                var div = `
-                    <h2>Конструктор формы</h2>
-                    <div class="accordion">
-                `;
-                div += fillFormMainFields(data);
-                div += fillFormFields(data);
-                div += `
-                    </div>
-                    <button type="submit" class="confirm">Сохранить изменения</button><br>
-                `;
-                formContentDiv.innerHTML = div
-                setAccordionEvents()
+
+                // Создаем заголовок
+                const header = document.createElement('h2');
+                header.textContent = 'Конструктор формы';
+                
+                // Создаем аккордеон
+                const accordion = document.createElement('div');
+                accordion.className = 'accordion';
+
+                // Заполняем аккордеон основными полями и дополнительными полями
+                accordion.appendChild(fillFormMainFields(data));
+                accordion.appendChild(fillFormFields(data));
+
+                // Создаем кнопку сохранения
+                const saveButton = document.createElement('button');
+                saveButton.type = 'submit';
+                saveButton.className = 'confirm';
+                saveButton.textContent = 'Сохранить изменения';
+
+                // Очищаем содержимое и добавляем новые элементы
+                formContentDiv.innerHTML = ''; // Очищаем предыдущий контент
+                formContentDiv.appendChild(header);
+                formContentDiv.appendChild(accordion);
+                formContentDiv.appendChild(saveButton);
+
+                // Устанавливаем события аккордеона
+                setAccordionEvents();
             });
         }
 
+        // Метод получения данных формы с сервера //
         function getFormData(formName) {
             return fetch(`/forms/get-form-data?form_name=${formName}`)
                 .then(response => response.json());
         }
 
+        // Метод отрисовки главных полей //
         function fillFormMainFields(data) {
-            return `
-            <div class="accordion-back bg-red">
-                <button class="accordion-header">Обязательные поля формы</button>
-                <div class="accordion-content">
-                    <div class="form-data main-field margin-on-hover">
-                        <label for="page_label">Заголовок вкладки при заполнении формы:</label>
-                        <input type="text"
-                                name="page_label"
-                                value="${data.form.page_label}"
-                                placeholder="Например: Заявление"
-                        >
-                    </div>
-                    <div class="form-data main-field margin-on-hover">
-                        <label for="form_label">Заголовок формы:</label>
-                        <input type="text"
-                                name="form_label"
-                                value="${data.form.form_label}"
-                                placeholder="Например: Заявка на замену картриджа"
-                        >
-                    </div>
-                    <div class="form-data main-field margin-on-hover">
-                        <label for="confirm_button_text">Текст кнопки подтверждения:</label>
-                        <input type="text"
-                                name="confirm_button_text"
-                                value="${data.form.confirm_button_text}"
-                                placeholder="Например: Нажми на меня, чтобы получить печенье"
-                        >
-                    </div>
-                </div>
-            </div>
-            `;
+            // Создаем основной контейнер
+            const accordionBack = document.createElement('div');
+            accordionBack.className = 'accordion-back bg-red';
+
+            // Создаем заголовок аккордеона
+            const accordionHeader = document.createElement('button');
+            accordionHeader.className = 'accordion-header';
+            accordionHeader.textContent = 'Обязательные поля формы';
+            accordionBack.appendChild(accordionHeader);
+
+            // Создаем контент аккордеона
+            const accordionContent = document.createElement('div');
+            accordionContent.className = 'accordion-content';
+            accordionBack.appendChild(accordionContent);
+
+            // Функция для создания полей формы
+            function createFormField(labelText, inputName, inputValue, placeholderText) {
+                const formData = document.createElement('div');
+                formData.className = 'form-data field bg-red margin-on-hover';
+
+                const label = document.createElement('label');
+                label.setAttribute('for', inputName);
+                label.textContent = labelText;
+
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.name = inputName;
+                input.value = inputValue;
+                input.placeholder = placeholderText;
+
+                formData.appendChild(label);
+                formData.appendChild(input);
+                return formData;
+            }
+
+            // Добавляем поля формы
+            accordionContent.appendChild(createFormField(
+                'Заголовок вкладки при заполнении формы:',
+                'page_label',
+                data.form.page_label,
+                'Например: Заявление'
+            ));
+            accordionContent.appendChild(createFormField(
+                'Заголовок формы:',
+                'form_label',
+                data.form.form_label,
+                'Например: Заявка на замену картриджа'
+            ));
+            accordionContent.appendChild(createFormField(
+                'Текст кнопки подтверждения:',
+                'confirm_button_text',
+                data.form.confirm_button_text,
+                'Например: Нажми на меня, чтобы получить печенье'
+            ));
+
+            return accordionBack;
         }
 
+        // Метод отрисовки сохранённых полей //
         function fillFormFields(data) {
-            var selectsHTML = `
-                <div class="accordion-back bg-blue">
-                    <button class="accordion-header">Дополнительные поля формы</button>
-                    <div class="accordion-content flex-column gap-5px">
-            `;
+            // Создаем основной контейнер для дополнительных полей
+            const fieldsPanel = document.createElement('div');
+            fieldsPanel.className = 'accordion-back bg-blue';
+            fieldsPanel.id = 'fields-panel';
+
+            // Создаем заголовок панели
+            const headerButton = document.createElement('button');
+            headerButton.className = 'accordion-header';
+            headerButton.textContent = 'Дополнительные поля формы';
+            fieldsPanel.appendChild(headerButton);
+
+            // Создаем контейнер для содержимого аккордеона
+            const accordionContent = document.createElement('div');
+            accordionContent.className = 'accordion-content flex-column gap-5px';
+            fieldsPanel.appendChild(accordionContent);
+
+            // Создаем внутренний аккордеон
+            const innerAccordion = document.createElement('div');
+            innerAccordion.className = 'accordion inner';
+            accordionContent.appendChild(innerAccordion);
+
+            // Заполнение полей в панель "Дополнительные поля формы"
             data.fields.forEach(field => {
-                selectsHTML += `<div class="form-data field margin-on-hover flex-column gap-5px">
-                    <label for="field_label">Наименование поля:</label>
-                    <input type="text" value="${field.label}">
-                    <label for="field">Тип поля:</label>
-                    <div class="tooltip-container">
-                        <select name="field" disabled>
-                `;
-                field.type.list.forEach(type => {
-                    selectsHTML += `
-                        <option value="${type}" ${type === field.type.selected ? 'selected' : ''}>
-                            ${type}
-                        </option>
-                    `;
+                const fieldContainer = document.createElement('div');
+                fieldContainer.className = 'accordion-back bg-blue2';
+
+                const fieldHeader = document.createElement('button');
+                fieldHeader.className = 'accordion-header';
+                fieldHeader.textContent = 'Поле';
+                fieldContainer.appendChild(fieldHeader);
+
+                const fieldContent = document.createElement('div');
+                fieldContent.className = 'accordion-content flex-column gap-5px';
+                fieldContainer.appendChild(fieldContent);
+
+                // Наименование поля
+                const labelField = document.createElement('div');
+                labelField.className = 'form-data field margin-on-hover';
+                const label = document.createElement('label');
+                label.setAttribute('for', 'field_label');
+                label.textContent = 'Наименование поля:';
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = field.label;
+                labelField.appendChild(label);
+                labelField.appendChild(input);
+                fieldContent.appendChild(labelField);
+
+                // Тип поля
+                const typeField = document.createElement('div');
+                typeField.className = 'form-data field margin-on-hover';
+                const typeLabel = document.createElement('label');
+                typeLabel.setAttribute('for', 'field');
+                typeLabel.textContent = 'Тип поля:';
+                const tooltipContainer = document.createElement('div');
+                tooltipContainer.className = 'tooltip-container';
+                const select = document.createElement('select');
+                select.name = 'field';
+                select.disabled = true;
+
+                // Заполнение типов
+                data.field_types.forEach(type => {
+                    const option = document.createElement('option');
+                    option.value = type;
+                    option.textContent = type;
+                    if (type === field.selected_type) {
+                        option.selected = true;
+                    }
+                    select.appendChild(option);
                 });
-                selectsHTML += `
-                        </select>
-                        <span class="tooltip">
-                            Тип поля изменить нельзя, но если ОЧЕНЬ нужно - обратитесь в отдел программирования.
-                        </span>
-                    </div>
+
+                const tooltip = document.createElement('span');
+                tooltip.className = 'tooltip';
+                tooltip.textContent = 'Тип поля изменить нельзя, но если ОЧЕНЬ нужно - обратитесь в отдел программирования.';
+
+                tooltipContainer.appendChild(select);
+                tooltipContainer.appendChild(tooltip);
+                typeField.appendChild(typeLabel);
+                typeField.appendChild(tooltipContainer);
+                fieldContent.appendChild(typeField);
+
+                // Кнопка доступности
+                const availabilityField = document.createElement('div');
+                availabilityField.className = 'form-data field margin-on-hover';
+                const availabilityContainer = document.createElement('div');
+                availabilityContainer.className = 'flex-row gap-10px enabler';
+                const availabilityLabel = document.createElement('label');
+                availabilityLabel.setAttribute('for', 'toggle');
+                availabilityLabel.textContent = 'Доступность для пользователя:';
+                const toggleButton = document.createElement('button');
+                toggleButton.type = 'button';
+                toggleButton.className = `toggle-button ${field.available ? 'enabled' : 'disabled'}`;
+                toggleButton.textContent = field.available ? 'доступно' : 'недоступно';
+                toggleButton.onclick = function() { toggleState(this); };
+
+                availabilityContainer.appendChild(availabilityLabel);
+                availabilityContainer.appendChild(toggleButton);
+                availabilityField.appendChild(availabilityContainer);
+                fieldContent.appendChild(availabilityField);
+
+                // Добавляем поле в внутренний аккордеон
+                innerAccordion.appendChild(fieldContainer);
+            });
+
+            return fieldsPanel;
+        }
+
+        // Метод для добавления нового поля //
+        function addField() {
+            const formContentDiv = document.getElementById('form-content');
+            var newFieldHTML = `
+                <div class="form-data field flex-column gap-5px">
+                    <label for="field_label">Наименование поля:</label>
+                    <input type="text" value="">
+                    <label for="field">Тип поля:</label>
+                    <select name="field" disabled>
+                    </select>
                     <div class="flex-row gap-10px enabler">
-                        <label for="toggle">Достуность для пользователя:</label>
-                        <button type="button" class="toggle-button ${field.available ? 'enabled' : 'disabled'}" onclick="toggleState(this)">
-                            ${field.available ? 'доступно' : 'недоступно'}
+                        <label for="toggle">Доступность для пользователя:</label>
+                        <button type="button" class="toggle-button disabled" onclick="toggleState(this)">
+                            недоступно
                         </button>
                     </div>
-                </div>`;
-            });
-            selectsHTML += "</div></div>";
-            return selectsHTML;
+                </div>
+            `;
+            formContentDiv.querySelector('.accordion-content').insertAdjacentHTML('beforeend', newFieldHTML);
         }
 
-        function setAccordionEvents(){
+        // Метод установки действий на кнопки аккордеона //
+        // По клику раскрывает / скрывает панель         //
+        function setAccordionEvents() {
             var acc = document.getElementsByClassName("accordion-header");
             for (let i = 0; i < acc.length; i++) {
-            acc[i].addEventListener("click", function() {
-                event.preventDefault();
-                this.classList.toggle("active");
-                var panel = this.nextElementSibling;
-                if (panel.style.maxHeight){
-                panel.style.maxHeight = null;
-                } else {
-                panel.style.maxHeight = panel.scrollHeight + "px";
-                } 
-            });}
+                acc[i].addEventListener("click", function(event) {
+                    event.preventDefault();
+                    toggleAccordion(i);
+                });
+            }
         }
 
+        // Непосредственно метод действий на аккордеон //
+        function toggleAccordion(index) {
+            var acc = document.getElementsByClassName("accordion-header");
+            var panel = acc[index].nextElementSibling;
+
+            if (panel.style.maxHeight) {
+                panel.style.maxHeight = null;
+                acc[index].classList.remove("active");
+            } else {
+                panel.style.maxHeight = panel.scrollHeight + "px";
+                acc[index].classList.add("active");
+            }
+            recalculateAccordionHeights()
+        }
+
+        // Метод для кнопки переключения доступности //
         function toggleState(button) {
             const isEnabled = button.classList.toggle('enabled');
             button.classList.toggle('disabled', !isEnabled);
@@ -131,6 +282,17 @@
             
             const fieldData = button.closest('.enabler');
             fieldData.dataset.available = isEnabled;
+        }
+
+        // Метод пересчета высоты открытых панелей аккордеона //
+        function recalculateAccordionHeights() {
+            var acc = document.getElementsByClassName("accordion-header");
+            for (let i = 0; i < acc.length; i++) {
+                var panel = acc[i].nextElementSibling;
+                if (panel.style.maxHeight) {
+                    panel.style.maxHeight = panel.scrollHeight + "px";
+                }
+            }
         }
     </script>
 </div>
