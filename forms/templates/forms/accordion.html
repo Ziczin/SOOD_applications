@@ -30,22 +30,18 @@
             fieldItem: 'field-item',
             addButton: 'add-field-btn',
             flexContainer: 'flex-container',
-
             formHeader: 'form-header',
-
             fieldsHeader: 'fields-header',
             fieldsContainer: 'fields-container',
             fieldsSection: 'fields-section',
             fieldControls: 'field-controls',
             disabledField: 'disabled-field',
-
             servicesHeader: 'services-header',
             serviceAvailable: 'service-available',
             serviceUnavailable: 'service-unavailable',
             servicesControls: 'services-controls',
             groupControls: 'group-controls',
             disabledGroup: 'disabled-group',
-
             mainMargin: 'main-margin',
         },
         attr: {
@@ -130,9 +126,9 @@
 </script>
 
 <script myMAKE>
-    function withCss(...clss) {
+    function withCss(...classes) {
         return (element) => {
-            clss.forEach(cls => cls && element.classList.add(cls));
+            classes.forEach(cls => cls && element.classList.add(cls));
             return element;
         }
     }
@@ -144,18 +140,18 @@
         }
     }
 
-    function withParamAttributes(attrs) {
+    function withParamAttributes(attributes) {
         return (element) => {
-            Object.entries(attrs).forEach(([key, value]) => {
+            Object.entries(attributes).forEach(([key, value]) => {
                 element.setAttribute(key, value);
             });
             return element;
         };
     }
 
-    function withAttributes(...attrs) {
+    function withAttributes(...attributes) {
         return (element) => {
-            attrs.forEach((attr) => {
+            attributes.forEach((attr) => {
                 element.setAttribute(attr, '');
             });
             return element;
@@ -169,14 +165,13 @@
         };
     }
 
-    function makeElement(elementType, ...methods) {
+    function makeElement(elementType, ...decorators) {
         const element = document.createElement(elementType);
-        return methods.reduce((el, method) => method(el) || el, element);
+        return decorators.reduce((el, decorator) => decorator(el) || el, element);
     }
 
-    // Div
-    function makeDiv(...methods) {
-        return makeElement('div', ...methods);
+    function makeDiv(...decorators) {
+        return makeElement('div', ...decorators);
     }
 
     function makeItCard(card) {
@@ -197,9 +192,8 @@
         return body;
     }
 
-    // Button
-    function makeButton(...methods) {
-        return makeElement('button', ...methods);
+    function makeButton(...decorators) {
+        return makeElement('button', ...decorators);
     }
 
     function makeItWarning(btn) {
@@ -217,19 +211,24 @@
         return btn;
     }
 
-    // Select
-    function makeSelect(...methods) {
-        return makeElement('select', ...methods);
+    function makeSelect(...decorators) {
+        return makeElement('select', ...decorators);
     }
 </script>
 
 <script COMPONENTS>
     function createAccordionItem(
         {
-            id, title, content, isOpen = false, controls = null,
-            additionalClasses = [], additionalAttributes = [],
-            additionalParamAttributes={}
-        }) {
+            id, 
+            title, 
+            content, 
+            isOpen = false, 
+            controls = null,
+            additionalClasses = [], 
+            additionalAttributes = [],
+            additionalParamAttributes = {}
+        }
+    ) {
         const card = makeDiv(
             makeItCard,
             withCss(css.bs.mb2, ...additionalClasses),
@@ -291,7 +290,7 @@
     }
 </script>
 
-<script FORM RENDERERS>
+<script FORM_RENDERERS>
     function renderFormSection(formData, container) {
         const card = createAccordionItem({
             id: 'formPanel',
@@ -307,7 +306,7 @@
     }
 </script>
 
-<script FIELDS RENDERERS>
+<script FIELDS_RENDERERS>
     function createFieldControls(fieldData) {
         const controls = makeDiv(withCss(css.custom.fieldControls));
         controls.style.display = 'flex';
@@ -317,7 +316,7 @@
         const disableBtn = makeButton(
             makeItWarning,
             withText(fieldData.disabled ? 'Включить' : 'Отключить'),
-            withClickHandler(e => toggleFieldDisabled(e, fieldData)),
+            withClickHandler(event => toggleFieldDisabled(event, fieldData)),
             withAttributes(css.attr.toggleCardButton, css.attr.manageButton),
         );
         controls.appendChild(disableBtn);
@@ -326,7 +325,7 @@
             const deleteBtn = makeButton(
                 makeItDanger, 
                 withText('Удалить'),
-                withClickHandler(e => deleteField(e, fieldData)),
+                withClickHandler(event => deleteField(event, fieldData)),
                 withAttributes(css.attr.deleteCardButton, css.attr.manageButton)
             );
             controls.appendChild(deleteBtn);
@@ -335,21 +334,21 @@
         return controls;
     }
 
-    function toggleFieldDisabled(e, fieldData) {
-        e.stopPropagation();
+    function toggleFieldDisabled(event, fieldData) {
+        event.stopPropagation();
         fieldData.disabled = !fieldData.disabled;
-        e.target.textContent = fieldData.disabled ? 'Включить' : 'Отключить';
-        e.target.closest('.card').classList.toggle(css.custom.disabledField, fieldData.disabled);
+        event.target.textContent = fieldData.disabled ? 'Включить' : 'Отключить';
+        event.target.closest('.card').classList.toggle(css.custom.disabledField, fieldData.disabled);
     }
 
-    function deleteField(e, fieldData) {
-        e.stopPropagation();
-        const index = data.fields.findIndex(f => 
-            f.label === fieldData.label && 
-            f.selected_type === fieldData.selected_type
+    function deleteField(event, fieldData) {
+        event.stopPropagation();
+        const fieldIndex = data.fields.findIndex(field => 
+            field.label === fieldData.label && 
+            field.selected_type === fieldData.selected_type
         );
-        if (index !== -1) data.fields.splice(index, 1);
-        e.target.closest('.card').remove();
+        if (fieldIndex !== -1) data.fields.splice(fieldIndex, 1);
+        event.target.closest('.card').remove();
     }
 
     function renderFieldItem(field, index, openStates) {
@@ -395,8 +394,8 @@
                 const addButton = makeButton(
                     withCss(css.bs.btn, css.bs.btnPrimary, css.bs.mt3, css.custom.addButton),
                     withText('Добавить поле'),
-                    withClickHandler(e => {
-                        e.stopPropagation();
+                    withClickHandler(event => {
+                        event.stopPropagation();
                         data.fields.push({
                             label: "Новое поле " + (data.fields.filter(f => !f.isInitial).length + 1),
                             selected_type: "Str",
@@ -418,8 +417,8 @@
     }
 </script>
 
-<script SERVICES RENDERERS>
-    function createServiceGroupControls(group, groupId, services) {
+<script SERVICES_RENDERERS>
+    function createServiceGroupControls(group, groupId, serviceGroups) {
         const controls = makeDiv(withCss(css.custom.groupControls));
         controls.style.display = 'flex';
         controls.style.gap = '5px';
@@ -427,7 +426,7 @@
         const disableBtn = makeButton(
             makeItWarning,
             withText(group.disabled ? 'Включить' : 'Отключить'),
-            withClickHandler(e => toggleGroupDisabled(e, group, services)),
+            withClickHandler(event => toggleGroupDisabled(event, group, serviceGroups)),
             withAttributes(css.attr.toggleCardButton, css.attr.manageButton),
         );
         controls.appendChild(disableBtn);
@@ -435,7 +434,7 @@
         const deleteBtn = makeButton(
             makeItDanger, 
             withText('Удалить'),
-            withClickHandler(e => deleteServiceGroup(e, groupId, services)),
+            withClickHandler(event => deleteServiceGroup(event, groupId, serviceGroups)),
             withAttributes(css.attr.deleteCardButton, css.attr.manageButton),
         );
         controls.appendChild(deleteBtn);
@@ -443,30 +442,30 @@
         return controls;
     }
 
-    function toggleGroupDisabled(e, group, services) {
-        e.stopPropagation();
+    function toggleGroupDisabled(event, group, serviceGroups) {
+        event.stopPropagation();
         group.disabled = !group.disabled;
-        e.target.textContent = group.disabled ? 'Включить' : 'Отключить';
+        event.target.textContent = group.disabled ? 'Включить' : 'Отключить';
         
-        const card = e.target.closest('.card');
+        const card = event.target.closest('.card');
         card.classList.toggle(css.custom.disabledGroup, group.disabled);
         card.querySelector('.btn-link').classList.toggle(css.bs.disabled, group.disabled);
         card.querySelector('.btn-link').style.pointerEvents = group.disabled ? 'none' : '';
         
-        updateGroupSelect(document.querySelector('.services-controls select'), services);
+        updateGroupSelect(document.querySelector('.services-controls select'), serviceGroups);
     }
 
-    function deleteServiceGroup(e, groupId, services) {
-        e.stopPropagation();
-        const index = services.selected.indexOf(groupId);
-        if (index !== -1) services.selected.splice(index, 1);
+    function deleteServiceGroup(event, groupId, serviceGroups) {
+        event.stopPropagation();
+        const groupIndex = serviceGroups.selected.indexOf(groupId);
+        if (groupIndex !== -1) serviceGroups.selected.splice(groupIndex, 1);
         
-        const container = e.target.closest('.services-content');
-        renderServicesContent(services, container);
-        updateGroupSelect(document.querySelector('.services-controls select'), services);
+        const container = event.target.closest('.services-content');
+        renderServicesContent(serviceGroups, container);
+        updateGroupSelect(document.querySelector('.services-controls select'), serviceGroups);
     }
 
-    function renderServiceGroup(group, groupId, openStates, services) {
+    function renderServiceGroup(group, groupId, openStates, serviceGroups) {
         const content = makeDiv();
         group.services.forEach(service => {
             content.appendChild(createServiceItem(service));
@@ -477,7 +476,7 @@
             title: group.name,
             content: content,
             isOpen: openStates[`serviceGroup${groupId}`],
-            controls: createServiceGroupControls(group, groupId, services),
+            controls: createServiceGroupControls(group, groupId, serviceGroups),
             additionalClasses: [
                 group.disabled ? css.custom.disabledGroup : ''
             ],
@@ -485,19 +484,19 @@
         });
     }
 
-    function renderServicesContent(services, container) {
+    function renderServicesContent(serviceGroups, container) {
         const openStates = getOpenStates(container);
         container.innerHTML = '';
         
-        services.selected.forEach(groupId => {
-            const group = services.available[groupId];
+        serviceGroups.selected.forEach(groupId => {
+            const group = serviceGroups.available[groupId];
             if (group) {
-                container.appendChild(renderServiceGroup(group, groupId, openStates, services));
+                container.appendChild(renderServiceGroup(group, groupId, openStates, serviceGroups));
             }
         });
     }
 
-    function renderServicesSection(services, container) {
+    function renderServicesSection(serviceGroups, container) {
         const card = createAccordionItem({
             id: 'servicesPanel',
             title: 'Сервисы',
@@ -506,17 +505,17 @@
                 const controlsContainer = makeDiv(withCss(css.custom.servicesControls));
 
                 const groupSelect = makeSelect(withCss(css.bs.formControl));
-                updateGroupSelect(groupSelect, services);
+                updateGroupSelect(groupSelect, serviceGroups);
 
                 const addGroupButton = makeButton(
                     withCss(css.bs.btn, css.bs.btnPrimary),
                     withText('Добавить группу'),
                     withClickHandler(() => {
                         const selectedGroup = groupSelect.value;
-                        if (selectedGroup && !services.selected.includes(selectedGroup)) {
-                            services.selected.push(selectedGroup);
-                            renderServicesContent(services, document.querySelector('.services-content'));
-                            updateGroupSelect(groupSelect, services);
+                        if (selectedGroup && !serviceGroups.selected.includes(selectedGroup)) {
+                            serviceGroups.selected.push(selectedGroup);
+                            renderServicesContent(serviceGroups, document.querySelector('.services-content'));
+                            updateGroupSelect(groupSelect, serviceGroups);
                         }
                     }),
                     withAttributes(css.attr.addCardButton, css.attr.manageButton)
@@ -531,7 +530,7 @@
                 );
                 body.appendChild(servicesContainer);
 
-                renderServicesContent(services, servicesContainer);
+                renderServicesContent(serviceGroups, servicesContainer);
                 return body;
             })(),
             additionalAttributes: [css.attr.servicesHeader]
@@ -549,7 +548,7 @@
         return states;
     }
 
-    function updateGroupSelect(selectElement, services) {
+    function updateGroupSelect(selectElement, serviceGroups) {
         selectElement.innerHTML = '';
         
         const defaultOption = document.createElement('option');
@@ -559,11 +558,11 @@
         defaultOption.selected = true;
         selectElement.appendChild(defaultOption);
         
-        Object.keys(services.available).forEach(groupId => {
-            if (!services.selected.includes(groupId) && !services.available[groupId].disabled) {
+        Object.keys(serviceGroups.available).forEach(groupId => {
+            if (!serviceGroups.selected.includes(groupId) && !serviceGroups.available[groupId].disabled) {
                 const option = document.createElement('option');
                 option.value = groupId;
-                option.textContent = services.available[groupId].name;
+                option.textContent = serviceGroups.available[groupId].name;
                 selectElement.appendChild(option);
             }
         });
@@ -583,23 +582,25 @@
     }
 </script>
 
-
 <style HEADERS>
     div.card[data-form-header] {
-        background: #d99a9a
+        background: #d99a9a;
     }
-    div.card[data-fields-header]{
-        background: #9ab3d9
+    div.card[data-fields-header] {
+        background: #9ab3d9;
     }
-    div.card[data-services-header]{
-        background: #a8d9a1
+    div.card[data-services-header] {
+        background: #a8d9a1;
     }
-    div.card[data-inner-header]{
-        background: #fff9
+    div.card[data-inner-header] {
+        background: #fff9;
     }
 </style>
+
 <style BUTTONS>
-    button[data-manage-button] { border: none; }
+    button[data-manage-button] { 
+        border: none; 
+    }
 
     button[data-add-card-button]:focus,
     button[data-add-card-button] {
@@ -644,74 +645,97 @@
 
 <style ACCORDION>
     .accordion > .card {
-        border-radius: 5rem !important;}
+        border-radius: 5rem !important;
+    }
 
     .card-header {
-        border: none !important;}
+        border: none !important;
+    }
 
     #accordion.accordion {
         display: flex;
         flex-direction: column;
-        gap: 12px;}
+        gap: 12px;
+    }
     #accordion .card {
         margin-bottom: 0 !important;
         border-radius: 12px !important;
         border: none !important;
-        overflow: hidden;}
+        overflow: hidden;
+    }
     #accordion .card:last-child {
-        margin-bottom: 0;}
+        margin-bottom: 0;
+    }
     .card-header .btn-link,
     .card-header .btn-link:hover {
-        text-decoration: none !important;}
+        text-decoration: none !important;
+    }
     .card-body {
         background: #fff4 !important;
     }
     .card-body .card-header .btn-link,
     .card-body .card-header .btn-link:hover {
-        color: black !important;}
+        color: black !important;
+    }
     .card {
-        border: 0px !important;} 
+        border: 0px !important;
+    } 
     .form-card-header {
-        background-color: #edd;}
+        background-color: #edd;
+    }
     .fields-card-header {
-        background-color: #dde;}
+        background-color: #dde;
+    }
     .services-card-header {
-        background-color: #ded;}
+        background-color: #ded;
+    }
 </style>
+
 <style OTHER>
     .flex-container {
         display: flex;
         gap: 12px;
-        flex-direction: column}
+        flex-direction: column;
+    }
     .service-available {
         color: green;
-        margin: 5px 0;}
+        margin: 5px 0;
+    }
     .service-unavailable {
         color: gray;
         margin: 5px 0;
-        opacity: 0.7;}
+        opacity: 0.7;
+    }
     .services-controls {
         display: flex;
         gap: 10px;
         align-items: center;
-        margin-bottom: 15px;}
+        margin-bottom: 15px;
+    }
     .services-controls select {
         flex-grow: 1;
-        max-width: 300px;}
+        max-width: 300px;
+    }
     .field-controls {
         display: flex;
-        justify-content: flex-end;}
+        justify-content: flex-end;
+    }
     .group-controls {
         display: flex;
-        gap: 5px;}
+        gap: 5px;
+    }
     .disabled-field,
     .disabled-group {
-        opacity: 0.6;}
+        opacity: 0.6;
+    }
     .main-margin {
         margin: 50px;
-        margin-bottom: 200px;}
+        margin-bottom: 200px;
+    }
     .accordion > .card {
-        margin-bottom: 5px;}
+        margin-bottom: 5px;
+    }
     .accordion > .card:last-child {
-        margin-bottom: 0;}
+        margin-bottom: 0;
+    }
 </style>
