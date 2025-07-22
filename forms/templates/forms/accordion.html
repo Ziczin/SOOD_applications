@@ -1,3 +1,4 @@
+
 <div id="accordion" class="container mt-3 m-30"></div>
 
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
@@ -313,7 +314,7 @@
                 body.appendChild(
                     makeParagraph(withText(
                         `Название страницы: ${formData.page_label}`)));
-                        
+
                 return body;
             })(),
             additionalAttributes: [css.attr.formHeader],
@@ -598,57 +599,102 @@
     }
 </script>
 
+<style COLORS>
+    :root {
+        --red: #f78888;
+        --red-hover: rgba(247, 136, 136, 0.8);
+        --red-active: rgba(247, 136, 136, 1);
+        --red-focus: rgba(247, 136, 136, 0.6);
+        
+        --l-blue: #90cce4;
+        --d-blue: #5da2d5;
+        --d-blue-hover: rgba(93, 162, 213, 0.8);
+        --d-blue-active: rgba(93, 162, 213, 1);
+        --d-blue-focus: rgba(93, 162, 213, 0.6);
+        
+        --yellow: #f3d250;
+        --yellow-hover: rgba(243, 210, 80, 0.8);
+        --yellow-active: rgba(243, 210, 80, 1);
+        --yellow-focus: rgba(243, 210, 80, 0.6);
+        
+        --gray: #ececec;
+    }
+</style>
+
 <style HEADERS>
     div.card[data-form-header] {
-        background: #d99a9a;
+        background: var(--red);
     }
     div.card[data-fields-header] {
-        background: #9ab3d9;
+        background: var(--l-blue);
     }
     div.card[data-services-header] {
-        background: #a8d9a1;
+        background: var(--yellow);
     }
     div.card[data-inner-header] {
-        background: #fff9;
+        background: #fffa;
     }
 </style>
 
 <style BUTTONS>
+    .btn-primary,
+    .btnDanger,
+    .btnWarning,
     button[data-manage-button] { 
-        border: none; 
+        border: none !important; 
+        outline: none !important;
+        box-shadow: none !important;
     }
 
-    button[data-add-card-button]:focus,
     button[data-add-card-button] {
-        background: #3b5a9a !important;
+        background: var(--d-blue) !important;
+        transition: background-color 0.3s;
     }
+
     button[data-add-card-button]:hover {
-        background: #4a7baf !important;
+        background: var(--d-blue-hover) !important;
     }
+
     button[data-add-card-button]:active {
-        background: #5a8bbf !important;
+        background: var(--d-blue-active) !important;
     }
 
-    button[data-toggle-card-button]:focus,
+    button[data-add-card-button]:focus {
+        background: var(--d-blue-focus) !important;
+    }
+
     button[data-toggle-card-button] {
-        background: #e0c700 !important;
-    }
-    button[data-toggle-card-button]:hover {
-        background: #e6d300 !important;
-    }
-    button[data-toggle-card-button]:active {
-        background: #f0d700 !important;
+        background: var(--yellow) !important;
+        transition: background-color 0.3s;
     }
 
-    button[data-delete-card-button]:focus,
+    button[data-toggle-card-button]:hover {
+        background: var(--yellow-hover) !important;
+    }
+
+    button[data-toggle-card-button]:active {
+        background: var(--yellow-active) !important;
+    }
+
+    button[data-toggle-card-button]:focus {
+        background: var(--yellow-focus) !important;
+    }
+
     button[data-delete-card-button] {
-        background: #7a2a2a !important;
+        background: var(--red) !important;
+        transition: background-color 0.3s;
     }
+
     button[data-delete-card-button]:hover {
-        background: #9b4c4c !important;
+        background: var(--red-hover) !important;
     }
+
     button[data-delete-card-button]:active {
-        background: #a03a3a !important;
+        background: var(--red-active) !important;
+    }
+
+    button[data-delete-card-button]:focus {
+        background: var(--red-focus) !important;
     }
 
     button[data-header-toggler]:active,
