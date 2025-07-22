@@ -214,7 +214,11 @@
     function makeSelect(...decorators) {
         return makeElement('select', ...decorators);
     }
-</script>
+
+    function makeParagraph(...decorators) {
+        return makeElement('p', ...decorators);
+    }
+</script> 
 
 <script COMPONENTS>
     function createAccordionItem(
@@ -295,11 +299,23 @@
         const card = createAccordionItem({
             id: 'formPanel',
             title: 'Форма',
-            content: [
-                `Название формы: ${formData.form_label}`,
-                `Кнопка подтверждения: ${formData.confirm_button_text}`,
-                `Название страницы: ${formData.page_label}`
-            ].join('\n'),
+            content: (() => {
+                const body = makeDiv();
+
+                body.appendChild(
+                    makeParagraph(withText(
+                        `Название формы: ${formData.form_label}`)));
+
+                body.appendChild(
+                    makeParagraph(withText(
+                        `Кнопка подтверждения: ${formData.confirm_button_text}`)));
+
+                body.appendChild(
+                    makeParagraph(withText(
+                        `Название страницы: ${formData.page_label}`)));
+                        
+                return body;
+            })(),
             additionalAttributes: [css.attr.formHeader],
         });
         container.appendChild(card);
