@@ -2,9 +2,11 @@
     {% csrf_token %}
     <div class="container inner-shadow">
     <div class="gap-10px scrollbox inner-shadow-content" id="form-content">
-        <br><br>
-        <div class="wave-text box" id="waveText">Для начала работы выберите форму</div>
-        <br><br>
+        <div id="accordion">
+            <br><br>
+            <div class="wave-text box" id="waveText">Для начала работы выберите форму</div>
+            <br><br>
+        </div>
         <script>
             const textElement = document.getElementById('waveText');
             const text = textElement.textContent;

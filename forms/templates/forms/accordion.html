@@ -1,12 +1,11 @@
-
-<div id="accordion" class="container mt-3 m-30"></div>
-
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-<script CONFIG>
+
+<script>
+    // CONFIG
     const css = {
         bs: {
             card: 'card',
@@ -44,6 +43,16 @@
             groupControls: 'group-controls',
             disabledGroup: 'disabled-group',
             mainMargin: 'main-margin',
+        },
+        other: {
+            formGroup: 'form-group',
+            fullFlex: 'full-flex',
+            gap10px: 'gap-10px',
+            gap5px: 'gap-5px',
+            gap1p: 'gap-1p',
+            marginOnHover: 'margin-on-hover',
+            recolorOnHover: 'recolor-on-hover',
+            shady: 'shady',
         },
         attr: {
             formHeader: 'data-form-header',
@@ -124,9 +133,8 @@
             selected: ['group2', 'group5']
         }
     };
-</script>
 
-<script myMAKE>
+    // myMAKE
     function withCss(...classes) {
         return (element) => {
             classes.forEach(cls => cls && element.classList.add(cls));
@@ -150,6 +158,12 @@
         };
     }
 
+    function withValue(value) {
+        return (element) => {
+            element.setAttribute('value', value);
+        };
+    }
+
     function withAttributes(...attributes) {
         return (element) => {
             attributes.forEach((attr) => {
@@ -166,13 +180,59 @@
         };
     }
 
+    function withChilds(...childs) {
+        return (element) => {
+            childs.forEach(child => {
+                element.appendChild(child);
+            });
+            return element;
+        };
+    }
+
     function makeElement(elementType, ...decorators) {
         const element = document.createElement(elementType);
         return decorators.reduce((el, decorator) => decorator(el) || el, element);
     }
 
-    function makeDiv(...decorators) {
+    function Label(forWhat, text, ...decorators) {
+        return makeElement(
+            'label', withText(text),
+            withParamAttributes({for: forWhat}),
+            ...decorators
+        );
+    }
+
+    function Input(name, placeholder, ...decorators) {
+        return makeElement(
+            'input',
+            withParamAttributes({
+                name: name,
+                placeholder: placeholder,
+            }),
+            ...decorators
+        );
+    }
+
+    function Div(...decorators) {
         return makeElement('div', ...decorators);
+    }
+
+    function makeItGapped(elem) {
+        elem.classList.add(css.other.gap1p);
+        return elem;
+    }
+
+    function makeItFlex(elem) {
+        elem.classList.add(css.other.fullFlex);
+        return elem;
+    }
+
+    function makeItFormGroup(div) {
+        div.classList.add(css.other.formGroup);
+        div.classList.add(css.other.shady);
+        div.classList.add(css.other.marginOnHover);
+        div.classList.add(css.other.recolorOnHover);
+        return div;
     }
 
     function makeItCard(card) {
@@ -194,7 +254,10 @@
     }
 
     function makeButton(...decorators) {
-        return makeElement('button', ...decorators);
+        return makeElement(
+            'button',
+            withParamAttributes({type: 'button'}),
+            ...decorators);
     }
 
     function makeItWarning(btn) {
@@ -212,16 +275,15 @@
         return btn;
     }
 
-    function makeSelect(...decorators) {
+    function Select(...decorators) {
         return makeElement('select', ...decorators);
     }
 
-    function makeParagraph(...decorators) {
+    function Paragraph(...decorators) {
         return makeElement('p', ...decorators);
     }
-</script> 
 
-<script COMPONENTS>
+    // COMPONENTS
     function createAccordionItem(
         {
             id, 
@@ -234,14 +296,14 @@
             additionalParamAttributes = {}
         }
     ) {
-        const card = makeDiv(
+        const card = Div(
             makeItCard,
             withCss(css.bs.mb2, ...additionalClasses),
             withAttributes(...additionalAttributes),
             withParamAttributes(additionalParamAttributes),
         );
         
-        const header = makeDiv(makeItHeader);
+        const header = Div(makeItHeader);
         const button = makeButton(
             withCss(isOpen ? '' : css.bs.collapsed),
             withText(title),
@@ -266,7 +328,7 @@
     }
 
     function createCollapseSection(id, isShow = false) {
-        const collapse = makeDiv(
+        const collapse = Div(
             withCss(css.bs.collapse),
             withCss(isShow ? css.bs.show : '')
         );
@@ -275,7 +337,7 @@
     }
 
     function createCardBody(content) {
-        const body = makeDiv(withCss(css.bs.cardBody));
+        const body = Div(withCss(css.bs.cardBody));
         
         if (typeof content === 'string') {
             body.appendChild(document.createTextNode(content));
@@ -287,45 +349,48 @@
     }
 
     function createServiceItem(service) {
-        const item = makeDiv(withText(service.name));
+        const item = Div(withText(service.name));
         item.className = service.available 
             ? css.custom.serviceAvailable 
             : css.custom.serviceUnavailable;
         return item;
     }
-</script>
 
-<script FORM_RENDERERS>
+    // FORM_RENDERERS
     function renderFormSection(formData, container) {
         const card = createAccordionItem({
             id: 'formPanel',
             title: 'Форма',
-            content: (() => {
-                const body = makeDiv();
-
-                body.appendChild(
-                    makeParagraph(withText(
-                        `Название формы: ${formData.form_label}`)));
-
-                body.appendChild(
-                    makeParagraph(withText(
-                        `Кнопка подтверждения: ${formData.confirm_button_text}`)));
-
-                body.appendChild(
-                    makeParagraph(withText(
-                        `Название страницы: ${formData.page_label}`)));
-
-                return body;
-            })(),
+            content: Div(makeItFlex, makeItGapped, 
+                withChilds(
+                    Div(makeItFormGroup,
+                    withChilds(
+                        Label('form-name', 'Название формы:'),
+                        Input('form-name', 'Введите имя формы',
+                            withValue(`${formData.form_label}`),
+                    ))),
+                    Div(makeItFormGroup,
+                    withChilds(
+                        Label('form-button-text', 'Текст кнопки подтверждения:'),
+                        Input('form-button-text', 'Введите текст',
+                            withValue(`${formData.confirm_button_text}`),
+                    ))),
+                    Div(makeItFormGroup,
+                    withChilds(
+                        Label('form-page', 'Наименование страницы:'),
+                        Input('form-page', 'Введите текст',
+                            withValue(`${formData.page_label}`),
+                    ))),
+                ),
+            ),
             additionalAttributes: [css.attr.formHeader],
         });
         container.appendChild(card);
     }
-</script>
 
-<script FIELDS_RENDERERS>
+    // FIELDS_RENDERERS
     function createFieldControls(fieldData) {
-        const controls = makeDiv(withCss(css.custom.fieldControls));
+        const controls = Div(withCss(css.custom.fieldControls));
         controls.style.display = 'flex';
         controls.style.gap = '5px';
         controls.style.marginLeft = '10px';
@@ -397,8 +462,8 @@
             id: 'fieldsPanel',
             title: 'Поля',
             content: (() => {
-                const body = makeDiv();
-                const fieldsContainer = makeDiv(
+                const body = Div();
+                const fieldsContainer = Div(
                     withCss(
                         css.custom.fieldsContainer,
                         css.custom.fieldsSection,
@@ -421,7 +486,7 @@
                         });
                         renderFieldsContent(data.fields, document.querySelector('.fields-section'));
                     }),
-                    withAttributes(css.attr.addCardButton, css.attr.manageButton)
+                    withAttributes(css.attr.addCardButton, css.attr.manageButton),
                 );
                 
                 body.appendChild(fieldsContainer);
@@ -432,11 +497,10 @@
         });
         container.appendChild(card);
     }
-</script>
 
-<script SERVICES_RENDERERS>
+    // SERVICES_RENDERERS
     function createServiceGroupControls(group, groupId, serviceGroups) {
-        const controls = makeDiv(withCss(css.custom.groupControls));
+        const controls = Div(withCss(css.custom.groupControls));
         controls.style.display = 'flex';
         controls.style.gap = '5px';
 
@@ -483,7 +547,7 @@
     }
 
     function renderServiceGroup(group, groupId, openStates, serviceGroups) {
-        const content = makeDiv();
+        const content = Div();
         group.services.forEach(service => {
             content.appendChild(createServiceItem(service));
         });
@@ -518,10 +582,10 @@
             id: 'servicesPanel',
             title: 'Сервисы',
             content: (() => {
-                const body = makeDiv();
-                const controlsContainer = makeDiv(withCss(css.custom.servicesControls));
+                const body = Div();
+                const controlsContainer = Div(withCss(css.custom.servicesControls));
 
-                const groupSelect = makeSelect(withCss(css.bs.formControl));
+                const groupSelect = Select(withCss(css.bs.formControl));
                 updateGroupSelect(groupSelect, serviceGroups);
 
                 const addGroupButton = makeButton(
@@ -542,7 +606,7 @@
                 controlsContainer.appendChild(addGroupButton);
                 body.appendChild(controlsContainer);
 
-                const servicesContainer = makeDiv(
+                const servicesContainer = Div(
                     withCss(css.custom.flexContainer, 'services-content')
                 );
                 body.appendChild(servicesContainer);
@@ -554,9 +618,8 @@
         });
         container.appendChild(card);
     }
-</script>
 
-<script UTILS>
+    // UTILS
     function getOpenStates(container) {
         const states = {};
         (container || document).querySelectorAll('.collapse').forEach(collapse => {
@@ -584,13 +647,11 @@
             }
         });
     }
-</script>
 
-<script MAIN>
-    document.addEventListener('DOMContentLoaded', initAccordion);
-
+    // MAIN
     function initAccordion() {
         const accordionContainer = document.getElementById('accordion');
+        accordionContainer.innerHTML = '';
         accordionContainer.classList.add(css.custom.accordion, css.custom.mainMargin);
         
         renderFormSection(data.form, accordionContainer);
@@ -601,21 +662,15 @@
 
 <style COLORS>
     :root {
-        --red: #f78888;
-        --red-hover: rgba(247, 136, 136, 0.8);
-        --red-active: rgba(247, 136, 136, 1);
-        --red-focus: rgba(247, 136, 136, 0.6);
+        --red: hsla(0, 87%, 75%, 1);
+        --red-hover: hsla(0, 87%, 72%, 1);
         
-        --l-blue: #90cce4;
-        --d-blue: #5da2d5;
-        --d-blue-hover: rgba(93, 162, 213, 0.8);
-        --d-blue-active: rgba(93, 162, 213, 1);
-        --d-blue-focus: rgba(93, 162, 213, 0.6);
+        --l-blue: hsla(200, 60%, 75%, 1);
+        --d-blue: hsla(200, 60%, 60%, 1);
+        --d-blue-hover: hsla(200, 65%, 55%, 1);
         
-        --yellow: #f3d250;
-        --yellow-hover: rgba(243, 210, 80, 0.8);
-        --yellow-active: rgba(243, 210, 80, 1);
-        --yellow-focus: rgba(243, 210, 80, 0.6);
+        --yellow: hsla(50, 82%, 63%, 1);
+        --yellow-hover: hsla(50, 82%, 60%, 1);
         
         --gray: #ececec;
     }
@@ -646,6 +701,8 @@
         box-shadow: none !important;
     }
 
+    button[data-add-card-button]:active,
+    button[data-add-card-button]:focus,
     button[data-add-card-button] {
         background: var(--d-blue) !important;
         transition: background-color 0.3s;
@@ -655,14 +712,9 @@
         background: var(--d-blue-hover) !important;
     }
 
-    button[data-add-card-button]:active {
-        background: var(--d-blue-active) !important;
-    }
-
-    button[data-add-card-button]:focus {
-        background: var(--d-blue-focus) !important;
-    }
-
+    
+    button[data-toggle-card-button]:active,
+    button[data-toggle-card-button]:focus,
     button[data-toggle-card-button] {
         background: var(--yellow) !important;
         transition: background-color 0.3s;
@@ -672,14 +724,8 @@
         background: var(--yellow-hover) !important;
     }
 
-    button[data-toggle-card-button]:active {
-        background: var(--yellow-active) !important;
-    }
-
-    button[data-toggle-card-button]:focus {
-        background: var(--yellow-focus) !important;
-    }
-
+    button[data-delete-card-button]:active,
+    button[data-delete-card-button]:focus,
     button[data-delete-card-button] {
         background: var(--red) !important;
         transition: background-color 0.3s;
@@ -689,19 +735,12 @@
         background: var(--red-hover) !important;
     }
 
-    button[data-delete-card-button]:active {
-        background: var(--red-active) !important;
-    }
-
-    button[data-delete-card-button]:focus {
-        background: var(--red-focus) !important;
-    }
-
     button[data-header-toggler]:active,
     button[data-header-toggler] {
         background-color: transparent;
         border: none !important;
         outline: none !important;
+        color: black !important;
     }
 </style>
 
@@ -734,6 +773,7 @@
     }
     .card-body {
         background: #fff4 !important;
+        padding: 1% !important
     }
     .card-body .card-header .btn-link,
     .card-body .card-header .btn-link:hover {
@@ -754,6 +794,11 @@
 </style>
 
 <style OTHER>
+    .container {
+        width: 100%;
+        min-width: 100%;
+        max-width: 100%;
+    }
     .flex-container {
         display: flex;
         gap: 12px;
@@ -791,8 +836,8 @@
         opacity: 0.6;
     }
     .main-margin {
-        margin: 50px;
-        margin-bottom: 200px;
+        margin-top: 5%;
+        margin-bottom: 20%;
     }
     .accordion > .card {
         margin-bottom: 5px;

@@ -27,8 +27,6 @@ body {
     background: white;
     border-radius: 12px;
     box-shadow: 0 0 20px #0002;
-    max-width: 95vw;
-    max-height: 95vh;
     height: fit-content;
     transition: background-color 0.3s cubic-bezier(0, 0, 0.01, 1),
                 color 0.3s ease,
@@ -60,11 +58,17 @@ button.content.back:hover {
     padding-right: 42%;
     color: #000;
     background-color: #e0e5ff;}
+
+
 .container {
+    padding: 0px !important;
     text-align: center;
     display: flex;
     flex-direction: column;
     overflow: hidden;}
+.container.p-1p {
+    padding: 1% !important;
+}
 .vh-90 {
     min-height: 90vh;}
 h1 {
@@ -153,9 +157,19 @@ form.flex {
     gap: 10px;}
 .gap-5px {
     gap: 5px;}
+.gap-1p {
+    gap: 1%;
+}
 .flex {
     flex: 1;}
 
+.full-flex {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
 .tabs {
     display: flex;
     gap: 10px;
@@ -235,6 +249,17 @@ form.flex {
 .accordion-content .acc-select {
     width: 95%;}
 
+.shady {
+    background-color: #0001;
+    padding: 2%;
+    border-radius: 12px;
+}
+.recolor-on-hover {
+    transition: ease background-color 0.3s;
+}
+.recolor-on-hover:hover {
+    background-color: #fff4;
+}
 .margin-on-hover {
     transition: margin-left 0.2s ease }
 .margin-on-hover:hover {
@@ -287,6 +312,7 @@ form.flex {
     flex-direction: column;
     max-height: 90vh;
     overflow-y: scroll;
+    margin-left: 10px;
     scrollbar-width: thin;
     scrollbar-color: #ccc transparent;}
 .scrollbox::-webkit-scrollbar {

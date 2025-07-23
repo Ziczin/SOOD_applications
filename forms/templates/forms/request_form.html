@@ -1,6 +1,5 @@
 <form method="post">
     {% csrf_token %}
-    <script>console.log(`{{form}}`)</script>
     {{ form.as_custom }}
     <button type="submit" class="confirm"> {{ form.btn_confirm }} </button>
 </form>
