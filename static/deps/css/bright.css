@@ -135,8 +135,6 @@ form.flex {
     font-size: 16px;}
 .mt-10 {
     margin-top: 10px;}
-.flex-box {
-    display: flex;}
 .flex-row {
     display: flex;
     flex-direction: row;
@@ -155,6 +153,9 @@ form.flex {
     margin-bottom: 2%;}
 .gap-10px {
     gap: 10px;}
+.gap-6px {
+    gap: 6px;
+}
 .gap-5px {
     gap: 5px;}
 .gap-1p {
@@ -163,13 +164,11 @@ form.flex {
 .flex {
     flex: 1;}
 
-.full-flex {
-    flex: 1;
+.flex-list {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
 }
+
 .tabs {
     display: flex;
     gap: 10px;

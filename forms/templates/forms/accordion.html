@@ -4,6 +4,8 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
 
+
+
 <script>
     // CONFIG
     const css = {
@@ -14,11 +16,9 @@
             btn: 'btn',
             btnLink: 'btn-link',
             collapse: 'collapse',
-            mb2: 'mb-2',
             show: 'show',
             collapsed: 'collapsed',
             btnPrimary: 'btn-primary',
-            mt3: 'mt-3',
             formControl: 'form-control',
             btnDanger: 'btn-danger',
             btnWarning: 'btn-warning',
@@ -29,7 +29,6 @@
             accordion: 'accordion',
             fieldItem: 'field-item',
             addButton: 'add-field-btn',
-            flexContainer: 'flex-container',
             formHeader: 'form-header',
             fieldsHeader: 'fields-header',
             fieldsContainer: 'fields-container',
@@ -46,10 +45,9 @@
         },
         other: {
             formGroup: 'form-group',
-            fullFlex: 'full-flex',
-            gap10px: 'gap-10px',
-            gap5px: 'gap-5px',
-            gap1p: 'gap-1p',
+            flexRow: 'flex-row',
+            flexColumn: 'flex-column',
+            gap6px: 'gap-6px',
             marginOnHover: 'margin-on-hover',
             recolorOnHover: 'recolor-on-hover',
             shady: 'shady',
@@ -183,7 +181,9 @@
     function withChilds(...childs) {
         return (element) => {
             childs.forEach(child => {
-                element.appendChild(child);
+                if (child != undefined) {
+                    element.appendChild(child);
+                }
             });
             return element;
         };
@@ -217,13 +217,24 @@
         return makeElement('div', ...decorators);
     }
 
+    function makeIf(condition, elem) {
+        if (condition) {
+            return elem;
+        }
+    }
+
     function makeItGapped(elem) {
-        elem.classList.add(css.other.gap1p);
+        elem.classList.add(css.other.gap6px);
         return elem;
     }
 
-    function makeItFlex(elem) {
-        elem.classList.add(css.other.fullFlex);
+    function makeItFlexRow(elem) {
+        elem.classList.add(css.other.flexRow);
+        return elem;
+    }
+
+    function makeItFlexColumn(elem) {
+        elem.classList.add(css.other.flexColumn);
         return elem;
     }
 
@@ -298,7 +309,7 @@
     ) {
         const card = Div(
             makeItCard,
-            withCss(css.bs.mb2, ...additionalClasses),
+            withCss(...additionalClasses),
             withAttributes(...additionalAttributes),
             withParamAttributes(additionalParamAttributes),
         );
@@ -361,7 +372,7 @@
         const card = createAccordionItem({
             id: 'formPanel',
             title: 'Форма',
-            content: Div(makeItFlex, makeItGapped, 
+            content: Div(makeItFlexColumn, makeItGapped, 
                 withChilds(
                     Div(makeItFormGroup,
                     withChilds(
@@ -390,30 +401,25 @@
 
     // FIELDS_RENDERERS
     function createFieldControls(fieldData) {
-        const controls = Div(withCss(css.custom.fieldControls));
-        controls.style.display = 'flex';
-        controls.style.gap = '5px';
-        controls.style.marginLeft = '10px';
-
-        const disableBtn = makeButton(
-            makeItWarning,
-            withText(fieldData.disabled ? 'Включить' : 'Отключить'),
-            withClickHandler(event => toggleFieldDisabled(event, fieldData)),
-            withAttributes(css.attr.toggleCardButton, css.attr.manageButton),
-        );
-        controls.appendChild(disableBtn);
-
-        if (!fieldData.isInitial) {
-            const deleteBtn = makeButton(
-                makeItDanger, 
-                withText('Удалить'),
-                withClickHandler(event => deleteField(event, fieldData)),
-                withAttributes(css.attr.deleteCardButton, css.attr.manageButton)
-            );
-            controls.appendChild(deleteBtn);
-        }
-
-        return controls;
+        return Div(
+            withCss(css.custom.fieldControls),
+            withChilds(
+                makeButton(
+                makeItWarning,
+                withText(fieldData.disabled ? 'Включить' : 'Отключить'),
+                withClickHandler(event => toggleFieldDisabled(event, fieldData)),
+                withAttributes(css.attr.toggleCardButton, css.attr.manageButton)
+                ),
+                makeIf(!fieldData.isInitial,
+                    makeButton(
+                    makeItDanger, 
+                    withText('Удалить'),
+                    withClickHandler(event => deleteField(event, fieldData)),
+                    withAttributes(css.attr.deleteCardButton, css.attr.manageButton)
+                    )
+                )
+            )
+        )
     }
 
     function toggleFieldDisabled(event, fieldData) {
@@ -462,19 +468,18 @@
             id: 'fieldsPanel',
             title: 'Поля',
             content: (() => {
-                const body = Div();
-                const fieldsContainer = Div(
+                const body = Div(makeItFlexColumn, makeItGapped);
+                const fieldsContainer = Div(makeItFlexColumn, makeItGapped,
                     withCss(
                         css.custom.fieldsContainer,
                         css.custom.fieldsSection,
-                        css.custom.flexContainer,
                     )
                 );
                 
                 renderFieldsContent(fields, fieldsContainer);
                 
                 const addButton = makeButton(
-                    withCss(css.bs.btn, css.bs.btnPrimary, css.bs.mt3, css.custom.addButton),
+                    withCss(css.bs.btn, css.bs.btnPrimary, css.custom.addButton),
                     withText('Добавить поле'),
                     withClickHandler(event => {
                         event.stopPropagation();
@@ -547,7 +552,7 @@
     }
 
     function renderServiceGroup(group, groupId, openStates, serviceGroups) {
-        const content = Div();
+        const content = Div(makeItFlexColumn, makeItGapped);
         group.services.forEach(service => {
             content.appendChild(createServiceItem(service));
         });
@@ -582,7 +587,7 @@
             id: 'servicesPanel',
             title: 'Сервисы',
             content: (() => {
-                const body = Div();
+                const body = Div(makeItFlexColumn, makeItGapped);
                 const controlsContainer = Div(withCss(css.custom.servicesControls));
 
                 const groupSelect = Select(withCss(css.bs.formControl));
@@ -606,7 +611,7 @@
                 controlsContainer.appendChild(addGroupButton);
                 body.appendChild(controlsContainer);
 
-                const servicesContainer = Div(
+                const servicesContainer = Div(makeItFlexColumn, makeItGapped,
                     withCss(css.custom.flexContainer, 'services-content')
                 );
                 body.appendChild(servicesContainer);
@@ -660,7 +665,13 @@
     }
 </script>
 
-<style COLORS>
+<style FIX_BOOTSRTAP_TRASH>
+    label, .form-group {
+        margin: 0 !important;
+    }
+</style>
+
+<style DECORATIONS>
     :root {
         --red: hsla(0, 87%, 75%, 1);
         --red-hover: hsla(0, 87%, 72%, 1);
@@ -673,6 +684,8 @@
         --yellow-hover: hsla(50, 82%, 60%, 1);
         
         --gray: #ececec;
+
+        --transition-time: var(--transition-time);
     }
 </style>
 
@@ -692,6 +705,10 @@
 </style>
 
 <style BUTTONS>
+    .btn {
+        border-radius: 12px;
+    }
+
     .btn-primary,
     .btnDanger,
     .btnWarning,
@@ -705,19 +722,18 @@
     button[data-add-card-button]:focus,
     button[data-add-card-button] {
         background: var(--d-blue) !important;
-        transition: background-color 0.3s;
+        transition: background-color var(--transition-time);
     }
 
     button[data-add-card-button]:hover {
         background: var(--d-blue-hover) !important;
     }
-
     
     button[data-toggle-card-button]:active,
     button[data-toggle-card-button]:focus,
     button[data-toggle-card-button] {
         background: var(--yellow) !important;
-        transition: background-color 0.3s;
+        transition: background-color var(--transition-time);
     }
 
     button[data-toggle-card-button]:hover {
@@ -728,7 +744,7 @@
     button[data-delete-card-button]:focus,
     button[data-delete-card-button] {
         background: var(--red) !important;
-        transition: background-color 0.3s;
+        transition: background-color var(--transition-time);
     }
 
     button[data-delete-card-button]:hover {
@@ -745,52 +761,29 @@
 </style>
 
 <style ACCORDION>
-    .accordion > .card {
-        border-radius: 5rem !important;
+    .card-header { /* Делаем панель в размер тыкабельной кнопки*/
+        padding: 0 !important;
+        border: none !important; /*Убираем мерзкую нижнюю полоску*/
     }
 
-    .card-header {
-        border: none !important;
-    }
-
-    #accordion.accordion {
+    #accordion.accordion { /* Расстояние между главными панелями аккордеона*/
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 6px;
     }
-    #accordion .card {
-        margin-bottom: 0 !important;
+
+    #accordion .card { /* Скругляем все хедеры панелей */
         border-radius: 12px !important;
-        border: none !important;
-        overflow: hidden;
     }
-    #accordion .card:last-child {
-        margin-bottom: 0;
-    }
-    .card-header .btn-link,
-    .card-header .btn-link:hover {
-        text-decoration: none !important;
-    }
-    .card-body {
+
+    .card-body { /* Определяем покрас панели как полупрозрачный белый */
         background: #fff4 !important;
-        padding: 1% !important
+        padding: 6px !important
     }
-    .card-body .card-header .btn-link,
-    .card-body .card-header .btn-link:hover {
-        color: black !important;
-    }
-    .card {
+
+    .card { /* Убираем обводку карточки */
         border: 0px !important;
     } 
-    .form-card-header {
-        background-color: #edd;
-    }
-    .fields-card-header {
-        background-color: #dde;
-    }
-    .services-card-header {
-        background-color: #ded;
-    }
 </style>
 
 <style OTHER>
@@ -799,37 +792,32 @@
         min-width: 100%;
         max-width: 100%;
     }
-    .flex-container {
-        display: flex;
-        gap: 12px;
-        flex-direction: column;
-    }
+
     .service-available {
         color: green;
-        margin: 5px 0;
     }
+
     .service-unavailable {
         color: gray;
-        margin: 5px 0;
-        opacity: 0.7;
     }
+
     .services-controls {
         display: flex;
         gap: 10px;
         align-items: center;
-        margin-bottom: 15px;
     }
+    .form-control select,
     .services-controls select {
         flex-grow: 1;
         max-width: 300px;
+        border-radius: 12px;
     }
-    .field-controls {
-        display: flex;
-        justify-content: flex-end;
-    }
+    
+    .field-controls,
     .group-controls {
         display: flex;
         gap: 5px;
+        padding: 10px;
     }
     .disabled-field,
     .disabled-group {
@@ -839,9 +827,7 @@
         margin-top: 5%;
         margin-bottom: 20%;
     }
-    .accordion > .card {
-        margin-bottom: 5px;
-    }
+
     .accordion > .card:last-child {
         margin-bottom: 0;
     }
