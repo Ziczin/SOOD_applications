@@ -1,0 +1,17 @@
+<form method="POST" action="{% url 'dashboard' %}">
+    {% csrf_token %}
+    <button type="submit" class="content back flex">Вернуться в аккаунт</button>
+</form>
+
+<div class="content">
+    <h2>Формы:</h2>
+    {% for form in data.forms %}
+    <div class="margin-on-hover">
+        <button class='redir' onclick="initAccordion()">
+            {{ form.form_label }}
+        </button>
+    </div>
+    {% endfor %}
+</div>
+
+{% include "forms/accordion.html" %}

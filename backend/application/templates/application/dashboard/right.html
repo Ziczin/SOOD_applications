@@ -1,0 +1,45 @@
+
+{% if user.role == "ADMIN" %}
+    <div class="content">
+    <h2>Мой отдел</h2>
+    <div class="accordion">
+    {% for user in data.users %}
+        <div class="accordion-back bg-red">
+        <button class="accordion-header">{{ user.full_name }}</button>
+        <div class="accordion-content margin">
+            <p class="ml-2p">Логин: {{ user.username }}</p>
+            <form method="post" action="/users/change-role/" style="display:inline;"> {% csrf_token %}
+                <select class="ml-2p mb-2p acc-select" name="role" onchange="roleChange()">
+                {% for role in data.roles %}
+                    <option value="{{ role.0 }}" {% if user.role == role.0 %}selected{% endif %}>
+                        {{ role.1 }}
+                    </option>
+                {% endfor %}
+                </select>
+                <input type="hidden" name="username" value="{{ user.username }}">
+            </form>
+        </div>
+        </div>
+    {% endfor %}
+    <script>
+        function roleChange() {
+            fetch(event.target.form.action, {
+                method: 'POST',
+                body: new FormData(event.target.form),
+                headers: {'X-CSRFToken': '{{ csrf_token }}'}
+        });}</script>
+    <script>
+        var acc = document.getElementsByClassName("accordion-header");
+        for (let i = 0; i < acc.length; i++) {
+        acc[i].addEventListener("click", function() {
+            this.classList.toggle("active");
+            var panel = this.nextElementSibling;
+            if (panel.style.maxHeight){
+            panel.style.maxHeight = null;
+            } else {
+            panel.style.maxHeight = panel.scrollHeight + "px";
+            } 
+        });}</script>
+    </div>
+    </div>
+{% endif %}
