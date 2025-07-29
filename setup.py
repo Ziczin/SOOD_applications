@@ -1,24 +1,21 @@
 import os
 import django
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'your_project.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'SOOD_applications.settings')
 django.setup()
 
 from django.contrib.auth import get_user_model
-from django.forms import ModelForm
+# from django.forms import ModelForm
 
-from users.models import CustomUser, Department, UserRole
-from application.models import Application, ApplicationField, ApplicationService
-from forms.models import Enum, EnumTag, FieldType
-from application.models import Field, Form
-from application.models import Service, ServiceValue
+from apps.users.models import Department, UserRole # CustomUser
+# from apps.application.models import Application, ApplicationField, ApplicationService
+from apps.forms.models import Enum, EnumTag, FieldType
+from apps.application.models import Field, Form
+# from apps.application.models import Service, ServiceValue
 
-def create_superuser_and_populate():
+
+def create_superuser():
     User = get_user_model()
-    
-    user_department, created = Department.objects.get_or_create(name='User')
-    remont_department, created = Department.objects.get_or_create(name='Remont')
-
     if not User.objects.filter(username='toster').exists():
         print("Создание суперюзера...")
         User.objects.create_superuser(username='toster', password='imposter', email='toster@example.com')
@@ -27,6 +24,10 @@ def create_superuser_and_populate():
     super_user.full_name = 'SUPERUSER'
     super_user.role = UserRole.ADMIN
     super_user.save()
+
+def on_test_setup():
+    user_department, created = Department.objects.get_or_create(name='User')
+    remont_department, created = Department.objects.get_or_create(name='Remont')
 
     print("-- Создание тэгов перечислений")
     obj1, created = EnumTag.objects.get_or_create(name='Принтер')
@@ -68,4 +69,4 @@ def create_superuser_and_populate():
     print("База данных заполнена начальными данными!")
 
 if __name__ == '__main__':
-    create_superuser_and_populate()
+    on_test_setup()

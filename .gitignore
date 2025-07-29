@@ -4,5 +4,5 @@ db.sqlite3
 venv/
 .env
 *.log
-settings.py
-run.py
+db_config.py
+staticfiles/
