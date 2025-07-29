@@ -7,7 +7,7 @@ class App extends React.Component{
 
   componentDidMount(){
     let data;
-    axios.get('/api/')
+    axios.get('http://localhost:8000')
     .then(res => {
       data = res.data;
       this.setState({

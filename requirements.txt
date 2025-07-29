@@ -1,5 +1,4 @@
 djangorestframework
 django-cors-headers
-django
+dajngo
 bcrypt
-gunicorn
