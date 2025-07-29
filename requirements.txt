@@ -1,4 +1,0 @@
-djangorestframework
-django-cors-headers
-dajngo
-bcrypt
