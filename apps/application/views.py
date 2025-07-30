@@ -35,5 +35,5 @@ def form_manager(request):
 def demo_form_manager(request):
     
     return render(
-        request, 'forms/accordion.html',
+        request, 'application/make_example.html',
     )

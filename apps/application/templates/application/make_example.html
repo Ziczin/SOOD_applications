@@ -1,0 +1,67 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ form.title }}</title>
+    <link rel="stylesheet" href="{% static 'deps/css/bright.css' %}">
+    <script src="{% static 'deps/make/make.js' %}"></script>
+</head>
+<body>
+    <div id="app" class='container p-1p content'></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const appContainer = document.getElementById('app');
+            const tabs = make.Tabs(
+                make.with.tab("Запрос",
+                    make.on.hover((e) => {
+                        make.with.text("На вкладку навелись")(e.target);
+                    }),
+                    make.on.focus((e) => {
+                        make.with.text("Вкладку в фокус взяли")(e.target);
+                    }),
+                    make.on.defocus((e) => {
+                        make.with.text("Вкладка больше не в фокусе")(e.target);
+                    }),
+                    make.with.content(
+                        make.Paragraph("Форма запроса"),
+                        make.Div(
+                            make.with.css('request-form'),
+                            make.with.children(
+                                make.Input(make.with.attr({type: "text", placeholder: "Имя"})),
+                                make.Input(make.with.attr({type: "email", placeholder: "Email"}))
+                )))),
+                make.with.tab("Услуги",
+                    make.with.content(
+                        make.Paragraph("Список услуг"),
+                        make.Div(
+                            make.with.css('services-list'),
+                            make.with.children(
+                                make.Div(make.with.text("Услуга 1")),
+                                make.Div(make.with.text("Услуга 2")),
+                                make.Div(make.with.text("Услуга 3"))
+                            )
+                        ),
+                        make.Button(
+                            make.with.text("Тестовая кнопка!"),
+                            make.on.hover(() => console.log('Hover!')),
+                            make.on.dehover(() => console.log('Dehover!')),
+                            make.on.click(() => console.log('Click!')),
+                            make.on.focus(() => console.log('Focus!'))
+                        )
+                    )
+                )
+            );
+            
+            appContainer.appendChild(tabs.element);
+        });
+    </script>
+</body>
+</html>
+<style>
+    .tetetest {
+        background: #efd;
+    }
+</style>

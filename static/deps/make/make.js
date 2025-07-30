@@ -1,163 +1,269 @@
-// make.js
-(function() {
-    // Блок makeWith - функции-декораторы (с исправленными именами)
+window.make = (function() {
+    class Component {
+        constructor(element, type) {
+            this.element = element;
+            this.type = type;
+            this.children = [];
+            this.parent = null;
+        }
+        
+        appendChild(child) {
+            if (child instanceof Component) {
+                child.parent = this;
+                this.element.appendChild(child.element);
+                this.children.push(child);
+            } else {
+                this.element.appendChild(child);
+            }
+            return this;
+        }
+        
+        insertChildAt(child, index) {
+            if (index < 0 || index > this.children.length) return this;
+            if (child instanceof Component) {
+                const refNode = index < this.children.length ? this.children[index].element : null;
+                this.element.insertBefore(child.element, refNode);
+                this.children.splice(index, 0, child);
+                child.parent = this;
+            }
+            return this;
+        }
+        
+        removeChild(child) {
+            const index = this.children.indexOf(child);
+            if (index !== -1) {
+                this.element.removeChild(child.element);
+                this.children.splice(index, 1);
+                child.parent = null;
+            }
+            return this;
+        }
+        
+        removeChildAt(index) {
+            if (index >= 0 && index < this.children.length) {
+                const child = this.children[index];
+                this.element.removeChild(child.element);
+                this.children.splice(index, 1);
+                child.parent = null;
+            }
+            return this;
+        }
+        
+        getChildAt(index) {
+            return this.children[index];
+        }
+        
+        replaceChild(newChild, oldChild) {
+            const index = this.children.indexOf(oldChild);
+            if (index !== -1) {
+                this.element.replaceChild(newChild.element, oldChild.element);
+                this.children[index] = newChild;
+                newChild.parent = this;
+                oldChild.parent = null;
+            }
+            return this;
+        }
+        
+        clearChildren() {
+            while (this.element.firstChild) {
+                this.element.removeChild(this.element.firstChild);
+            }
+            this.children.forEach(child => child.parent = null);
+            this.children = [];
+            return this;
+        }
+        
+        applyDecorators(...decorators) {
+            decorators.forEach(decorator => decorator(this.element));
+            return this;
+        }
+    }
+
     const makeWith = {
-        css: function(...classes) {
-            return function(element) {
-                classes.forEach(cls => cls && element.classList.add(cls));
-                return element;
+        css: (...classes) => element => {
+            classes.forEach(cls => cls && element.classList.add(cls));
+            return element;
+        },
+        text: text => element => {
+            element.textContent = text;
+            return element;
+        },
+        attr: attributes => element => {
+            Object.entries(attributes).forEach(([key, value]) => element.setAttribute(key, value));
+            return element;
+        },
+        value: value => element => {
+            element.setAttribute('value', value);
+            return element;
+        },
+        attrs: (...attributes) => element => {
+            attributes.forEach(attr => element.setAttribute(attr, ''));
+            return element;
+        },
+        click: handler => element => {
+            element.addEventListener('click', handler);
+            return element;
+        },
+        children: (...childs) => element => {
+            childs.forEach(child => child != undefined && element.appendChild(child instanceof Component ? child.element : child));
+            return element;
+        },
+        tab: (title, ...items) => {
+            const decorators = [];
+            const contentItems = [];
+            
+            items.forEach(item => {
+                if (typeof item === 'function') {
+                    decorators.push(item);
+                } else {
+                    if (Array.isArray(item)) {
+                        contentItems.push(...item);
+                    } else {
+                        contentItems.push(item);
+                    }
+                }
+            });
+            
+            return {
+                type: 'tab',
+                title: title,
+                content: contentItems,
+                decorators: decorators,
+                parent: null
             };
         },
-        text: function(text) {
-            return function(element) {
-                element.textContent = text;
-                return element;
-            };
+        content: (...elements) => elements
+    };
+
+    const makeOn = {
+        hover: (...handlers) => element => {
+            handlers.forEach(handler => element.addEventListener('mouseenter', handler));
+            return element;
         },
-        attr: function(attributes) {
-            return function(element) {
-                Object.entries(attributes).forEach(([key, value]) => {
-                    element.setAttribute(key, value);
-                });
-                return element;
-            };
+        dehover: (...handlers) => element => {
+            handlers.forEach(handler => element.addEventListener('mouseleave', handler));
+            return element;
         },
-        value: function(value) {
-            return function(element) {
-                element.setAttribute('value', value);
-                return element;
-            };
+        click: (...handlers) => element => {
+            handlers.forEach(handler => element.addEventListener('click', handler));
+            return element;
         },
-        attrs: function(...attributes) {
-            return function(element) {
-                attributes.forEach((attr) => {
-                    element.setAttribute(attr, '');
-                });
-                return element;
-            };
+        focus: (...handlers) => element => {
+            handlers.forEach(handler => element.addEventListener('focus', handler));
+            return element;
         },
-        click: function(handler) {
-            return function(element) {
-                element.addEventListener('click', handler);
-                return element;
-            };
+        defocus: (...handlers) => element => {
+            handlers.forEach(handler => element.addEventListener('blur', handler));
+            return element;
         },
-        children: function(...childs) {
-            return function(element) {
-                childs.forEach(child => {
-                    if (child != undefined) {
-                        element.appendChild(child);
+    };
+
+    function createComponent(elementType, ...decorators) {
+        const element = document.createElement(elementType);
+        const component = new Component(element, elementType);
+        decorators.forEach(decorator => typeof decorator === 'function' && decorator(component.element));
+        return component;
+    }
+
+    const makeIt = {
+        flexRow: e => e.classList.add('flex-row'),
+        flexColumn: e => e.classList.add('flex-column'),
+        gapped: e => e.classList.add('gap-6px'),
+        formGroup: e => e.classList.add('form-group', 'shady', 'margin-on-hover', 'recolor-on-hover'),
+        card: e => e.classList.add('card'),
+        body: e => e.classList.add('card-body'),
+        warning: e => e.classList.add('btn', 'btn-warning', 'btn-sm'),
+        danger: e => e.classList.add('btn', 'btn-danger', 'btn-sm'),
+        link: e => e.classList.add('btn', 'btn-link'),
+        primary: e => e.classList.add('btn', 'btn-primary')
+    };
+
+    const Tabs = (...args) => {
+        const containerDecorators = [];
+        const tabs = [];
+        
+        args.forEach(arg => {
+            if (arg && arg.type === 'tab') {
+                tabs.push(arg);
+            } else if (typeof arg === 'function') {
+                containerDecorators.push(arg);
+            }
+        });
+        
+        const tabsContainer = createComponent('div', ...containerDecorators, makeWith.css('make-tabs'));
+        const menuContainer = createComponent('div', makeWith.css('make-tabs-menu'));
+        const contentContainer = createComponent('div', makeWith.css('make-tabs-content'));
+        tabsContainer.appendChild(menuContainer).appendChild(contentContainer);
+        
+        tabs.forEach((tab, index) => {
+            const tabId = Math.random().toString(36).substring(2, 10);
+            const button = createComponent('button',
+                makeWith.text(tab.title),
+                makeWith.attr({ id: `tab-${tabId}` }),
+                makeWith.css('make-tab-button'),
+                ...tab.decorators
+            );
+            
+            const contentDiv = createComponent('div', makeWith.attr({ id: `content-${tabId}` }));
+            
+            if (tab.content) {
+                tab.content.forEach(item => {
+                    if (Array.isArray(item)) {
+                        item.forEach(subItem => {
+                            if (subItem instanceof Component) {
+                                contentDiv.appendChild(subItem);
+                            } else if (subItem instanceof Node) {
+                                contentDiv.element.appendChild(subItem);
+                            }
+                        });
+                    } else {
+                        if (item instanceof Component) {
+                            contentDiv.appendChild(item);
+                        } else if (item instanceof Node) {
+                            contentDiv.element.appendChild(item);
+                        }
                     }
                 });
-                return element;
-            };
-        }
+            }
+            
+            if (index !== 0) contentDiv.element.setAttribute('hidden', '');
+            else button.element.classList.add('active');
+            
+            button.element.addEventListener('click', () => {
+                contentContainer.children.forEach(child => child.element.setAttribute('hidden', ''));
+                contentDiv.element.removeAttribute('hidden');
+                menuContainer.children.forEach(child => child.element.classList.remove('active'));
+                button.element.classList.add('active');
+            });
+            
+            menuContainer.appendChild(button);
+            contentContainer.appendChild(contentDiv);
+        });
+        
+        return tabsContainer;
     };
 
-    // Блок make - создание элементов
-    const make = {
-        element: function(elementType, ...decorators) {
-            const element = document.createElement(elementType);
-            return decorators.reduce((el, decorator) => decorator(el) || el, element);
-        },
-        Div: function(...decorators) {
-            return this.element('div', ...decorators);
-        },
-        Select: function(...decorators) {
-            return this.element('select', ...decorators);
-        },
-        Input: function(...decorators) {
-            return this.element('input', ...decorators);
-        },
-        Label: function(...decorators) {
-            return this.element('label', ...decorators);
-        },
-        Paragraph: function(...decorators) {
-            return this.element('p', ...decorators);
-        },
-        Button: function(...decorators) {
-            return this.element('button',
-                makeWith.attr({type: 'button'}),
-                ...decorators
-            );
-        }
+    const injectStyles = () => {
+        if (document.getElementById('make-styles')) return;
+        const style = document.createElement('style');
+        style.id = 'make-styles';
+        style.textContent = `.card{border-radius:12px!important;border:0!important}.card-body{padding:6px!important;background:#fff4!important}.btn{border-radius:12px;border:none!important;outline:none!important;box-shadow:none!important;padding:6px 12px;cursor:pointer}.btn-primary{background-color:#007bff;color:white}.btn-warning{background-color:#ffc107;color:black}.btn-danger{background-color:#dc3545;color:white}.btn-link{background:transparent;color:#007bff;text-decoration:underline}.btn-sm{padding:3px 6px;font-size:.875rem}.make-tabs{display:flex;flex-direction:column;width:100%}.make-tabs-menu{display:flex;gap:10px;margin-bottom:10px}.make-tab-button{padding:10px 15px;border:none;background-color:#dadada;color:#444;cursor:pointer;transition:background-color .3s ease;border-radius:4px 4px 0 0;font-size:16px}.make-tab-button.active,.make-tab-button.active:hover{background-color:#ccc;color:#222;font-weight:700}.make-tab-button:hover{background-color:#e0e0e0}.make-tabs-content{border:1px solid #ddd;border-radius:0 0 4px 4px;padding:15px;background:white}`;
+        document.head.appendChild(style);
     };
+    
+    injectStyles();
 
-    // Блок makeIt - модификация элементов
-    const makeIt = {
-        flexRow: function(element) {
-            element.classList.add('flex-row');
-            return element;
-        },
-        flexColumn: function(element) {
-            element.classList.add('flex-column');
-            return element;
-        },
-        gapped: function(element) {
-            element.classList.add('gap-6px');
-            return element;
-        },
-        formGroup: function(element) {
-            element.classList.add('form-group', 'shady', 'margin-on-hover', 'recolor-on-hover');
-            return element;
-        },
-        card: function(element) {
-            element.classList.add('card');
-            return element;
-        },
-        header: function(element) {
-            element.classList.add('card-header');
-            element.style.display = 'flex';
-            element.style.justifyContent = 'space-between';
-            element.style.alignItems = 'center';
-            return element;
-        },
-        body: function(element) {
-            element.classList.add('card-body');
-            return element;
-        },
-        warning: function(element) {
-            element.classList.add('btn', 'btn-warning', 'btn-sm');
-            return element;
-        },
-        danger: function(element) {
-            element.classList.add('btn', 'btn-danger', 'btn-sm');
-            return element;
-        },
-        link: function(element) {
-            element.classList.add('btn', 'btn-link');
-            return element;
-        },
-        primary: function(element) {
-            element.classList.add('btn', 'btn-primary');
-            return element;
-        }
+    return {
+        with: makeWith,
+        it: makeIt,
+        on: makeOn,
+        element: createComponent,
+        Div: (...d) => createComponent('div', ...d),
+        Select: (...d) => createComponent('select', ...d),
+        Input: (...d) => createComponent('input', ...d),
+        Label: (...d) => createComponent('label', ...d),
+        Paragraph: (...d) => createComponent('p', ...d),
+        Button: (...d) => createComponent('button', makeWith.attr({type: 'button'}), ...d),
+        Tabs: Tabs
     };
-
-    // Добавляем необходимые стили
-    const style = document.createElement('style');
-    style.textContent = `
-        .card { border-radius: 12px !important; border: 0 !important; }
-        .card-header { padding: 0 !important; border: none !important; }
-        .card-body { padding: 6px !important; background: #fff4 !important; }
-        .btn { 
-            border-radius: 12px; 
-            border: none !important; 
-            outline: none !important; 
-            box-shadow: none !important;
-            padding: 6px 12px;
-            cursor: pointer;
-        }
-        .btn-primary { background-color: #007bff; color: white; }
-        .btn-warning { background-color: #ffc107; color: black; }
-        .btn-danger { background-color: #dc3545; color: white; }
-        .btn-link { background: transparent; color: #007bff; text-decoration: underline; }
-        .btn-sm { padding: 3px 6px; font-size: 0.875rem; }
-    `;
-    document.head.appendChild(style);
-
-    // Экспортируем в глобальную область видимости
-    window.makeWith = makeWith;
-    window.make = make;
-    window.makeIt = makeIt;
 })();

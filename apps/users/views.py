@@ -25,6 +25,7 @@ def register(request):
     else:
         form = registration_form()
 
+    return render(request, 'application/make_example.html', {'form': form, 'errors': errors})
     return render(request, 'forms/form_builder.html', {'form': form, 'errors': errors})
 
 def login_view(request):
