@@ -1,52 +1,38 @@
-from django.contrib.auth.forms import UserCreationForm
-
-from apps.users.models import CustomUser, Department
-
-from django.forms import PasswordInput
-from django.forms import TextInput
+from apps.users.models import Department
 
 registration_form_data = {
-    'meta': {
-        'name': 'Registration',
-        'css': 'deps/css/bright.css',
-        'model': CustomUser,
-        'parent': UserCreationForm,
-    },
-    'form': {
-        'page_title': 'Регистрация',
-        'form_title': 'Регистрация',
-        'btn_confirm': 'Зарегистрироваться',
-        'sub_btn_link': '/users/login',
-        'sub_btn_link_text': 'Уже есть аккаунт? Войти',
-    },
+    'name': 'Registration',
+    "action": "/users/register/",
+    'title': 'Регистрация',
+    'btn_confirm': 'Зарегистрироваться',
+    'sub_btn_link': '/users/login',
+    'sub_btn_link_text': 'Уже есть аккаунт? Войти',
     'fields': [
         {
-            'id': 'username', 'type': TextInput,
+            'id': 'username', 'type': 'text',
             'label': 'Имя пользователя',
             'placeholder': 'Например IvanovAV',
         },
         {
-            'id': 'password1', 'type': PasswordInput,
+            'id': 'password1', 'type': 'password',
             'label': 'Пароль',
             'placeholder': 'Введите пароль',
         },
         {
-            'id': 'password2', 'type': PasswordInput,
+            'id': 'password2', 'type': 'password',
             'label': 'Повторите пароль',
             'placeholder': 'Введите пароль. Снова',
             'error_messages': {'password_mismatch': 'Gfhj'},
         },
         {
-            'id': 'full_name', 'type': TextInput,
+            'id': 'full_name', 'type': 'text',
             'label': 'Полное имя',
             'placeholder': 'Например: Иванов Иван Иванович',
-            'required': True,
         },
         {
             'id': 'department', 'type': [Department, ],
             'label': 'Выберите ваш отдел',
             'placeholder': 'Без отдела',
-            'required': True,
         },
     ],
 }

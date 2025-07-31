@@ -3,24 +3,21 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 
 from .forms import form_create_form_data
-from .form_builder import form_builder
+from .form_checker import form_checker
 
 from .models import Field, FieldType, Form
 from apps.application.models import ServiceGroup
 
-form_create_form = form_builder(form_create_form_data)
 
 @login_required
 def form_creation(request):
     errors = []
     if request.method == 'POST':
-        form = form_create_form(request.POST)
+        form = request.POST
         if form.is_valid():
             form.save()
             return redirect('dashboard')
-    else:
-        form = form_create_form()
-    return render(request, 'forms/form_builder.html', {'form': form, 'errors': errors})
+    return render(request, 'forms/form_builder.html', {'form': form_checker(form), 'errors': errors})
 
 @login_required
 def get_form_data(request):

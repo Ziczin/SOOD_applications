@@ -80,7 +80,7 @@ def main():
 
     if args.run:
         print("\n=== ЗАПУСК СЕРВЕРА РАЗРАБОТКИ ===")
-        execute_from_command_line(['manage.py', 'runserver'])
+        execute_from_command_line(['manage.py', 'runserver', '0.0.0.0:5051'])
 
 if __name__ == '__main__':
     main()

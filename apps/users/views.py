@@ -3,46 +3,54 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 
-from apps.users.models import CustomUser
+from apps.users.models import CustomUser, UserRole, Department
 from apps.forms.forms import login_form_data, registration_form_data
-
-from apps.forms.form_builder import form_builder
-
-registration_form = form_builder(registration_form_data)
-login_form = form_builder(login_form_data)
+from apps.forms.form_checker import form_checker
 
 def register(request):
     errors = []
     if request.method == 'POST':
         if CustomUser.objects.filter(username=request.POST["username"]).exists():
-            errors.append('Пользователь с таким логином уже существует!')
+            errors.append({
+                'text':'Пользователь с таким логином уже существует!',
+                'desc': 'Кто-то уже занял этот логин, попробуйте добавить в конец 1 или написать логин как-то по другому.'})
         if request.POST['password1'] != request.POST['password2']:
-            errors.append('Пароли не совпадают!')
-        form = registration_form(request.POST)
-        if form.is_valid():
-            form.save()
+            errors.append({
+                'text': 'Пароли не совпадают!',
+                'desc': 'Проверьте внимательней или нажмите на значок глаза чтобы сравнить пароли в открытом виде.'
+            })
+        if not errors:
+            CustomUser.objects.create_user(
+                username=request.POST['username'],
+                password=request.POST['password1'],
+                full_name=request.POST['full_name'],
+                department=Department.objects.order_by('id')[int(request.POST['department'])],
+                role=UserRole.USER
+                )
             return redirect('login')
-    else:
-        form = registration_form()
 
-    return render(request, 'application/make_example.html', {'form': form, 'errors': errors})
-    return render(request, 'forms/form_builder.html', {'form': form, 'errors': errors})
+    data = form_checker(registration_form_data)
+    data['_errors'] = errors
+    return render(request, 'forms/form_builder.html', {'form_data': data})
 
 def login_view(request):
     errors = []
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
-        form = login_form(request.POST)
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
             return redirect('/applications/dashboard')
         else:
-            errors.append("Неправильный логин или пароль!")
-    else:
-        form = login_form()
-    return render(request, 'forms/form_builder.html', {'form': form, 'errors': errors})
+            errors.append({
+                'text': "Неправильный логин или пароль!",
+                'desc': "Если вы забыли пароль, то обратитесь в отдел программирования"
+                })
+
+    data = form_checker(login_form_data)
+    data["_errors"] = errors
+    return render(request, 'forms/form_builder.html', {"form_data": data})
 
 def logout_view(request):
     logout(request)

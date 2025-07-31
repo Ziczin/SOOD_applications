@@ -1,56 +1,132 @@
 {% load static %}
+{{ form_data|json_script:"form-data" }}
+{{ errors|json_script:"errors-data" }}
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ form.title }}</title>
-    <link rel="stylesheet" href="{% static 'deps/css/bright.css' %}">
+  {% csrf_token %}
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{% static 'deps/make/make.css' %}">
+  <script src="{% static 'deps/make/make.js' %}"></script>
+  <title>Сервис заявок</title>
+  <link rel="stylesheet" href="{% static 'deps/css/bright.css' %}">
+
 </head>
+
 <body>
-    <div class='container p-1p content'>
-        <h1>{{ form.form_name }}</h1>
-        {% if services in form %}
-            <div class="tabs">
-                <button id="request-button" class="tab-button active" onclick="showTab('request')">Запрос</button>
-                <button id="services-button" class="tab-button" onclick="showTab('services')">Услуги</button>
-            </div>
-        {% endif %}
-        <div id='request' class="tab-content active">
-            {% include "forms/request_form.html" %}
-        </div>
-        <div id='services' class="tab-content">
-            <p>Тестовый текст</p>
-        </div>
-    </div>
-    <script>
-        function showTab(tabId) {
-            const tabs = document.querySelectorAll('.tab-content');
-            const container = document.querySelector('.container');
-            const activeTab = document.getElementById(tabId);
-            const previousActiveTab = document.querySelector('.tab-content.active');
-
-            if (previousActiveTab) {
-                previousActiveTab.classList.remove('active');
-            }
-
-            const buttons = document.querySelectorAll('.tab-button');
-            buttons.forEach(button => {
-                button.classList.remove('active');
-            });
-
-            activeTab.classList.add('active');
-            const activeButton = document.getElementById(tabId + '-button');
-            if (activeButton) {
-                activeButton.classList.add('active');
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const initialTab = 'request';
-            showTab(initialTab);
-        });
-    </script>
+  <div class='container p-1p content w-40p' id="form-template">
+  </div>
 </body>
 </html>
+
+<script>
+  const csrftoken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+  const data = JSON.parse(document.getElementById("form-data").textContent);
+  const errors = JSON.parse(document.getElementById("errors-data").textContent);
+  const title = make.H1(make.with.text(data.title))
+  const fields = make.Form(
+    make.it.flexColumn,
+    make.it.gap10px,
+    make.with.attr({
+      method: 'post',
+      action: data.action,
+    }),
+    make.with.csrf(csrftoken),
+    make.with.childs(
+      ...data.fields.map(el =>
+        make.Div(
+          make.it.formGroup,
+          ...(el.type !== 'enum' ? [make.it.beautySelect] : []),
+          make.with.childs(
+            make.Label(
+              make.with.text(el.label),
+              make.with.attr({ name: el.id })
+            ),
+            el.type !== 'enum' ?
+            make.Input(
+              make.with.attr({
+                id: el.id,
+                name: el.id,
+                type: el.type,
+                placeholder: el.placeholder
+              }),
+              make.with.attrs(...el.attrs),
+        ) : make.Select(
+              make.with.attr({ name: el.id, id: el.id }),
+              make.with.attrs(...el.attrs),
+              make.with.childs(
+                make.Option( make.with.text(el.placeholder), make.with.attrs('value', 'disabled')),
+                ...el.enum.map(elEnum =>
+                  make.Option(
+                    make.with.text(elEnum.text),
+                    make.with.attr({ value: elEnum.value})
+      ))))))),
+      make.Button(
+        make.it.onConfirmationMargin,
+        make.it.primary,
+        make.with.text(data.btn_confirm),
+        make.with.attr({type: 'submit'})
+      )
+    )
+  );
+  const bottomStuff = make.Div(
+    make.with.childs(
+      make.Separator(),
+      make.Link(
+        make.it.simpleLink,
+        make.with.text(data.sub_btn_link_text),
+        make.with.attr({ href: data.sub_btn_link }),
+      ),
+      make.Separator(),
+      make.Div(
+        make.it.flexColumn,
+        make.it.gap6px,
+        make.with.childs(
+          ...data._errors.map(err =>
+            make.Paragraph(
+              make.it.beautySelect,
+              make.it.leftAlign,
+              make.it.textItalic,
+              make.color.error,
+              make.with.text(err.text),
+              make.with.attr({ description: err.desc}),
+              make.on.click(async e => {
+                const el = e.target
+                const desc = el.getAttribute('description')
+                if (!desc) return
+
+                const isToggled = el.dataset.toggled === 'true'
+                const targetText = isToggled ? el.dataset.orig : desc
+
+                if (!isToggled) {
+                  el.dataset.orig = el.textContent
+                  el.dataset.toggled = 'true'
+                } else {
+                  el.dataset.toggled = 'false'
+                }
+
+                while (el.textContent) {
+                  el.textContent = el.textContent.slice(0, -1)
+                  await new Promise(r => setTimeout(r, 5))
+                }
+                for (let ch of targetText) {
+                  el.textContent += ch
+                  await new Promise(r => setTimeout(r, 15))
+                }
+              })
+            )
+          )
+        )
+      )
+    )
+  );
+
+  document.getElementById("form-template").appendChild(title.element)
+  document.getElementById("form-template").appendChild(fields.element)
+  document.getElementById("form-template").appendChild(bottomStuff.element)
+
+
+</script>

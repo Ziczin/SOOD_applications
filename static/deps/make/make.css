@@ -1,0 +1,178 @@
+/* make.css */
+:root {
+    --red: hsla(0, 87%, 75%, 1);
+    --red-hover: hsla(0, 87%, 72%, 1);
+    
+    --l-blue: hsla(200, 60%, 75%, 1);
+    --d-blue: hsla(200, 60%, 60%, 1);
+    --d-blue-hover: hsla(200, 65%, 55%, 1);
+    
+    --yellow: hsla(50, 82%, 63%, 1);
+    --yellow-hover: hsla(50, 82%, 60%, 1);
+    
+    --d-gray: #666666;
+    --m-gray: #a0a0a0;
+    --l-gray: #ececec;
+
+    --transition-fast: 0.1s;
+    --transition-avg: 0.2s;
+    --transition-slow: 0.3s;
+    --transition-very-slow: 0.5s;
+    --transition-very-very-slow: 1s;
+    --transition-very-very-very-slow: 2s;
+}
+
+/* fix agent */
+p, form {
+    margin: 0;
+}
+
+/* accordion */
+.card {
+    border-radius: 12px !important;
+    border: 0 !important;
+}
+
+.card-body {
+    padding: 6px !important;
+    background: #ffffff44 !important;
+}
+
+/* buttons */
+.btn {
+    border-radius: 12px;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    padding: 6px 12px;
+    cursor: pointer;
+}
+.btn-primary {
+    background-color: var(--d-blue);
+    color: white;
+    padding: 1%;
+    transition: background-color var(--transition-slow) ease;
+}
+.btn-primary:hover {
+    background-color: var(--d-blue-hover);
+}
+.btn-warning {
+    background-color: #ffc107;
+    color: black;
+}
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+}
+.btn-link {
+    background: transparent;
+    color: #007bff;
+    text-decoration: underline;
+}
+.btn-sm {
+    padding: 3px 6px;
+    font-size: .875rem;
+}
+
+.make-block-separator {
+    margin-top: 8px;
+}
+
+/* tabs */
+.make-tabs {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+.make-tabs-menu {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.make-tab-button {
+    padding: 10px 15px;
+    border: none;
+    background-color: #dadada;
+    color: #444;
+    cursor: pointer;
+    transition: background-color .3s ease;
+    border-radius: 4px 4px 0 0;
+    font-size: 16px;
+}
+.make-tab-button.active,
+.make-tab-button.active:hover {
+    background-color: #ccc;
+    color: #222;
+    font-weight: 700;
+}
+.make-tab-button:hover {
+    background-color: #e0e0e0;
+}
+.make-tabs-content {
+    border: 1px solid #ddd;
+    border-radius: 0 0 4px 4px;
+    padding: 15px;
+    background: white;
+}
+
+/* flexibility */
+.make-flex{
+    display: flex;
+}
+.make-flex-row{
+    display: flex;
+    flex-direction: row;
+}
+.make-flex-column{
+    display: flex;
+    flex-direction: column;
+}
+.make-gap-10px {
+    gap: 10px;
+}
+.make-gap-6px {
+    gap: 6px;
+}
+
+/* form elements parameters*/
+.make-form-group {
+    flex: 1;
+    text-align: left;
+}
+.make-beauty-select {
+    filter: brightness(0.98);
+    transition: margin-left var(--transition-very-very-slow) ease,
+                filter var(--transition-very-very-slow) ease;
+}
+.make-beauty-select:hover {
+    margin-left: 2px;
+    filter: brightness(0.95);
+    transition-duration: var(--transition-avg)
+}
+
+/* link */
+.make-simple-link:visited,
+.make-simple-link {
+    color: var(--d-gray);
+    font-size: 16px;
+    text-decoration: none;
+    transition: color var(--transition-avg) ease;
+}
+.make-simple-link:hover {
+    color: var(--m-gray);
+}
+
+.make-text-italic {
+    font-style: italic;
+}
+
+/* colors */
+.make-color-error {
+    color: #b57585;
+}
+
+/* ordering */
+.make-text-align-left {
+    text-align: left;
+}
+

@@ -104,8 +104,8 @@ window.make = (function() {
             element.addEventListener('click', handler);
             return element;
         },
-        children: (...childs) => element => {
-            childs.forEach(child => child != undefined && element.appendChild(child instanceof Component ? child.element : child));
+        childs: (...chs) => element => {
+            chs.forEach(child => child != undefined && element.appendChild(child instanceof Component ? child.element : child));
             return element;
         },
         tab: (title, ...items) => {
@@ -132,7 +132,19 @@ window.make = (function() {
                 parent: null
             };
         },
-        content: (...elements) => elements
+        content: (...elements) => elements,
+        csrf: token => element => {
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            csrfInput.value = token;
+            element.appendChild(csrfInput);
+            return element;
+        }
+    };
+
+    const makeColor = {
+        error: e => e.classList.add('make-color-error'),
     };
 
     const makeOn = {
@@ -166,17 +178,28 @@ window.make = (function() {
     }
 
     const makeIt = {
-        flexRow: e => e.classList.add('flex-row'),
-        flexColumn: e => e.classList.add('flex-column'),
+        textItalic: e => e.classList.add('make-text-italic'),
+        leftAlign: e => e.classList.add('make-text-align-left'),
+        simpleLink: e => e.classList.add('make-simple-link'),
+        gap10px: e => e.classList.add('make-gap-10px'),
+        gap6px: e => e.classList.add('make-gap-6px'),
+        flexRow: e => e.classList.add('make-flex-row'),
+        flexColumn: e => e.classList.add('make-flex-column'),
         gapped: e => e.classList.add('gap-6px'),
-        formGroup: e => e.classList.add('form-group', 'shady', 'margin-on-hover', 'recolor-on-hover'),
+        formGroup: e => e.classList.add('make-form-group'),
+        beautySelect: e => e.classList.add('make-beauty-select'),
         card: e => e.classList.add('card'),
         body: e => e.classList.add('card-body'),
         warning: e => e.classList.add('btn', 'btn-warning', 'btn-sm'),
         danger: e => e.classList.add('btn', 'btn-danger', 'btn-sm'),
         link: e => e.classList.add('btn', 'btn-link'),
-        primary: e => e.classList.add('btn', 'btn-primary')
+        primary: e => e.classList.add('btn', 'btn-primary'),
+        onConfirmationMargin: e => e.classList.add('make-confirmation-margin'),
     };
+
+    const makeInner = {
+        separator: e => e.classList.add('make-block-separator')
+    }
 
     const Tabs = (...args) => {
         const containerDecorators = [];
@@ -243,27 +266,59 @@ window.make = (function() {
         return tabsContainer;
     };
 
-    const injectStyles = () => {
-        if (document.getElementById('make-styles')) return;
-        const style = document.createElement('style');
-        style.id = 'make-styles';
-        style.textContent = `.card{border-radius:12px!important;border:0!important}.card-body{padding:6px!important;background:#fff4!important}.btn{border-radius:12px;border:none!important;outline:none!important;box-shadow:none!important;padding:6px 12px;cursor:pointer}.btn-primary{background-color:#007bff;color:white}.btn-warning{background-color:#ffc107;color:black}.btn-danger{background-color:#dc3545;color:white}.btn-link{background:transparent;color:#007bff;text-decoration:underline}.btn-sm{padding:3px 6px;font-size:.875rem}.make-tabs{display:flex;flex-direction:column;width:100%}.make-tabs-menu{display:flex;gap:10px;margin-bottom:10px}.make-tab-button{padding:10px 15px;border:none;background-color:#dadada;color:#444;cursor:pointer;transition:background-color .3s ease;border-radius:4px 4px 0 0;font-size:16px}.make-tab-button.active,.make-tab-button.active:hover{background-color:#ccc;color:#222;font-weight:700}.make-tab-button:hover{background-color:#e0e0e0}.make-tabs-content{border:1px solid #ddd;border-radius:0 0 4px 4px;padding:15px;background:white}`;
-        document.head.appendChild(style);
-    };
-    
-    injectStyles();
+    async function query(route, method, data = null) {
+        method = method.toUpperCase();
+        const validMethods = ['GET', 'POST', 'PUT', 'DELETE'];
+        
+        if (!validMethods.includes(method)) {
+            throw new Error(`Invalid HTTP method: ${method}`);
+        }
+
+        const options = {
+            method: method,
+            headers: {}
+        };
+
+        // Для GET-запросов добавляем параметры в URL
+        if (method === 'GET' && data) {
+            const params = new URLSearchParams(data).toString();
+            route = `${route}?${params}`;
+        }
+        // Для других методов добавляем данные в тело
+        else if (data) {
+            options.headers['Content-Type'] = 'application/json';
+            options.body = JSON.stringify(data);
+        }
+
+        const response = await fetch(route, options);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        return await response.json();
+    }
 
     return {
         with: makeWith,
         it: makeIt,
         on: makeOn,
+        color: makeColor,
         element: createComponent,
         Div: (...d) => createComponent('div', ...d),
+        Form: (...d) => createComponent('form', ...d),
+        H1: (...d) => createComponent('h1', ...d),
+        H2: (...d) => createComponent('h2', ...d),
+        H3: (...d) => createComponent('h3', ...d),
         Select: (...d) => createComponent('select', ...d),
+        Option: (...d) => createComponent('option', ...d),
         Input: (...d) => createComponent('input', ...d),
         Label: (...d) => createComponent('label', ...d),
         Paragraph: (...d) => createComponent('p', ...d),
-        Button: (...d) => createComponent('button', makeWith.attr({type: 'button'}), ...d),
-        Tabs: Tabs
+        Button: (...d) => createComponent('button', ...d),
+        Link: (...d) => createComponent('a', ...d),
+        Separator: (...d) => createComponent('div', makeInner.separator, ...d),
+        Tabs: Tabs,
+        query: query
     };
 })();
