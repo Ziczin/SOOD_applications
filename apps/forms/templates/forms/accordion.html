@@ -38,7 +38,6 @@
             servicesControls: 'services-controls',
             groupControls: 'group-controls',
             disabledGroup: 'disabled-group',
-            mainMargin: 'main-margin',
         },
         other: {
             formGroup: 'form-group',
@@ -654,7 +653,7 @@
     function initAccordion() {
         const accordionContainer = document.getElementById('accordion');
         accordionContainer.innerHTML = '';
-        accordionContainer.classList.add(css.custom.accordion, css.custom.mainMargin);
+        accordionContainer.classList.add(css.custom.accordion);
         
         renderFormSection(data.form, accordionContainer);
         renderFieldsSection(data.fields, accordionContainer);
@@ -819,10 +818,6 @@
     .disabled-field,
     .disabled-group {
         opacity: 0.6;
-    }
-    .main-margin {
-        margin-top: 5%;
-        margin-bottom: 20%;
     }
 
     .accordion > .card:last-child {

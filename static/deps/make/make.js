@@ -195,10 +195,12 @@ window.make = (function() {
         link: e => e.classList.add('btn', 'btn-link'),
         primary: e => e.classList.add('btn', 'btn-primary'),
         onConfirmationMargin: e => e.classList.add('make-confirmation-margin'),
+        shadeAtBorder: e => e.classList.add('make-shade-at-border'),
     };
 
     const makeInner = {
-        separator: e => e.classList.add('make-block-separator')
+        separator: e => e.classList.add('make-block-separator'),
+        scrollbox: e => e.classList.add('make-scrollbox'),
     }
 
     const Tabs = (...args) => {
@@ -318,6 +320,7 @@ window.make = (function() {
         Button: (...d) => createComponent('button', ...d),
         Link: (...d) => createComponent('a', ...d),
         Separator: (...d) => createComponent('div', makeInner.separator, ...d),
+        Scrollbox: (...d) => createComponent('div', makeInner.scrollbox, ...d),
         Tabs: Tabs,
         query: query
     };

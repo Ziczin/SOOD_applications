@@ -176,3 +176,22 @@ p, form {
     text-align: left;
 }
 
+
+/* scrollbox */
+.scrollbox {
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+    overflow-y: scroll;
+    margin-left: 10px;
+    scrollbar-width: thin;
+    scrollbar-color: #ccc transparent;}
+.scrollbox::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;}
+.scrollbox::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 10px;
+    border: 2px solid transparent;}
+.scrollbox::-webkit-scrollbar-track {
+    background: transparent;}

@@ -2,14 +2,14 @@ from django.shortcuts import render, HttpResponse
 from django.contrib.auth.decorators import login_required
 
 from .models import Form
-from apps.users.models import CustomUser
+from apps.users.models import CustomUser, UserRole
 
 @login_required
 def dashboard(request):
     forms_list = list(Form.objects.all().values())
     user_data = CustomUser.objects.get(username=request.user)
     users = CustomUser.objects.filter(department=user_data.department)
-    roles = CustomUser.role.field.choices
+    roles = UserRole.choices
     
     return render(
         request, 'application/builder.html',

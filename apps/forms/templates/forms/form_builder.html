@@ -100,21 +100,25 @@
 
                 const isToggled = el.dataset.toggled === 'true'
                 const targetText = isToggled ? el.dataset.orig : desc
+                const isInAction = el.dataset.isInAction === 'true'
 
-                if (!isToggled) {
-                  el.dataset.orig = el.textContent
-                  el.dataset.toggled = 'true'
-                } else {
-                  el.dataset.toggled = 'false'
-                }
-
-                while (el.textContent) {
-                  el.textContent = el.textContent.slice(0, -1)
-                  await new Promise(r => setTimeout(r, 5))
-                }
-                for (let ch of targetText) {
-                  el.textContent += ch
-                  await new Promise(r => setTimeout(r, 15))
+                if (!isInAction) {
+                  el.dataset.isInAction = 'true'
+                  if (!isToggled) {
+                    el.dataset.orig = el.textContent
+                    el.dataset.toggled = 'true'
+                  } else {
+                    el.dataset.toggled = 'false'
+                  }
+                  while (el.textContent) {
+                    el.textContent = el.textContent.slice(0, -1)
+                    await new Promise(r => setTimeout(r, 5))
+                  }
+                  for (let ch of targetText) {
+                    el.textContent += ch
+                    await new Promise(r => setTimeout(r, 15))
+                  }
+                  el.dataset.isInAction = 'false'
                 }
               })
             )

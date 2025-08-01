@@ -6,10 +6,12 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
+    width: 100vw;
     margin: 0;}
 .page-container {
-    height: 96vh;
+    height: 98vh;
     width: 98vw;
+    padding: 1vh;
     display: flex;
     flex-direction: row;
     gap: 1%;}
@@ -18,8 +20,8 @@ body {
     flex-direction: column;
     width: 25%;}
 .center-container {
-    height: auto !important;
-    width: 50%;}
+  display: flex;
+  width: 50%;}
 .content {
     color: #444;
     padding: 12px;
@@ -27,7 +29,6 @@ body {
     background: white;
     border-radius: 12px;
     box-shadow: 0 0 20px #0002;
-    height: fit-content;
     transition: background-color 0.3s cubic-bezier(0, 0, 0.01, 1),
                 color 0.3s ease,
                 box-shadow 0.1s ease,
@@ -61,11 +62,12 @@ button.content.back:hover {
 
 
 .container {
-    padding: 0px !important;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;}
+  max-height: 100%;
+  padding: 0px !important;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;}
 .container.p-1p {
     padding: 1% !important;
 }
@@ -290,28 +292,29 @@ form.flex {
 
 .inner-shadow{
     position: relative;}
-.inner-shadow-content{
-    position: relative;
-    z-index: 1;}
 .inner-shadow::before {
-    content: '';
-    position: absolute;
-    width: 100vw;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: transparent;
-    box-shadow: inset -25vw 10px 10px #fff, inset -25vw -10px 10px #fff;
-    z-index: 2;
-    pointer-events: none;}
+  content: '';
+  position: absolute;
+  top: 0px;
+  bottom: 0px;
+  right: -20px;
+  left: -20px;
+
+  pointer-events: none;
+  box-shadow:
+    inset 0vw  10px 10px #fff,
+    inset 0vw -10px 10px #fff;
+  z-index: 1;
+}
 
 .scrollbox {
     display: flex;
     flex-direction: column;
-    max-height: 90vh;
+    max-height: 94vh;
     overflow-y: scroll;
     margin-left: 10px;
+    padding-top: 20px;
+    padding-bottom: 20px;
     scrollbar-width: thin;
     scrollbar-color: #ccc transparent;}
 .scrollbox::-webkit-scrollbar {
