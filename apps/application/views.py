@@ -32,8 +32,13 @@ def form_manager(request):
     )
 
 @login_required
-def demo_form_manager(request):
-    
-    return render(
-        request, 'application/make_example.html',
-    )
+def demo_1(request):
+    return render(request, 'application/test.html',)
+
+@login_required
+def demo_2(request):
+    return render(request, 'application/test2.html',)
+
+@login_required
+def demo_3(request):
+    return render(request, 'application/test3.html',)

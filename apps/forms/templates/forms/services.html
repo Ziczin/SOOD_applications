@@ -1,0 +1,19 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {% csrf_token %}
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{% static 'deps/make/make.css' %}">
+  <script src="{% static 'deps/make/make.js' %}"></script>
+  <link rel="stylesheet" href="{% static 'deps/css/bright.css' %}">
+  <title>Редактирование сервисов</title>
+</head>
+
+<body>
+  <div class='container p-1p content w-40p' id="form-template">
+  </div>
+</body>
+</html>

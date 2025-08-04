@@ -5,9 +5,29 @@ from django.contrib.auth.decorators import login_required
 from .forms import form_create_form_data
 from .form_checker import form_checker
 
-from .models import Field, FieldType, Form
-from apps.application.models import ServiceGroup
+from .models import Field, FieldType, ServiceGroup, Service, Form
 
+@login_required
+def get_forms_by_user_department(request):
+    dept = request.user.department
+    qs = Form.objects.filter(department=dept, available=True)
+    data = list(qs.values(
+        'id', 'form_name'
+    ))
+    return JsonResponse({'forms': data})
+
+@login_required
+def get_service_groups_by_form_id(request):
+    form_name = request.GET.get('form_name')
+    groups = ServiceGroup.objects.filter(form_name=form_name)
+    data = [
+        {
+            'name': g.name,
+            'available': g.available
+        }
+        for g in groups
+    ]
+    return JsonResponse({'service_groups': data})
 
 @login_required
 def form_creation(request):
@@ -35,12 +55,12 @@ def get_form_data(request):
         }
     }
     # Получаем поля и их типы
-    data['field_types'] = [elem.name for elem in FieldType.objects.filter()]
-    data['fields'] = [{
-            'label': field.label,
-            'selected_type': field.type.name,
-            'enum_tag': field.enum_tag
-        } for field in Field.objects.filter(form=form)]
+    data['field_types'] = [elem.name for elem in FieldType.objects.filter()] # type: ignore
+    data['fields'] = [{ # type: ignore
+        'label': field.label,
+        'selected_type': field.type.name,
+        'enum_tag': field.enum_tag
+    } for field in Field.objects.filter(form=form)]
 
     # Получаем группы сервисов
     data['service_groups'] = {

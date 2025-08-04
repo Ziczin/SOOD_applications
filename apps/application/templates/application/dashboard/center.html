@@ -47,9 +47,17 @@
             {% csrf_token %}
             <button type="submit" class="redir">Менеджер форм</button>
         </form>
-        <form class="margin-on-hover" method="POST" action="{% url 'demo-form-manager' %}">
+        <form class="margin-on-hover" method="POST" action="{% url 'demo-1' %}">
             {% csrf_token %}
-            <button type="submit" class="redir">Демоверсия менеджера</button>
+            <button type="submit" class="redir">Демо 1</button>
+        </form>
+        <form class="margin-on-hover" method="POST" action="{% url 'demo-2' %}">
+            {% csrf_token %}
+            <button type="submit" class="redir">Демо 2</button>
+        </form>
+        <form class="margin-on-hover" method="POST" action="{% url 'demo-3' %}">
+            {% csrf_token %}
+            <button type="submit" class="redir">Демо 3</button>
         </form>
         <form class="margin-on-hover" method="POST">
             {% csrf_token %}
