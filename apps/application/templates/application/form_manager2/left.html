@@ -1,0 +1,336 @@
+{% load static %}
+
+<form method="POST" action="{% url 'dashboard' %}">
+  {% csrf_token %}
+  <button type="submit" class="content back flex">Вернуться в аккаунт</button>
+</form>
+
+<div class="content">
+  <h2>Формы:</h2>
+  {% for form in data.forms %}
+  <div class="margin-on-hover">
+    <button class='redir' onclick="init()">
+      {{ form.form_label }}
+    </button>
+  </div>
+  {% endfor %}
+</div>
+
+<link rel="stylesheet" href="{% static 'deps/make/make.css' %}">
+<script src="{% static 'deps/make/make.js' %}"></script>
+
+<script>
+  const data = {
+    form: {
+      confirm_button_text: "Confirm Button Text",
+      form_label: "Testovaya Forma",
+    },
+    fields: [
+      { label: "Количество", selected_type: "Int", isInitial: true, enabled: true },
+      { label: "Цена", selected_type: "Float", isInitial: true, enabled: true },
+      { label: "Наименование", selected_type: "Str", isInitial: true, enabled: true },
+      { label: "Описание", selected_type: "Str", isInitial: true, enabled: true }
+    ],
+    service_groups: {
+      available: {
+        group1: {
+          name: "Группа сервисов 1",
+          services: [
+            { name: "Сервис 1.1", available: true },
+            { name: "Сервис 1.2", available: false },
+            { name: "Сервис 1.3", available: true }
+          ],
+          enabled: true
+        },
+        group2: {
+          name: "Группа сервисов 2",
+          services: [
+            { name: "Сервис 2.1", available: false },
+            { name: "Сервис 2.2", available: true }
+          ],
+          enabled: true
+        },
+        group3: {
+          name: "Группа сервисов 3",
+          services: [
+            { name: "Сервис 3.1", available: true },
+            { name: "Сервис 3.2", available: true },
+            { name: "Сервис 3.3", available: false }
+          ],
+          enabled: true
+        },
+        group4: {
+          name: "Группа сервисов 4",
+          services: [
+            { name: "Сервис 4.1", available: false }
+          ],
+          enabled: true
+        },
+        group5: {
+          name: "Группа сервисов 5",
+          services: [
+            { name: "Сервис 5.1", available: true },
+            { name: "Сервис 5.2", available: true }
+          ],
+          enabled: true
+        },
+        group6: {
+          name: "Группа сервисов 6",
+          services: [
+            { name: "Сервис 6.1", available: false },
+            { name: "Сервис 6.2", available: false }
+          ],
+          enabled: true
+        }
+      },
+      selected: ['group2', 'group5']
+    }
+  };
+
+  const THEtext = [
+    `Слушай, человек. Должен явить истину, что многие отвергают легкомыслием. Себя повергают в пучину. Ближних ввергают в бедствия. Всё от дерзости невежества! Возьми в ум эти слова. В сердце положи. Речь о законе фундаментальном. О правиле непреложном. Пренебрегают им на погибель. Помни: не дерзай! Не делай того, о чём не сказано в наставлениях явно.`,
+    `Внемли, странник. Инструкция - не просто бумага. Не мерцающие буквы на экране. Это плод долгих трудов. Горьких ошибок. Скрупулёзных расчётов. Опыт, купленный жертвами. Кодекс выживания. Карта гавани безопасной в море неопределённости.`,
+    `Самонадеянность губительна. Думаешь, ум твой острее? Интуиция вернее мудрости создателей? Знания испытателей? Гордыня! Возносишь себя на трон. Кричишь: "Я знаю лучше!" Видишь последствия? Разбитые механизмы. Данные потеряны навеки. Финансы рухнули. Увечья. Гибель.`,
+    `Помысли об этом. Инженер пренебрег чертежом. Решил "упростить" узел, не предусмотренный проектом. Не герой. Виновник катастрофы грядущей. Лекарь применил снадобье не по науке. Не по инструкции. По минутной фантазии. Не спаситель. Губитель.`,
+    `Каждое отступление - шаг в бездну. "Небольшое" отклонение. "А что будет если?" За гранью инструкции. Игра в рулетку. Ставка страшная: благополучие. Здоровье. Сама жизнь. Репутация. Доверие.`,
+    `Не пойми превратно. Не рабство слепое я требую. Нужно вдумчивое понимание. Скрупулёзное изучение. Неясно? Вопрошай! Ищи разъяснения у сведущих. У создателей. Изучай дополнения.`,
+    `Но помни крепко: никогда! Не заменяй знание домыслом. Не подменяй чёткую последовательность своей смутной догадкой. "Как должно быть правильнее". Твоё "правильнее" - мираж опасный. За ним пропасть зияет.`,
+    `Знай, путник. Инструкции - договор священный. Между тобой и Создателем вещи. Системы. Процесса. Говорит Создатель ясно: "Следуй путём сим. Достигнешь цели безопасно. Отклонишься - рушатся гарантии. Ответственность на тебе. Последствия непредсказуемы."`,
+    `Нарушишь договор? Отказался от защиты. Стал виновником единственным. Виновником хаоса грядущего.`,
+    `Увы, природа человеческая. Тянется к запретному. К экспериментам вне рамок. Думаешь: правила для других. Ты исключение? Знаешь путь короткий? Способ лучший? Иллюзия! Яд горький.`,
+    `Рождает беды бесчисленные. От неурядиц бытовых: техника сгоревшая, "самодельное" подключение. До катастроф глобальных. Аварий техногенных. Всё от отклонения. От регламента.`,
+    `Кричит каждая трагедия. Корни её - в пренебрежении. Кричит в пустоту: "Не было сказано - не делай!" Слышишь?`,
+    `Внемли же наставлению. Пусть страх отступить от написанного будет сильнее. Сильнее соблазна "инициативы". Инициативы ненужной. Там где требуется лишь следование точное.`,
+    `Пусть высшая доблесть твоя - не дерзость нарушителя. А дисциплина исполнителя. Педантичность. Чтение установленного порядка.`,
+    `Ищи знание. В источниках дозволенных. Совершенствуй понимание. Но никогда! Не дерзай действовать в зоне умолчания.`,
+    `Почему? Территория риска. Последствий непредусмотренных. Ответственности твоей полной. За всё что случится.`,
+    `Да будет стыдно тому, кто имел руководство ясное. Пошёл путём самоуверенным. Путём невежества слепого!`,
+    `Да будет благословен разумный. Чья рука не дрогнет. Отступить от шага неосвящённого. Не освящённого словом наставления.`,
+    `Ибо в следовании - мудрость. Не рабство. Сила истинная. Не слабость. Путь верный. Не ограничение. Путь к исходу предсказуемому. Благополучному.`,
+    `Соблюдай границы дозволенного. За чертой - тень гордыни твоей. Холод безответственности. Поглотит всё дорогое. Всё.`,
+    `Делай лишь предписанное. В этом залог порядка. Безопасности. Свободы истинной. Свободы от последствий безрассудства. Твоего безрассудства.`
+]
+
+  const gooseText = [
+    `⠸⣿⣦⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⡠⠔⠒⠒⠒⢤⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀`,
+    `⠀⠀⠙⠻⣿⣷⣦⣀⠀⠀⠀⢀⣾⣷⠀⠘⠀⠀⠀⠙⢆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀`,
+    `⠀⠀⠀⠀⠀⠉⠛⠙⢏⢩⣶⣿⣿⠿⠖⠒⠤⣄⠀⠀⠈⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀`,
+    `⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠋⢅⡈⠐⠠⢀⠀⠈⢆⠀⠀⣷⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀`,
+    `⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠐⠠⢀⠩⠀⢸⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀`,
+    `⠀⣿⣹⠆⣿⣉⢀⡟⡄⣰⠉⠂⢸⣏⠁⠀⠀⠀⡌⠀⠀⠸⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀`,
+    `⠀⠛⠀⠀⠓⠒⠘⠉⠛⠘⠒⠃⠘⠒⠂⠀⠀⢰⠁⠀⠀⠀⠑⢤⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀`,
+    `⠀⠀⠀⢦⢠⡄⡄⢠⣦⠀⣔⠢⠀⠀⠀⠀⡠⠃⠀⠀⠀⠀⠀⠀⠀⠈⠉⠉⠙⠒⠒⠤⢄⣀⠤⠔⠒⡄`,
+    `⠀⠀⠀⠸⠏⠳⠃⠟⠺⠆⠬⠽⠀⠀⠀⢰⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇`,
+    `⠀⣄⢀⡀⣠⠀⢠⡀⣠⢠⡀⠀⣠⢀⡀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡼⠀`,
+    `⠀⡏⢿⡇⣿⣒⠈⣧⡇⢸⣒⡂⣿⢺⡁⠀⢧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡤⠊⠀⠀`,
+    `⠀⠀⠈⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡸⠀⠀⠀⠀`,
+    `⠀⠀⠀⠀⠀⣼⣳⠀⡟⣼⠀⠀⠀⠀⠀⠀⠀⠈⢆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠇⠀⠀⠀⠀`,
+    `⠀⠀⠀⠀⠀⠃⠈⠃⠃⠘⠀⠀⠀⠀⠀⠀⠀⠀⠈⢆⣀⣀⣀⡀⠀⠀⠀⠀⠀⠀⠀⢀⠎⠀⠀⠀⠀⠀`,
+    `⡖⢲⡄⣶⣲⡆⢲⠒⣶⢀⡖⢲⠀⡶⡄⡆⠀⠀⠀⠀⣿⠁⠀⠈⠑⠢⣄⠀⠀⠀⢠⠎⠀⠀⠀⠀⠀⠀`,
+    `⠳⠼⠃⠿⠀⠀⠸⠀⠿⠈⠣⠞⠀⠇⠹⠇⠀⠀⠀⢸⣿⠀⠀⠀⠀⠀⠀⠙⣢⡴⠁⠀⠀⠀⠀⠀⠀⠀`,
+    `⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠠⣶⣶⣶⣾⣿⡿⠀⠀⠀⠀⠀⠀⠀⣿⠇⠀⠀⠀⠀⠀⠀⠀⠀`,
+    `⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠛⠛⠿⠛⠉⠀⠀⠀⠀⠀⠀⠀⢀⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀`,
+    `⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣴⣶⣿⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀`,
+    `⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠻⠛⠉⠻⠀⠀⠀⠀⠀⠀⠀⠀⠀`,
+  ]
+  function init() {
+    var accumulator;
+    const content = document.getElementById('form-content')
+    const form = make.Form(
+      make.it.flex,
+      make.Tabs(
+        make.with.tab('Форма',
+          make.color.red,
+          make.with.content(
+            make.Div(
+              make.it.flexColumn,
+              make.it.gap10px,
+              make.Div( // Имя формы
+                make.it.beautySelect,
+                make.Label(
+                  make.with.text('Наименование формы:'),
+                  make.with.attr({name: 'name'})
+                ),
+                make.Input(
+                  make.with.attr({name:'name', id:'name', type:'text'})
+                ),
+              ),
+              make.Div( // Текст кнопки подтверждения
+                make.it.beautySelect,
+                make.it.formGroup,
+                make.Label(
+                  make.with.text('Текст кнопки подтверждения:'),
+                  make.with.attr({name: 'confirm_button_text'})
+                ),
+                make.Input(
+                  make.with.attr({
+                    name:'confirm_button_text',
+                    id:'confirm_button_text',
+                    type:'text',
+                  })
+                ),
+              ),
+              make.Div( // Выключатель
+                make.Label(
+                  make.with.text('После сохранения формы: '),
+                  make.with.attr({name: 'name'})
+                ),
+                make.prefab.toggleButton('Доступно', 'Недоступно'),
+              )
+            )
+          )
+        ),
+        make.with.tab('Поля',
+          make.color.blue,
+          make.with.content(
+            make.Div(
+              make.it.flexColumn,
+              accumulator = make.Div(
+                make.it.flexColumn,
+                make.it.gap10px,
+                ...data.fields.map((field, idx) =>
+                  make.prefab.inputGroup({
+                    text: `Поле №${idx}`,
+                    value: field.label,
+                    placeholder: 'Введите наименование поля'
+                  })
+                )
+              ),
+              make.Button(
+                make.with.attr({type: 'button'}),
+                make.with.text('Добавить поле'),
+                make.on.click(() => {
+                  accumulator.append(
+                    make.prefab.inputGroup({
+                      text: `Поле №${data.fields.length}`,
+                      value: '',
+                      placeholder: 'Введите наименование поля'
+                    })
+                  )
+                })
+              )
+            )
+          )
+        ),
+        make.with.tab('Сервисы',
+          make.color.yellow,
+          make.with.content(
+            make.Div(
+              make.it.flexColumn,
+              make.it.gap10px,
+              make.Paragraph(
+                make.with.text('Сервис1')
+              ),
+              make.Paragraph(
+                make.with.text('Сервис2')
+              ),
+              make.Paragraph(
+                make.with.text('Сервис3')
+              )
+            )
+          )
+        )
+      )
+    )
+
+    make.Notice( 500, 2000, 500,
+      make.Div(
+        make.color.green,
+        make.with.css('content'),
+        make.Paragraph(
+          make.with.text('Успешно загружено!')
+        )
+      )
+    );
+    content.innerHTML = '';
+    content.appendChild(form.build())
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    make.Notice(500, 1000, 500,
+      make.Div(
+        make.color.lblue,
+        make.with.css('content'),
+        make.Paragraph(make.with.text('Выберите форму')),
+        make.Paragraph(make.with.text('для редактирования'))
+        
+        make.on.click(() => {
+          make.Notice(500, 800, 500,
+            make.Div(
+              make.color.blue,
+              make.with.css('content'),
+              make.Paragraph(make.with.text('Не надо сюда жать!')),
+              
+              make.on.click(() => {
+                make.Notice(500, 600, 1000,
+                  make.Div(
+                    make.color.red,
+                    make.with.css('content'),
+                    make.Paragraph(make.with.text('Не надо сюда жать еще раз!!!')),
+                    make.on.click(() => {
+                      make.Notice(1000, 2000, 6000,
+                        make.Div(
+                          make.color.dred,
+                          make.with.css('content'),
+                          make.Paragraph(
+                            make.with.text('Последнее предупреждение!!!'),
+                            make.on.click(async e => {
+                              const el = e.target;
+                              const newText = 'Нас ждёт долгий разговор...';
+                              const isToggled = el.dataset.toggled === 'true';
+                              const targetText = el.textContent;
+
+                              if (!isToggled) {
+                                el.dataset.isToggled = 'true';
+                                while (el.textContent.length > 1) {
+                                  el.textContent = el.textContent.slice(0, -1);
+                                  await new Promise(r => setTimeout(r, 30));
+                                }
+                                let flag = true;
+                                for (let ch of newText) {
+                                  if (flag) {
+                                    el.textContent = ch;
+                                    flag = false;
+                                  }
+                                  else {
+                                    el.textContent += ch;
+                                  }
+                                  await new Promise(r => setTimeout(r, 50));
+                                }
+                              }
+                            })
+                          )
+                        )
+                      )
+                    }),
+                    make.on.click(() => {
+                      THEtext.forEach((text) => {
+                        make.Notice(1500, text.length*100, 1500,
+                          make.Div(
+                            make.color.yellow,
+                            make.with.css('content'),
+                            make.Paragraph(make.with.text(text)),
+                          )
+                        )
+                      })
+                      make.Notice(2000, 6000, 120000,
+                        make.Div(
+                          make.color.yellow,
+                          make.it.goose,
+                          make.with.css('content'),
+                          ...gooseText.map(text => make.Paragraph(make.with.text(text)))
+                        )
+                      )
+                    })
+                  )
+                )
+              })
+            )
+          )
+        })
+      )
+    )
+  })
+
+
+</script>

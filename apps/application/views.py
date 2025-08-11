@@ -33,8 +33,15 @@ def form_manager(request):
 
 @login_required
 def demo_1(request):
-    return render(request, 'application/test.html',)
-
+    forms_list = list(Form.objects.all().values())
+    
+    return render(
+        request, 'application/builder.html',
+        {
+            'variant': 'form_manager2',
+            'data': {'forms': forms_list}
+        }
+    )
 @login_required
 def demo_2(request):
     return render(request, 'application/test2.html',)

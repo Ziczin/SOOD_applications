@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Toggle</title>
+<style>
+.toggle {position: relative; display: inline-block; width: 60px; height: 30px;}
+.toggle input {opacity: 0; width: 0; height: 0;}
+.slider {position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #ccc; border-radius: 15px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; transition: background .3s, transform .3s;}
+.toggle input:checked + .slider {background: #4caf50; transform: translateX(30px);}
+</style>
+</head>
+<body>
+<label class="toggle">
+  <input type="checkbox" id="switch">
+  <span class="slider">OFF</span>
+</label>
+<script>
+const chk = document.getElementById('switch');
+const lbl = chk.nextElementSibling;
+chk.addEventListener('change', ()=> lbl.textContent = chk.checked ? 'ON' : 'OFF');
+</script>
+</body>
+</html>

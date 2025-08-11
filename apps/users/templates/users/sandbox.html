@@ -1,0 +1,53 @@
+{% load static %}
+{{ form_data|json_script:"form-data" }}
+{{ errors|json_script:"errors-data" }}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {% csrf_token %}
+  <meta charset="UTF-8">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="{% static 'deps/make/make.css' %}">
+  <link rel="stylesheet" href="{% static 'deps/css/bright.css' %}">
+
+  <title>Сервис заявок</title>
+</head>
+
+<body>
+  <div class='container p-1p content w-40p' id="form-template">
+  </div>
+</body>
+</html>
+
+<script type="module">
+  await import("{% static 'deps/make/make.js' %}");
+  const maindiv = document.getElementById('form-template')
+  const innerMakeTemplate = make.Div(
+    make.with.css('error'),
+    make.H2(
+      make.with.text('test text 2'),
+      make.it.beautySelect,
+      make.on.click(
+        () => make.Notice(500, 1500, 500,
+          make.Div(
+            make.with.css('content'),
+            make.Paragraph(
+              make.with.text('test notice')
+            )
+          )
+        )
+      )
+    ),
+    make.H2(
+      make.with.text('test text 3'),
+      make.on.hover(() => console.log('HOVER')),
+      make.on.dehover(() => console.log('DEHOVER')),
+    )
+  )
+  maindiv.appendChild(innerMakeTemplate.build())
+  
+
+</script>

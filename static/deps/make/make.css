@@ -2,6 +2,9 @@
 :root {
     --red: hsla(0, 87%, 75%, 1);
     --red-hover: hsla(0, 87%, 72%, 1);
+
+    --d-red: hsla(0, 87%, 60%, 1);
+    --d-red-hover: hsla(0, 87%, 55%, 1);
     
     --l-blue: hsla(200, 60%, 75%, 1);
     --d-blue: hsla(200, 60%, 60%, 1);
@@ -9,10 +12,18 @@
     
     --yellow: hsla(50, 82%, 63%, 1);
     --yellow-hover: hsla(50, 82%, 60%, 1);
+
+    --green: hsla(120, 60%, 75%, 1);
+    --green-hover: hsla(120, 60%, 72%, 1);
+    --d-green: hsla(120, 60%, 60%, 1);
+    --d-green-hover: hsla(120, 65%, 55%, 1);
     
+    --v-gray: #333333;
     --d-gray: #666666;
     --m-gray: #a0a0a0;
     --l-gray: #ececec;
+
+    --error: #b57585;
 
     --transition-fast: 0.1s;
     --transition-avg: 0.2s;
@@ -74,15 +85,19 @@ p, form {
     font-size: .875rem;
 }
 
+.make-button {
+    border-radius: 12px;
+}
+
 .make-block-separator {
     margin-top: 8px;
 }
 
 /* tabs */
 .make-tabs {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    width: 100%;
 }
 .make-tabs-menu {
     display: flex;
@@ -90,40 +105,57 @@ p, form {
     margin-bottom: 10px;
 }
 .make-tab-button {
-    padding: 10px 15px;
-    border: none;
-    background-color: #dadada;
     color: #444;
+    font-weight: 700;
+    padding: 10px 15px;
+    border: 3px solid transparent;
     cursor: pointer;
-    transition: background-color .3s ease;
-    border-radius: 4px 4px 0 0;
+    transition: filter var(--transition-very-slow) ease;
+    border-radius: 12px;
     font-size: 16px;
 }
-.make-tab-button.active,
-.make-tab-button.active:hover {
-    background-color: #ccc;
-    color: #222;
-    font-weight: 700;
-}
+
 .make-tab-button:hover {
-    background-color: #e0e0e0;
+    filter: brightness(0.95);
+    transition: filter var(--transition-avg) ease;
+}
+
+.make-tab-button.active {
+    border-color: #000;
 }
 .make-tabs-content {
-    border: 1px solid #ddd;
     border-radius: 0 0 4px 4px;
     padding: 15px;
     background: white;
 }
 
+.make-tab-content {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+  height: auto;
+  overflow: hidden;
+  transition: opacity 0.5s ease, transform 0.5s ease, height 0.5s ease;
+}
+
+.make-tab-content[hidden] {
+  opacity: 0;
+  transform: translateY(-10px);
+  height: 0;
+}
+
 /* flexibility */
 .make-flex{
+    flex: 1;
     display: flex;
 }
 .make-flex-row{
+    flex: 1;
     display: flex;
     flex-direction: row;
 }
 .make-flex-column{
+    flex: 1;
     display: flex;
     flex-direction: column;
 }
@@ -168,14 +200,31 @@ p, form {
 
 /* colors */
 .make-color-error {
-    color: #b57585;
+    color: var(--error);
+}
+.make-color-red {
+    background-color: var(--red);
+}
+.make-color-d-red {
+    background-color: var(--d-red);
+}
+.make-color-blue {
+    background-color: var(--d-blue);
+}
+.make-color-l-blue {
+    background-color: var(--l-blue);
+}
+.make-color-yellow {
+    background-color: var(--yellow);
+}
+.make-color-green {
+    background-color: var(--green);
 }
 
 /* ordering */
 .make-text-align-left {
     text-align: left;
 }
-
 
 /* scrollbox */
 .scrollbox {
@@ -195,3 +244,46 @@ p, form {
     border: 2px solid transparent;}
 .scrollbox::-webkit-scrollbar-track {
     background: transparent;}
+
+
+/* toggle button */
+.make-toggle-button-container {
+    display: inline-block;
+}
+
+.make-toggle-button-container .make-button {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-right: 12px;
+    padding-left: 12px;
+    border-radius: 12px;
+    border: 2px solid var(--l-gray);
+    background-color: white;
+    color: var(--d-gray);
+    transition: all var(--transition-slow) ease;
+}
+
+.make-toggle-button-container .make-button:hover {
+    background-color: var(--l-gray);
+    border-color: var(--m-gray);
+    transition: all var(--transition-avg) ease;
+}
+
+.make-toggle-button-container .make-button.make-toggle-active {
+    background-color: var(--d-blue);
+    border-color: var(--d-blue);
+    color: white;
+    filter: brightness(1);
+}
+
+.make-toggle-button-container .make-button.make-toggle-active:hover {
+    background-color: var(--d-blue-hover);
+    border-color: var(--d-blue-hover);
+    filter: brightness(0.95);
+    transition: all var(--transition-avg) ease;
+}
+
+/* memes */
+.make-goose p {
+    margin-top: -5px;
+}

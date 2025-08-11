@@ -6,14 +6,14 @@
 <html lang="en">
 <head>
   {% csrf_token %}
-  <meta name="csrf-token" content="{{ csrf_token }}">
   <meta charset="UTF-8">
+  <meta name="csrf-token" content="{{ csrf_token }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <link rel="stylesheet" href="{% static 'deps/make/make.css' %}">
-  <script src="{% static 'deps/make/make.js' %}"></script>
-  <title>Сервис заявок</title>
   <link rel="stylesheet" href="{% static 'deps/css/bright.css' %}">
 
+  <title>Сервис заявок</title>
 </head>
 
 <body>
@@ -22,11 +22,14 @@
 </body>
 </html>
 
-<script>
+<script type="module">
+  await import("{% static 'deps/make/make.js' %}");
+
   const csrftoken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
   const data = JSON.parse(document.getElementById("form-data").textContent);
   const errors = JSON.parse(document.getElementById("errors-data").textContent);
-  const title = make.H1(make.with.text(data.title))
+  
+  const title = make.H1(make.with.text(data.title));
   const fields = make.Form(
     make.it.flexColumn,
     make.it.gap10px,
@@ -35,102 +38,99 @@
       action: data.action,
     }),
     make.with.csrf(csrftoken),
-    make.with.childs(
-      ...data.fields.map(el =>
-        make.Div(
-          make.it.formGroup,
-          ...(el.type !== 'enum' ? [make.it.beautySelect] : []),
-          make.with.childs(
-            make.Label(
-              make.with.text(el.label),
-              make.with.attr({ name: el.id })
-            ),
-            el.type !== 'enum' ?
-            make.Input(
-              make.with.attr({
-                id: el.id,
-                name: el.id,
-                type: el.type,
-                placeholder: el.placeholder
-              }),
-              make.with.attrs(...el.attrs),
-        ) : make.Select(
-              make.with.attr({ name: el.id, id: el.id }),
-              make.with.attrs(...el.attrs),
-              make.with.childs(
-                make.Option( make.with.text(el.placeholder), make.with.attrs('value', 'disabled')),
-                ...el.enum.map(elEnum =>
-                  make.Option(
-                    make.with.text(elEnum.text),
-                    make.with.attr({ value: elEnum.value})
-      ))))))),
-      make.Button(
-        make.it.onConfirmationMargin,
-        make.it.primary,
-        make.with.text(data.btn_confirm),
-        make.with.attr({type: 'submit'})
-      )
-    )
-  );
-  const bottomStuff = make.Div(
-    make.with.childs(
-      make.Separator(),
-      make.Link(
-        make.it.simpleLink,
-        make.with.text(data.sub_btn_link_text),
-        make.with.attr({ href: data.sub_btn_link }),
-      ),
-      make.Separator(),
+    ...data.fields.map(el =>
       make.Div(
-        make.it.flexColumn,
-        make.it.gap6px,
-        make.with.childs(
-          ...data._errors.map(err =>
-            make.Paragraph(
-              make.it.beautySelect,
-              make.it.leftAlign,
-              make.it.textItalic,
-              make.color.error,
-              make.with.text(err.text),
-              make.with.attr({ description: err.desc}),
-              make.on.click(async e => {
-                const el = e.target
-                const desc = el.getAttribute('description')
-                if (!desc) return
-
-                const isToggled = el.dataset.toggled === 'true'
-                const targetText = isToggled ? el.dataset.orig : desc
-                const isInAction = el.dataset.isInAction === 'true'
-
-                if (!isInAction) {
-                  el.dataset.isInAction = 'true'
-                  if (!isToggled) {
-                    el.dataset.orig = el.textContent
-                    el.dataset.toggled = 'true'
-                  } else {
-                    el.dataset.toggled = 'false'
-                  }
-                  while (el.textContent) {
-                    el.textContent = el.textContent.slice(0, -1)
-                    await new Promise(r => setTimeout(r, 5))
-                  }
-                  for (let ch of targetText) {
-                    el.textContent += ch
-                    await new Promise(r => setTimeout(r, 15))
-                  }
-                  el.dataset.isInAction = 'false'
-                }
-              })
+        make.it.formGroup,
+        ...(el.type !== 'enum' ? [make.it.beautySelect] : []),
+        make.Label(
+          make.with.text(el.label),
+          make.with.attr({ for: el.id })
+        ),
+        el.type !== 'enum' ?
+        make.Input(
+          make.with.attr({
+            id: el.id,
+            name: el.id,
+            type: el.type,
+            placeholder: el.placeholder
+          }),
+          make.with.attrs(...el.attrs),
+        ) : make.Select(
+          make.with.attr({ name: el.id, id: el.id }),
+          make.with.attrs(...el.attrs),
+          make.Option(make.with.text(el.placeholder), make.with.attrs('value', 'disabled')),
+          ...el.enum.map(elEnum =>
+            make.Option(
+              make.with.text(elEnum.text),
+              make.with.attr({ value: elEnum.value })
             )
           )
+        )
+      )
+    ),
+    make.Button(
+      make.it.onConfirmationMargin,
+      make.it.primary,
+      make.with.text(data.btn_confirm),
+      make.with.attr({type: 'submit'})
+    )
+  );
+
+  const bottomStuff = make.Div(
+    make.Separator(),
+    make.Link(
+      make.it.simpleLink,
+      make.with.text(data.sub_btn_link_text),
+      make.with.attr({ href: data.sub_btn_link }),
+    ),
+    make.Separator(),
+    make.Div(
+      make.it.flexColumn,
+      make.it.gap6px,
+      ...data._errors.map(err =>
+        make.Paragraph(
+          make.it.beautySelect,
+          make.it.leftAlign,
+          make.it.textItalic,
+          make.color.error,
+          make.with.text(err.text),
+          make.with.attr({ description: err.desc }),
+          make.on.click(async e => {
+            const el = e.target;
+            const desc = el.getAttribute('description');
+            if (!desc) return;
+
+            const isToggled = el.dataset.toggled === 'true';
+            const targetText = isToggled ? el.dataset.orig : desc;
+            const isInAction = el.dataset.isInAction === 'true';
+
+            if (!isInAction) {
+              el.dataset.isInAction = 'true';
+              if (!isToggled) {
+                el.dataset.orig = el.textContent;
+                el.dataset.toggled = 'true';
+              } else {
+                el.dataset.toggled = 'false';
+              }
+              while (el.textContent) {
+                el.textContent = el.textContent.slice(0, -1);
+                await new Promise(r => setTimeout(r, 5));
+              }
+              for (let ch of targetText) {
+                el.textContent += ch;
+                await new Promise(r => setTimeout(r, 15));
+              }
+              el.dataset.isInAction = 'false';
+            }
+          })
         )
       )
     )
   );
 
-  document.getElementById("form-template").appendChild(title.element)
-  document.getElementById("form-template").appendChild(fields.element)
-  document.getElementById("form-template").appendChild(bottomStuff.element)
-
-
+  // Строим компоненты и добавляем в DOM
+  const container = document.getElementById("form-template");
+  container.appendChild(title.build());
+  container.appendChild(fields.build());
+  container.appendChild(bottomStuff.build());
 </script>

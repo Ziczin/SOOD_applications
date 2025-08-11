@@ -67,3 +67,5 @@ def change_role(request):
 
 
 
+def sandbox(request):
+    return render(request, 'users/sandbox.html')

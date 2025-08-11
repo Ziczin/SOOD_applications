@@ -1,0 +1,735 @@
+content\_.js
+import decorate from './decorate/_.js';
+import prefab from './prefab/_.js';
+
+export default {
+    decorate,
+    prefab
+}
+content\decorate\_.js
+
+import with_ from './with.js'
+import it_ from './it.js'
+import color from './color.js'
+import inner from './inner.js'
+import on from './on.js'
+import size from './size.js'
+
+export default {
+    with: with_,
+    it: it_,
+    color: color,
+    inner: inner,
+    on: on,
+    size: size,
+}
+content\decorate\color.js
+export default (withCss) =>
+{
+    return {
+        error: withCss('make-color-error'),
+        red: withCss('make-color-red'),
+        dred: withCss('make-color-d-red'),
+        blue: withCss('make-color-blue'),
+        lblue: withCss('make-color-l-blue'),
+        yellow: withCss('make-color-yellow'),
+        green: withCss('make-color-green'),
+    }
+}
+content\decorate\inner.js
+import makeWith from "./with.js";
+
+export default (withCss) =>
+{
+    return {
+        separator: withCss('make-block-separator'),
+        scrollbox: withCss('make-scrollbox')
+    }
+}
+content\decorate\it.js
+export default (withCss) =>
+{
+    return {
+        goose: withCss('make-goose'),
+        textItalic: withCss('make-text-italic'),
+        leftAlign: withCss('make-text-align-left'),
+        simpleLink: withCss('make-simple-link'),
+
+        flex: withCss('make-flex'),
+        flexRow: withCss('make-flex-row'),
+        flexColumn: withCss('make-flex-column'),
+        gapped: withCss('gap-6px'),
+        gap6px: withCss('make-gap-6px'),
+        gap10px: withCss('make-gap-10px'),
+
+        formGroup: withCss('make-form-group'),
+        beautySelect: withCss('make-beauty-select'),
+
+        card: withCss('card'),
+        body: withCss('card-body'),
+
+        warning: withCss('btn', 'btn-warning', 'btn-sm'),
+        danger: withCss('btn', 'btn-danger', 'btn-sm'),
+        link: withCss('btn', 'btn-link'),
+        primary: withCss('btn', 'btn-primary'),
+        onConfirmationMargin: withCss('make-confirmation-margin'),
+        
+        shadeAtBorder: withCss('make-shade-at-border'),
+    }
+}
+content\decorate\on.js
+export default (Event) => 
+{
+    return {
+        hover: Event('mouseenter', { passive: true }),
+        dehover: Event('mouseleave', { passive: true }),
+        click: Event('click', { passive: true }),
+        focus: Event('focus', { passive: true }),
+        defocus: Event('blur', { passive: true }),
+    }
+}
+content\decorate\size.js
+
+export default (withCss) =>
+{
+    return {
+        small: withCss('make-size-small'),
+        medium: withCss('make-size-medium'),
+        large: withCss('make-size-large'),
+    }
+}
+content\decorate\with.js
+export default (createDecorator) =>
+{
+    return {
+        css: createDecorator(
+            (component, ...classes) => {
+                for (const cls of classes) {
+                    console.log(component)
+                    if (cls) component.element.classList.add(cls);
+                }
+            }, true
+        ),
+        
+        text: createDecorator(
+            (component, text) => {
+                component.element.textContent = text;
+            }, true
+        ),
+        
+        attr: createDecorator(
+            (component, attributes) => {
+                for (const [key, value] of Object.entries(attributes)) {
+                    component.element.setAttribute(key, value);
+                }
+            }, true
+        ),
+        
+        value: createDecorator(
+            (component, value) => {
+                component.element.value = value;
+            }, true
+        ),
+        
+        attrs: createDecorator(
+            (component, ...attributes) => {
+                for (const attr of attributes) {
+                    component.element.setAttribute(attr, '');
+                }
+            }, true
+        ),
+        
+        csrf: createDecorator(
+            (component, token) => {
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrfmiddlewaretoken';
+                csrfInput.value = token;
+                component.element.appendChild(csrfInput);
+            }, true
+        )
+    }
+}
+content\prefab\_.js
+import basic from './basic.js';
+import custom from './custom.js';
+import Notice from './notice.js';
+
+
+export default {
+    basic,
+    custom,
+    Notice,
+}
+content\prefab\basic.js
+export default function(createComponent) {
+    return {
+        Div: (...d) => createComponent('div', ...d),
+        Form: (...d) => createComponent('form', ...d),
+        H1: (...d) => createComponent('h1', ...d),
+        H2: (...d) => createComponent('h2', ...d),
+        H3: (...d) => createComponent('h3', ...d),
+        Select: (...d) => createComponent('select', ...d),
+        Option: (...d) => createComponent('option', ...d),
+        Input: (...d) => createComponent('input', ...d),
+        Label: (...d) => createComponent('label', ...d),
+        Paragraph: (...d) => createComponent('p', ...d),
+        Button: (...d) => createComponent('button', ...d),
+        Link: (...d) => createComponent('a', ...d),
+    }
+}
+
+content\prefab\custom.js
+export default function(createComponent, makeInner) {
+    return {
+        Separator: (...d) => createComponent('div', makeInner.separator, ...d),
+        Scrollbox: (...d) => createComponent('div', makeInner.scrollbox, ...d),
+    }
+}
+   
+        
+        
+
+content\prefab\notice.js
+export default function createNotice(core, Component) {
+    class NoticeHandler {
+        constructor() {
+            this.noticeQueue = [];
+            this.isNoticeActive = false;
+        }
+
+        add(notice, timeIn, timeStay, timeOut) {
+            this.noticeQueue.push({ notice, timeIn, timeStay, timeOut });
+            this.showNext();
+        }
+
+        async showNext() {
+            if (this.isNoticeActive || this.noticeQueue.length === 0) return;
+            this.isNoticeActive = true;
+
+            const { notice, timeIn, timeStay, timeOut } = this.noticeQueue.shift();
+            const el = notice.build();
+            document.body.appendChild(el);
+
+            await core.delay(50);
+            el.style.transform = 'translateX(0)';
+
+            await core.delay(timeIn + timeStay);
+
+            el.style.transition = `transform ${timeOut}ms ease-in-out`;
+            el.style.transform = 'translateX(100%)';
+
+            await core.delay(timeOut);
+
+            el.remove();
+            this.isNoticeActive = false;
+            this.showNext();
+        }
+    }
+
+    class Notice extends Component {
+        constructor(timeIn, timeStay, timeOut) {
+            super('div');
+            this.timeIn = timeIn;
+            this.timeStay = timeStay;
+            this.timeOut = timeOut;
+        }
+        
+        build() {
+            super.build();
+            
+            this.element.style.position = 'fixed';
+            this.element.style.bottom = '1%';
+            this.element.style.right = '0';
+            this.element.style.transform = 'translateX(100%)';
+            this.element.style.transition = `transform ${this.timeIn}ms ease-in-out`;
+            this.element.style.zIndex = '1000';
+            this.element.style.minWidth = '25%';
+            this.element.style.maxWidth = '100%';
+            
+            return this.element;
+        }
+    }
+
+    const noticeHandler = new NoticeHandler();
+
+    return function createNotice (timeIn, timeStay, timeOut, ...decorators) {
+        const notice = new Notice(timeIn, timeStay, timeOut);
+        
+        for (const decorator of decorators) {
+            notice.addDecorator(decorator);
+        };
+        
+        notice.build();
+        noticeHandler.add(notice, timeIn, timeStay, timeOut);
+        
+        return notice;
+    };
+}
+core\_.js
+import delay from "./delay.js";
+import mix from "./mix.js";
+import query from "./query.js";
+
+export default {
+    delay,
+    mix,
+    query
+};
+core\delay.js
+export default async function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+core\mix.js
+export default function mix(Base, ...mixins) {
+    class Mixed extends Base {}
+
+    for (const mixin of mixins) {
+        Object.getOwnPropertyNames(mixin.prototype).forEach((name) => {
+            if (name === "constructor") return;
+
+            if (!Mixed.prototype.hasOwnProperty(name)) {
+                Object.defineProperty(
+                    Mixed.prototype,
+                    name,
+                    Object.getOwnPropertyDescriptor(mixin.prototype, name)
+                );
+            }
+        });
+
+        Object.getOwnPropertyNames(mixin).forEach((name) => {
+            if (["prototype", "name", "length"].includes(name)) return;
+
+            if (!Mixed.hasOwnProperty(name)) {
+                Object.defineProperty(
+                    Mixed,
+                    name,
+                    Object.getOwnPropertyDescriptor(mixin, name)
+                );
+            }
+        });
+    }
+
+    return Mixed;
+}
+core\query.js
+export default async function query(route, method, data = null) {
+    method = method.toUpperCase();
+    const options = { method };
+    
+    if (method === 'GET' && data) {
+        const params = new URLSearchParams(data).toString();
+        route = `${route}?${params}`;
+    } else if (data) {
+        options.headers = { 'Content-Type': 'application/json' };
+        options.body = JSON.stringify(data);
+    }
+    
+    const response = await fetch(route, options);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return response.json();
+}
+extension\_.js
+import wrapper from './wrapper/_.js';
+import mixin from './mixin/_.js';
+
+export default {
+    wrapper,
+    mixin
+};
+extension\mixin\Applicable.js
+export default class Applicable {
+    constructor() {}
+    apply() {
+        throw new Error('Not implemented');
+    }
+}
+extension\mixin\_.js
+import Applicable from './Applicable.js';
+
+export default {
+    Applicable
+};
+extension\wrapper\Component.js
+import Applicable from '../mixin/Applicable.js';
+
+export default class Component extends Applicable {
+    constructor(elementType, autoRebuild = true) {
+        super(); // Важно оставить super()
+        this.elementType = elementType;
+        this.element = null;
+        this.decorators = [];
+        this.children = [];
+        this.parent = null;
+        this.autoRebuild = autoRebuild;
+    }
+
+    addDecorator(decorator) {
+        this.decorators.push(decorator);
+        return this;
+    }
+
+    addChild(...items) {
+        for (const item of items) {
+            if (item instanceof Component) {
+                item.parent = this;
+                this.children.push(item);
+            }
+        }
+        if (this.autoRebuild) {
+            this.build(true);
+        }
+        return this;
+    }
+
+    build(force = false) {
+        if (this.element) {
+            if (force) this.element.innerHTML = '';
+            else return this.element;
+        }
+        else this.element = document.createElement(this.elementType);
+        
+        for (const decorator of this.decorators) {
+            decorator.apply(this);
+        }
+
+        for (const child of this.children) {
+            this.element.appendChild(child.build());
+        }
+
+        return this.element;
+    }
+
+    apply(parent) {
+        if (parent instanceof Component && !this.parent) {
+            parent.addChild(this);
+        }
+    }
+}
+
+
+extension\wrapper\Decorator.js
+import Applicable from '../mixin/Applicable.js';
+
+export default class Decorator extends Applicable {
+    constructor(func, needReApply = true) {
+        super(); // Важно оставить super()
+        this.func = func;
+        this.needReApply = needReApply;
+        this.applied = false;
+    }
+    
+    apply(component) {
+        if (this.needReApply || !this.applied) {
+            this.func(component);
+            this.applied = true;
+        }
+    }
+}
+extension\wrapper\_.js
+import Component from './Component.js';
+import Decorator from './Decorator.js';
+
+export default {
+    Component,
+    Decorator
+};
+factory\Component.js
+export default (Component) => 
+    
+function (elementType, ...decorators) {
+    const component = new Component(elementType);
+    for (const decorator of decorators) {
+        component.addDecorator(decorator);
+    }
+    return component;
+};
+factory\Decorator.js
+export default (Decorator) =>
+    
+function (fn, needReApply = false) {
+    return (
+        (...args) =>
+        new Decorator(
+            element => fn(element, ...args),
+            needReApply
+        )
+    );
+} 
+
+factory\Event.js
+export default (Decorator) =>
+    
+function (eventType, options = {}) {
+    return (...handlers) => 
+    new Decorator(
+        component => {
+            for (const handler of handlers) {
+                component.element.addEventListener(eventType, handler, options);
+            }
+        },
+        true
+    );
+} 
+factory\_.js
+// factory/_.js
+import createComponent from './Component.js';
+import createDecorator from './Decorator.js';
+import createEvent from './Event.js';
+
+export default {
+    Component: createComponent,
+    Decorator: createDecorator,
+    Event: createEvent,
+};
+
+make.js
+import extension from './extension/_.js';
+import factory from './factory/_.js';
+import content from './content/_.js'
+import core from './core/_.js'
+
+const createComponent = factory.Component(extension.wrapper.Component);
+const createDecorator = factory.Decorator(extension.wrapper.Decorator);
+const createEvent = factory.Event(extension.wrapper.Decorator);
+
+const makeWith = content.decorate.with(createDecorator);
+
+window.make = (function() {
+    console.log('Powered by make.js')
+
+    return {
+        with: makeWith,
+        on: content.decorate.on(createEvent),
+        it: content.decorate.it(makeWith.css),
+        size: content.decorate.size(makeWith.css),
+        color: content.decorate.color(makeWith.css),
+        Notice: content.prefab.Notice(core, extension.wrapper.Component),
+        ...content.prefab.basic(createComponent),
+        ...content.prefab.custom(createComponent, content.decorate.inner(makeWith.css)),
+        // Tabs: Tabs,
+        // query: query
+    };
+})();
+sandbox\make.js
+import {query} from '../core/query.js';
+
+window.make = (function() {
+    return {
+        with: makeWith,
+        it: makeIt,
+        on: makeOn,
+        color: makeColor,
+        inner: makeInner,
+        prefab: makePrefab,
+        element: createComponent,
+        Div: (...d) => createComponent('div', ...d),
+        Form: (...d) => createComponent('form', ...d),
+        H1: (...d) => createComponent('h1', ...d),
+        H2: (...d) => createComponent('h2', ...d),
+        H3: (...d) => createComponent('h3', ...d),
+        Select: (...d) => createComponent('select', ...d),
+        Option: (...d) => createComponent('option', ...d),
+        Input: (...d) => createComponent('input', ...d),
+        Label: (...d) => createComponent('label', ...d),
+        Paragraph: (...d) => createComponent('p', ...d),
+        Button: (...d) => createComponent('button', ...d),
+        Link: (...d) => createComponent('a', ...d),
+        Separator: (...d) => createComponent('div', makeInner.separator, ...d),
+        Scrollbox: (...d) => createComponent('div', makeInner.scrollbox, ...d),
+        Tabs: Tabs,
+        Notice: createNotice,
+        query: query
+    };
+})();
+
+sandbox\prefabs.js
+const makePrefab = {
+    inputGroup: ({ text, type = 'text', placeholder = '', value = '' }) => createComponent(
+        'div', 
+        makeIt.formGroup, 
+        makeIt.beautySelect, 
+        createComponent(
+            'label', 
+            makeWith.text(text), 
+            createComponent(
+                'input',
+                makeWith.attr({
+                    placeholder,
+                    value,
+                    type
+                })
+            )
+        )
+    ),
+    
+    toggleButton: (textOn, textOff, ...decorators) => {
+        let isToggled = false;
+        
+        const hiddenInput = createComponent(
+            'input',
+            makeWith.attr({
+                type: 'hidden',
+                value: 'false'
+            })
+        );
+        
+        const toggleHandler = () => {
+            isToggled = !isToggled;
+            const buttonElement = button.element;
+               
+            buttonElement.textContent = isToggled ? textOn : textOff;
+            hiddenInput.element.value = String(isToggled);
+            buttonElement.classList.toggle('make-toggle-active', isToggled);
+            
+            if (isToggled) {
+                triggerActivate(buttonElement);
+            } else {
+                triggerDisactivate(buttonElement);
+            }
+        };
+        
+        const button = createComponent(
+            'button',
+            makeWith.text(textOff),
+            makeWith.attr({ type: 'button' }),
+            makeWith.css('make-button'),
+            makeOn.click(toggleHandler),
+            ...decorators
+        );
+        
+        const container = createComponent(
+            'div',
+            makeWith.css('make-toggle-button-container'),
+            button,
+            hiddenInput
+        );
+        
+        Object.assign(container, {
+            toggle: () => button.element.click(),
+            setState: (state) => {
+                if (state !== isToggled) toggleHandler();
+            },
+            getState: () => isToggled,
+            setName: (name) => {
+                hiddenInput.element.name = name;
+            }
+        });
+        
+        return container;
+    }
+};
+
+const triggerActivate = (element) => {
+    const handlers = element._activateHandlers;
+    if (handlers) {
+        for (const handler of handlers) handler();
+    }
+};
+
+const triggerDisactivate = (element) => {
+    const handlers = element._disactivateHandlers;
+    if (handlers) {
+        for (const handler of handlers) handler();
+    }
+};
+sandbox\tabs.js
+function Tabs(...args) {
+    const [tabs, containerDecorators] = args.reduce((acc, arg) => {
+        arg?.type === 'tab' 
+            ? acc[0].push(arg) 
+            : typeof arg === 'function' && acc[1].push(arg);
+        return acc;
+    }, [[], []]);
+
+    const tabsContainer = createComponent(
+        'div',
+        ...containerDecorators,
+        makeWith.css('make-tabs')
+    );
+    
+    const menuContainer = createComponent('div', makeWith.css('make-tabs-menu'));
+    const contentContainer = createComponent('div', makeWith.css('make-tabs-content'));
+    tabsContainer.append(menuContainer, contentContainer);
+
+    let currentActiveIndex = 0;
+    const tabElements = [];
+
+    tabs.forEach((tab, index) => {
+        const button = createComponent(
+            'button',
+            makeWith.text(tab.title),
+            makeWith.attr({
+                'type': 'button',
+                'aria-controls': `tab-content-${index}`,
+                'aria-selected': 'false'
+            }),
+            makeWith.css('make-tab-button'),
+            ...(tab.decorators || []),
+            makeOn.click(() => activateTab(index))
+        );
+
+        const content = createComponent(
+            'div',
+            makeWith.css('make-tab-content'),
+            makeWith.attr({
+                'id': `tab-content-${index}`,
+                'role': 'tabpanel',
+                'aria-labelledby': `tab-button-${index}`
+            })
+        );
+
+        if (tab.content) {
+            content.append(...tab.content.flat().filter(Boolean));
+        }
+
+        button.addDecorator(new Decorator(element => {
+            if (index === currentActiveIndex) {
+                element.classList.add('active');
+                element.setAttribute('aria-selected', 'true');
+            }
+        }));
+
+        content.addDecorator(new Decorator(element => {
+            element.hidden = index !== currentActiveIndex;
+        }));
+
+        menuContainer.append(button);
+        contentContainer.append(content);
+        tabElements.push({ button, content });
+    });
+
+    const activateTab = (index) => {
+        if (currentActiveIndex === index) return;
+
+        const prevButton = tabElements[currentActiveIndex].button;
+        const prevContent = tabElements[currentActiveIndex].content;
+        
+        if (prevButton.element) {
+            prevButton.element.classList.remove('active');
+            prevButton.element.setAttribute('aria-selected', 'false');
+        }
+        if (prevContent.element) prevContent.element.hidden = true;
+
+        currentActiveIndex = index;
+        const newButton = tabElements[index].button;
+        const newContent = tabElements[index].content;
+        
+        if (newButton.element) {
+            newButton.element.classList.add('active');
+            newButton.element.setAttribute('aria-selected', 'true');
+        }
+        if (newContent.element) newContent.element.hidden = false;
+
+        if (tabsContainer.element) {
+            tabsContainer.element.dispatchEvent(
+                new CustomEvent('tabchange', {
+                    detail: { index },
+                    bubbles: true
+                })
+            );
+        }
+    };
+
+    return tabsContainer;
+}
