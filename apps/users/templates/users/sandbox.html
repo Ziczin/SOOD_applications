@@ -25,28 +25,24 @@
 <script type="module">
   await import("{% static 'deps/make/make.js' %}");
   const maindiv = document.getElementById('form-template')
-  const innerMakeTemplate = make.Div(
-    make.with.css('error'),
-    make.H2(
-      make.with.text('test text 2'),
-      make.it.beautySelect,
-      make.on.click(
-        () => make.Notice(500, 1500, 500,
-          make.Div(
-            make.with.css('content'),
-            make.Paragraph(
-              make.with.text('test notice')
-            )
-          )
-        )
+  const innerMakeTemplate = make.Tabs(
+    make.Tab('tab 1',
+      make.TabContent(
+        make.Paragraph(make.with.text('Контент 1'))
       )
     ),
-    make.H2(
-      make.with.text('test text 3'),
-      make.on.hover(() => console.log('HOVER')),
-      make.on.dehover(() => console.log('DEHOVER')),
+    make.Tab('tab 2',
+      make.TabContent(
+        make.Paragraph(make.with.text('Контент 2'))
+      )
+    ),
+    make.Tab('tab 3',
+      make.TabContent(
+        make.Paragraph(make.with.text('Контент 3'))
+      )
     )
   )
+  
   maindiv.appendChild(innerMakeTemplate.build())
   
 

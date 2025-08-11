@@ -105,7 +105,6 @@ export default (createDecorator) =>
         css: createDecorator(
             (component, ...classes) => {
                 for (const cls of classes) {
-                    console.log(component)
                     if (cls) component.element.classList.add(cls);
                 }
             }, true
@@ -154,12 +153,14 @@ content\prefab\_.js
 import basic from './basic.js';
 import custom from './custom.js';
 import Notice from './notice.js';
+import tabs from './tabs/_.js';
 
 
 export default {
     basic,
     custom,
     Notice,
+    tabs,
 }
 content\prefab\basic.js
 export default function(createComponent) {
@@ -265,6 +266,123 @@ export default function createNotice(core, Component) {
         
         return notice;
     };
+}
+content\prefab\tabs\Tab.js
+export default function createTab(Component, makeWith) {
+    return class Tab extends Component {
+        constructor(title, tabContent, ...decorators) {
+            super('button');
+            if (!tabContent || !(tabContent.constructor.name === 'TabContent')) {
+                throw new Error('Tab requires exactly one TabContent element');
+            }
+            
+            this.title = title;
+            this.tabContent = tabContent;
+            this.addDecorator(makeWith.text(title));
+            this.addDecorator(makeWith.attr({ type: 'button' }));
+            decorators.forEach(d => this.addDecorator(d));
+        }
+    };
+}
+content\prefab\tabs\TabContent.js
+export default function createTabContent(Component) {
+    return class TabContent extends Component {
+        constructor(...decorators) {
+            super('div');
+            decorators.forEach(d => this.addDecorator(d));
+        }
+    };
+}
+content\prefab\tabs\Tabs.js
+export default function createTabs(Component, makeWith, makeOn) {
+    return class Tabs extends Component {
+        constructor(...tabs) {
+            super('div');
+            this.addDecorator(makeWith.css('make-tabs'));
+            
+            if (!tabs.every(tab => tab.constructor.name === 'Tab')) {
+                throw new Error('Tabs can only contain Tab elements');
+            }
+            
+            this.tabs = tabs;
+            this.menuContainer = new Component('div', makeWith.css('make-tabs-menu'));
+            this.contentContainer = new Component('div', makeWith.css('make-tabs-content'));
+            
+            this.addChild(this.menuContainer, this.contentContainer);
+            this.currentActiveIndex = 0;
+        }
+
+        build(force = false) {
+            super.build(force);
+            
+            // Очищаем контейнеры
+            this.menuContainer.element.innerHTML = '';
+            this.contentContainer.element.innerHTML = '';
+            
+            // Строим вкладки
+            this.tabs.forEach((tab, index) => {
+                // Кнопка вкладки
+                const button = tab.build();
+                button.setAttribute('aria-controls', `tab-content-${index}`);
+                button.setAttribute('id', `tab-button-${index}`);
+                button.addEventListener('click', () => this.activateTab(index));
+                
+                // Контент вкладки
+                const content = tab.tabContent.build();
+                content.setAttribute('id', `tab-content-${index}`);
+                content.setAttribute('role', 'tabpanel');
+                content.setAttribute('aria-labelledby', `tab-button-${index}`);
+                content.hidden = index !== this.currentActiveIndex;
+                
+                if (index === this.currentActiveIndex) {
+                    button.classList.add('active');
+                    button.setAttribute('aria-selected', 'true');
+                } else {
+                    button.setAttribute('aria-selected', 'false');
+                }
+                
+                this.menuContainer.element.appendChild(button);
+                this.contentContainer.element.appendChild(content);
+            });
+            
+            return this.element;
+        }
+
+        activateTab(index) {
+            if (this.currentActiveIndex === index) return;
+            
+            // Обновляем предыдущую вкладку
+            const prevButton = this.menuContainer.element.children[this.currentActiveIndex];
+            const prevContent = this.contentContainer.element.children[this.currentActiveIndex];
+            prevButton.classList.remove('active');
+            prevButton.setAttribute('aria-selected', 'false');
+            prevContent.hidden = true;
+            
+            // Активируем новую вкладку
+            this.currentActiveIndex = index;
+            const newButton = this.menuContainer.element.children[index];
+            const newContent = this.contentContainer.element.children[index];
+            newButton.classList.add('active');
+            newButton.setAttribute('aria-selected', 'true');
+            newContent.hidden = false;
+            
+            // Генерируем событие
+            this.element.dispatchEvent(new CustomEvent('tabchange', {
+                detail: { index },
+                bubbles: true
+            }));
+        }
+    };
+}
+content\prefab\tabs\_.js
+import Tab from './Tab.js';
+import TabContent from './TabContent.js';
+import Tabs from './Tabs.js';
+
+export default {
+    Tabs,
+    Tab,
+    TabContent,
 }
 core\_.js
 import delay from "./delay.js";
@@ -494,55 +612,34 @@ const createDecorator = factory.Decorator(extension.wrapper.Decorator);
 const createEvent = factory.Event(extension.wrapper.Decorator);
 
 const makeWith = content.decorate.with(createDecorator);
+const makeOn = content.decorate.on(createEvent);
+
+const Tab = content.prefab.tabs.Tab(extension.wrapper.Component, makeWith);
+const TabContent = content.prefab.tabs.TabContent(extension.wrapper.Component);
+const Tabs = content.prefab.tabs.Tabs(
+    extension.wrapper.Component,
+    makeWith,
+    makeOn
+);
 
 window.make = (function() {
     console.log('Powered by make.js')
 
     return {
         with: makeWith,
-        on: content.decorate.on(createEvent),
+        on: makeOn,
         it: content.decorate.it(makeWith.css),
         size: content.decorate.size(makeWith.css),
         color: content.decorate.color(makeWith.css),
         Notice: content.prefab.Notice(core, extension.wrapper.Component),
         ...content.prefab.basic(createComponent),
         ...content.prefab.custom(createComponent, content.decorate.inner(makeWith.css)),
-        // Tabs: Tabs,
+        Tabs: (...tabs) => new Tabs(...tabs),
+        Tab: (title, ...decorators) => new Tab(title, ...decorators),
+        TabContent: (...decorators) => new TabContent(...decorators),
         // query: query
     };
 })();
-sandbox\make.js
-import {query} from '../core/query.js';
-
-window.make = (function() {
-    return {
-        with: makeWith,
-        it: makeIt,
-        on: makeOn,
-        color: makeColor,
-        inner: makeInner,
-        prefab: makePrefab,
-        element: createComponent,
-        Div: (...d) => createComponent('div', ...d),
-        Form: (...d) => createComponent('form', ...d),
-        H1: (...d) => createComponent('h1', ...d),
-        H2: (...d) => createComponent('h2', ...d),
-        H3: (...d) => createComponent('h3', ...d),
-        Select: (...d) => createComponent('select', ...d),
-        Option: (...d) => createComponent('option', ...d),
-        Input: (...d) => createComponent('input', ...d),
-        Label: (...d) => createComponent('label', ...d),
-        Paragraph: (...d) => createComponent('p', ...d),
-        Button: (...d) => createComponent('button', ...d),
-        Link: (...d) => createComponent('a', ...d),
-        Separator: (...d) => createComponent('div', makeInner.separator, ...d),
-        Scrollbox: (...d) => createComponent('div', makeInner.scrollbox, ...d),
-        Tabs: Tabs,
-        Notice: createNotice,
-        query: query
-    };
-})();
-
 sandbox\prefabs.js
 const makePrefab = {
     inputGroup: ({ text, type = 'text', placeholder = '', value = '' }) => createComponent(
@@ -633,103 +730,3 @@ const triggerDisactivate = (element) => {
         for (const handler of handlers) handler();
     }
 };
-sandbox\tabs.js
-function Tabs(...args) {
-    const [tabs, containerDecorators] = args.reduce((acc, arg) => {
-        arg?.type === 'tab' 
-            ? acc[0].push(arg) 
-            : typeof arg === 'function' && acc[1].push(arg);
-        return acc;
-    }, [[], []]);
-
-    const tabsContainer = createComponent(
-        'div',
-        ...containerDecorators,
-        makeWith.css('make-tabs')
-    );
-    
-    const menuContainer = createComponent('div', makeWith.css('make-tabs-menu'));
-    const contentContainer = createComponent('div', makeWith.css('make-tabs-content'));
-    tabsContainer.append(menuContainer, contentContainer);
-
-    let currentActiveIndex = 0;
-    const tabElements = [];
-
-    tabs.forEach((tab, index) => {
-        const button = createComponent(
-            'button',
-            makeWith.text(tab.title),
-            makeWith.attr({
-                'type': 'button',
-                'aria-controls': `tab-content-${index}`,
-                'aria-selected': 'false'
-            }),
-            makeWith.css('make-tab-button'),
-            ...(tab.decorators || []),
-            makeOn.click(() => activateTab(index))
-        );
-
-        const content = createComponent(
-            'div',
-            makeWith.css('make-tab-content'),
-            makeWith.attr({
-                'id': `tab-content-${index}`,
-                'role': 'tabpanel',
-                'aria-labelledby': `tab-button-${index}`
-            })
-        );
-
-        if (tab.content) {
-            content.append(...tab.content.flat().filter(Boolean));
-        }
-
-        button.addDecorator(new Decorator(element => {
-            if (index === currentActiveIndex) {
-                element.classList.add('active');
-                element.setAttribute('aria-selected', 'true');
-            }
-        }));
-
-        content.addDecorator(new Decorator(element => {
-            element.hidden = index !== currentActiveIndex;
-        }));
-
-        menuContainer.append(button);
-        contentContainer.append(content);
-        tabElements.push({ button, content });
-    });
-
-    const activateTab = (index) => {
-        if (currentActiveIndex === index) return;
-
-        const prevButton = tabElements[currentActiveIndex].button;
-        const prevContent = tabElements[currentActiveIndex].content;
-        
-        if (prevButton.element) {
-            prevButton.element.classList.remove('active');
-            prevButton.element.setAttribute('aria-selected', 'false');
-        }
-        if (prevContent.element) prevContent.element.hidden = true;
-
-        currentActiveIndex = index;
-        const newButton = tabElements[index].button;
-        const newContent = tabElements[index].content;
-        
-        if (newButton.element) {
-            newButton.element.classList.add('active');
-            newButton.element.setAttribute('aria-selected', 'true');
-        }
-        if (newContent.element) newContent.element.hidden = false;
-
-        if (tabsContainer.element) {
-            tabsContainer.element.dispatchEvent(
-                new CustomEvent('tabchange', {
-                    detail: { index },
-                    bubbles: true
-                })
-            );
-        }
-    };
-
-    return tabsContainer;
-}

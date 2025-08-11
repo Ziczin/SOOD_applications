@@ -4,7 +4,6 @@ export default (createDecorator) =>
         css: createDecorator(
             (component, ...classes) => {
                 for (const cls of classes) {
-                    console.log(component)
                     if (cls) component.element.classList.add(cls);
                 }
             }, true
