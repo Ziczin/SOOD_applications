@@ -6,16 +6,17 @@
     <title>Панель управления</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'deps/css/bright.css' %}">
+    <link rel="stylesheet" href="{% static 'deps/make/make.css' %}">
 </head>
 <body>
     <div class="page-container">
-        <div class="side-container gap-10px"> 
+        <div class="side-container gap-10px" id="left-container"> 
             {% include 'application/'|add:variant|add:"/left.html" with data=data %}
         </div>
-        <div class="center-container flex-column content force-white"> 
+        <div class="center-container flex-column content force-white" id="center-container">
             {% include 'application/'|add:variant|add:"/center.html" with data=data %}
         </div>
-        <div class="side-container gap-10px"> 
+        <div class="side-container gap-10px" id="right-container"> 
             {% include 'application/'|add:variant|add:"/right.html" with data=data %}
         </div>
     </div>

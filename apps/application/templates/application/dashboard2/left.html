@@ -1,0 +1,52 @@
+{% load static %}
+
+<form method="POST" action="{% url 'dashboard' %}">
+    {% csrf_token %}
+    <button type="submit" class="content back flex">Вернуться в аккаунт</button>
+</form>
+
+<div id='left-data' class="content"
+  data-fullname="{{ data.user.full_name|escape }}"
+  data-login="{{ data.user.username|escape }}"
+  data-department="{{ data.user.department|escape }}"
+  data-role="{{ data.user.role|escape }}"
+></div>
+
+<script type="module">
+  await import("{% static 'deps/make/make.js' %}");
+
+  const content = document.getElementById("left-data")
+  
+  onload = content.dataset;
+
+  content.appendChild(
+    make.Div(
+      make.Separator(0),
+      make.it.flexColumn,
+      make.it.gap10px,
+      make.h1(
+        `${onload.fullname}`,
+      ),
+      make.Paragraph(`Логин: ${onload.login}`),
+      make.Paragraph(`Отдел: ${onload.department}`),
+      ...make.switch(
+        make.case(onload.role === 'ADMIN',
+          make.Paragraph(
+            "Администратор",
+            make.it.textBold,
+            make.on.click((event) => {
+              event.target.classList.toggle('admin')
+            })            
+          ),
+        ),
+        make.case(onload.role === 'MODERATOR',
+          make.Paragraph("Модератор"),
+        ),
+        make.case(true,
+          make.Paragraph("Пользователь"),
+        )
+      ),
+      make.Separator(0)
+    ).build()
+  )
+</script>

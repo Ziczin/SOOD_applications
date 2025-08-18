@@ -42,6 +42,23 @@ def demo_1(request):
             'data': {'forms': forms_list}
         }
     )
+
+@login_required
+def demo_dashboard(request):
+    forms_list = list(Form.objects.all().values())
+    user_data = CustomUser.objects.get(username=request.user)
+    users = CustomUser.objects.filter(department=user_data.department)
+    roles = UserRole.choices
+    
+    return render(
+        request, 'application/builder.html',
+        {
+            'variant': 'dashboard2',
+            'data': {'forms': forms_list, 'user': user_data, 'users': users, 'roles': roles}
+        }
+    )
+
+
 @login_required
 def demo_2(request):
     return render(request, 'application/test2.html',)

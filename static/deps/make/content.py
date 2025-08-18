@@ -11,7 +11,7 @@ def collect_js_files(start_path, file_list):
         path = os.path.join(start_path, entry)
         if os.path.isdir(path):
             collect_js_files(path, file_list)
-        elif entry.endswith('.js'):
+        elif entry.endswith('.js') or entry.endswith('.css'):
             file_list.append(path)
 
 def main():
@@ -24,6 +24,7 @@ def main():
         for i, file_path in enumerate(js_files):
             # Пустая строка между файлами (кроме первого)
             if i > 0:
+                output_file.write('\n')
                 output_file.write('\n')
             
             # Записываем относительный путь

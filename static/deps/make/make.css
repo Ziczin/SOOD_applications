@@ -34,19 +34,81 @@
 }
 
 /* fix agent */
-p, form {
+p, form, h1, h2, h3, h4, h5, h6 {
     margin: 0;
 }
 
-/* accordion */
-.card {
-    border-radius: 12px !important;
-    border: 0 !important;
+.make-notice-body {
+    padding: 8px;
+    border-radius: 12px;
+}
+/* Аккордеон */
+.make-accordion {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
-.card-body {
-    padding: 6px !important;
-    background: #ffffff44 !important;
+.make-accordion-header {
+    color: #000;
+    width: 100%;
+    padding: 12px 16px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: left;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    position: relative;
+    z-index: 10;
+}
+
+.make-accordion-header:hover {
+    background-color: #e9ecef;
+}
+
+.make-accordion-header:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+.make-accordion-content {
+    border: 1px solid #dee2e6;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    background-color: #fff;
+    overflow: hidden;
+    max-height: 0;
+    transition-property: max-height;
+    transition-timing-function: ease;
+    /* transition-duration будет устанавливаться динамически через JS */
+}
+
+/* Карточки аккордеона */
+.make-accordion-card {
+    color: black;
+}
+
+.make-accordion-card-content {
+    color: black;
+}
+
+/* Кнопки аккордеона */
+.make-accordion-toggle {
+    color: black;
+}
+
+.make-accordion-collapse {
+    color: black;
+}
+
+.make-accordion-show {
+    color: black;
+}
+
+.make-accordion-body {
+    color: black;
 }
 
 /* buttons */
@@ -84,13 +146,20 @@ p, form {
     padding: 3px 6px;
     font-size: .875rem;
 }
+.make-btn-redir {
+    text-align: left;
+    background-color: #ddd;
+    color: #222;
+    transition: background-color var(--transition-avg) ease;
+}
+
+.make-btn-redir:hover {
+    background-color: #bce;
+}
+
 
 .make-button {
     border-radius: 12px;
-}
-
-.make-block-separator {
-    margin-top: 8px;
 }
 
 /* tabs */
@@ -172,13 +241,13 @@ p, form {
     flex: 1;
     text-align: left;
 }
-.make-beauty-select {
+.make-delayed-margin-on-hover {
     filter: brightness(0.98);
     transition: margin-left var(--transition-very-very-slow) ease,
                 filter var(--transition-very-very-slow) ease;
 }
-.make-beauty-select:hover {
-    margin-left: 2px;
+.make-delayed-margin-on-hover:hover {
+    margin-left: 1%;
     filter: brightness(0.95);
     transition-duration: var(--transition-avg)
 }
@@ -197,6 +266,11 @@ p, form {
 
 .make-text-italic {
     font-style: italic;
+}
+
+.make-text-bold {
+    font-weight: bold;
+    letter-spacing: -0.025em;
 }
 
 /* colors */
@@ -228,7 +302,7 @@ p, form {
 }
 
 /* scrollbox */
-.scrollbox {
+.make-scrollbox {
     display: flex;
     flex-direction: column;
     max-height: 90vh;
@@ -236,14 +310,14 @@ p, form {
     margin-left: 10px;
     scrollbar-width: thin;
     scrollbar-color: #ccc transparent;}
-.scrollbox::-webkit-scrollbar {
+.make-scrollbox::-webkit-scrollbar {
     width: 12px;
     height: 12px;}
-.scrollbox::-webkit-scrollbar-thumb {
+.make-scrollbox::-webkit-scrollbar-thumb {
     background-color: #ccc;
     border-radius: 10px;
     border: 2px solid transparent;}
-.scrollbox::-webkit-scrollbar-track {
+.make-scrollbox::-webkit-scrollbar-track {
     background: transparent;}
 
 
@@ -288,3 +362,10 @@ p, form {
 .make-goose p {
     margin-top: -5px;
 }
+
+/* animatic */
+.make-margin-on-hover {
+    transition: margin-left 0.2s ease }
+.make-margin-on-hover:hover {
+    margin-left: 0.8%;
+    transition: margin-left 0.2s ease;}

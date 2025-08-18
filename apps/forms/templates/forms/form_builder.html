@@ -29,7 +29,7 @@
   const data = JSON.parse(document.getElementById("form-data").textContent);
   const errors = JSON.parse(document.getElementById("errors-data").textContent);
   
-  const title = make.H1(make.with.text(data.title));
+  const title = make.h1(make.with.text(data.title));
   const fields = make.Form(
     make.it.flexColumn,
     make.it.gap10px,
@@ -41,7 +41,7 @@
     ...data.fields.map(el =>
       make.Div(
         make.it.formGroup,
-        ...(el.type !== 'enum' ? [make.it.beautySelect] : []),
+        ...(el.type !== 'enum' ? [make.it.delayedMarginOnHover] : []),
         make.Label(
           make.with.text(el.label),
           make.with.attr({ for: el.id })
@@ -89,7 +89,7 @@
       make.it.gap6px,
       ...data._errors.map(err =>
         make.Paragraph(
-          make.it.beautySelect,
+          make.it.delayedMarginOnHover,
           make.it.leftAlign,
           make.it.textItalic,
           make.color.error,

@@ -9,6 +9,14 @@ export default (createDecorator) =>
             }, true
         ),
         
+        style: createDecorator(
+            (component, styles) => {
+                if (styles && typeof styles === 'object') {
+                    Object.assign(component.element.style, styles);
+                }
+            }, true
+        ),
+        
         text: createDecorator(
             (component, text) => {
                 component.element.textContent = text;

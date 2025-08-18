@@ -6,6 +6,7 @@ export default {
     decorate,
     prefab
 }
+
 content\decorate\_.js
 
 import with_ from './with.js'
@@ -14,6 +15,7 @@ import color from './color.js'
 import inner from './inner.js'
 import on from './on.js'
 import size from './size.js'
+import style from './style.js'
 
 export default {
     with: with_,
@@ -22,7 +24,9 @@ export default {
     inner: inner,
     on: on,
     size: size,
+    style: style,
 }
+
 content\decorate\color.js
 export default (withCss) =>
 {
@@ -36,6 +40,7 @@ export default (withCss) =>
         green: withCss('make-color-green'),
     }
 }
+
 content\decorate\inner.js
 import makeWith from "./with.js";
 
@@ -46,6 +51,7 @@ export default (withCss) =>
         scrollbox: withCss('make-scrollbox')
     }
 }
+
 content\decorate\it.js
 export default (withCss) =>
 {
@@ -63,7 +69,7 @@ export default (withCss) =>
         gap10px: withCss('make-gap-10px'),
 
         formGroup: withCss('make-form-group'),
-        beautySelect: withCss('make-beauty-select'),
+        delayedMarginOnHover: withCss('make-delayed-margin-on-hover'),
 
         card: withCss('card'),
         body: withCss('card-body'),
@@ -75,8 +81,17 @@ export default (withCss) =>
         onConfirmationMargin: withCss('make-confirmation-margin'),
         
         shadeAtBorder: withCss('make-shade-at-border'),
+        
+        accordion: withCss('make-accordion'),
+        accordionHeader: withCss('make-accordion-header'),
+        accordionToggle: withCss('make-accordion-toggle'),
+        accordionCollapse: withCss('make-accordion-collapse'),
+        accordionContent: withCss('make-accordion-content'),
+        accordionShow: withCss('make-accordion-show'),
+        accordionCollapsed: withCss('make-accordion-collapsed'),
     }
 }
+
 content\decorate\on.js
 export default (Event) => 
 {
@@ -88,6 +103,7 @@ export default (Event) =>
         defocus: Event('blur', { passive: true }),
     }
 }
+
 content\decorate\size.js
 
 export default (withCss) =>
@@ -98,6 +114,17 @@ export default (withCss) =>
         large: withCss('make-size-large'),
     }
 }
+
+content\decorate\style.js
+export default (withStyle) =>
+{
+    return {
+        padding: (pad) => withStyle({
+            padding: `${pad}px`,
+        }),
+    }
+}
+
 content\decorate\with.js
 export default (createDecorator) =>
 {
@@ -106,6 +133,14 @@ export default (createDecorator) =>
             (component, ...classes) => {
                 for (const cls of classes) {
                     if (cls) component.element.classList.add(cls);
+                }
+            }, true
+        ),
+        
+        style: createDecorator(
+            (component, styles) => {
+                if (styles && typeof styles === 'object') {
+                    Object.assign(component.element.style, styles);
                 }
             }, true
         ),
@@ -149,47 +184,304 @@ export default (createDecorator) =>
         )
     }
 }
+
 content\prefab\_.js
 import basic from './basic.js';
 import custom from './custom.js';
 import Notice from './notice.js';
 import tabs from './tabs/_.js';
-
+import accordion from './accordion/_.js';
 
 export default {
     basic,
     custom,
     Notice,
     tabs,
+    accordion,
 }
+
+content\prefab\accordion\Accordion.js
+export default function createAccordion(Component, Preferences, makeWith) {
+    return class Accordion extends Component {
+        constructor(...args) {
+            super('div');
+            this.addDecorator(makeWith.css('make-accordion'));
+            
+            let preferences;
+            let cards;
+            if (args.length > 0 && args[0] instanceof Preferences) {
+                preferences = args[0];
+                cards = args.slice(1);
+            } else {
+                preferences = new Preferences({});
+                cards = args;
+            }
+            
+            this.preferences = preferences
+                .set('isMulti', false)
+                .set('timeOpen', 300)
+                .set('timeClose', 300);
+            
+            if (cards.length > 0) {
+                this.addChild(...cards);
+            }
+            
+            this.currentActiveIndices = new Set();
+            this.previousActiveIndices = new Set();
+            this.contentElements = [];
+            this.isBuilding = false;
+            this.transitioning = new Set();
+            this.pendingIndex = null;
+            this.autoRebuild = false; // Отключаем автоматический rebuild
+        }
+
+        build(force = false) {
+            if (this.destroyed) return null;
+            if (this.isBuilding) return this.element;
+            
+            this.isBuilding = true;
+            try {
+                if (!this.element) {
+                    this.element = document.createElement(this.elementType);
+                    this.element.classList.add('make-accordion');
+                }
+                
+                if (force || this.contentElements.length === 0) {
+                    this.element.innerHTML = '';
+                    this.contentElements = [];
+                    this._buildAllCards();
+                }
+                
+                this.updateStates();
+                return this.element;
+            } finally {
+                this.isBuilding = false;
+            }
+        }
+
+        _buildAllCards() {
+            this.children.forEach((card, index) => {
+                this._buildSingleCard(card, index);
+            });
+        }
+
+        _buildSingleCard(card, index) {
+            if (!card || !card.cardContent) return;
+            
+            const cardId = `accordion-content-${index}`;
+            const headerButton = card.build();
+            headerButton.classList.add('make-accordion-header');
+            headerButton.setAttribute('aria-controls', cardId);
+            headerButton.setAttribute('aria-expanded', 'false');
+            headerButton.id = headerButton.id || `accordion-header-${index}`;
+            
+            if (!headerButton._accordionListener) {
+                const listener = () => this.toggleCard(index);
+                headerButton.addEventListener('click', listener);
+                headerButton._accordionListener = listener;
+            }
+            
+            const content = card.cardContent.build();
+            content.classList.add('make-accordion-content');
+            content.setAttribute('id', cardId);
+            content.setAttribute('role', 'region');
+            content.setAttribute('aria-labelledby', headerButton.id);
+            content.style.overflow = 'hidden';
+            content.style.maxHeight = '0';
+            content.style.opacity = '0';
+            
+            this.contentElements[index] = content;
+            this.element.appendChild(headerButton);
+            this.element.appendChild(content);
+        }
+
+        addChild(...items) {
+            const startIndex = this.children.length;
+            const result = super.addChild(...items);
+            
+            if (this.element) {
+                items.forEach((card, offset) => {
+                    const index = startIndex + offset;
+                    this._buildSingleCard(card, index);
+                    this.contentElements[index] = card.cardContent.element;
+                });
+            }
+            
+            return result;
+        }
+
+        updateStates() {
+            if (this.isBuilding || this.destroyed) return;
+            const isMulti = this.preferences.get('isMulti', false);
+            const timeOpen = this.preferences.get('timeOpen', 300);
+            const timeClose = this.preferences.get('timeClose', 300);
+            
+            const previousActive = new Set(this.previousActiveIndices);
+            this.previousActiveIndices = new Set(this.currentActiveIndices);
+            
+            this.children.forEach((card, index) => {
+                if (!card || !this.contentElements[index]) return;
+                
+                const headerButton = card.element || card.build();
+                const content = this.contentElements[index];
+                const isActive = this.currentActiveIndices.has(index);
+                const wasActive = previousActive.has(index);
+                
+                if (isActive === wasActive) return;
+                
+                headerButton.setAttribute('aria-expanded', isActive.toString());
+                
+                if (!isMulti && isActive && wasActive) {
+                    this._closeCard(index, content, timeClose);
+                } else if (isActive) {
+                    this._openCard(index, content, timeOpen);
+                } else {
+                    this._closeCard(index, content, timeClose);
+                }
+            });
+        }
+
+        _openCard(index, content, timeOpen) {
+            if (this.transitioning.has(index)) return;
+            
+            content.style.maxHeight = '0';
+            content.style.opacity = '0';
+            
+            void content.offsetHeight;
+            
+            this.transitioning.add(index);
+            content.style.transition = `max-height ${timeOpen}ms ease-in-out, opacity ${timeOpen}ms ease-in-out`;
+            
+            const targetHeight = content.scrollHeight;
+            content.style.maxHeight = targetHeight + 'px';
+            content.style.opacity = '1';
+            
+            const handleTransitionEnd = () => {
+                content.removeEventListener('transitionend', handleTransitionEnd);
+                if (this.currentActiveIndices.has(index)) {
+                    content.style.transition = 'none';
+                    content.style.maxHeight = 'none';
+                }
+                this.transitioning.delete(index);
+            };
+            
+            content.addEventListener('transitionend', handleTransitionEnd);
+        }
+
+        _closeCard(index, content, timeClose) {
+            if (this.transitioning.has(index)) return;
+            
+            content.style.maxHeight = content.scrollHeight + 'px';
+            content.style.opacity = '1';
+            
+            void content.offsetHeight;
+            
+            this.transitioning.add(index);
+            content.style.transition = `max-height ${timeClose}ms ease-in-out, opacity ${timeClose}ms ease-in-out`;
+            content.style.maxHeight = '0';
+            content.style.opacity = '0';
+            
+            const handleTransitionEnd = () => {
+                content.removeEventListener('transitionend', handleTransitionEnd);
+                this.transitioning.delete(index);
+            };
+            
+            content.addEventListener('transitionend', handleTransitionEnd);
+        }
+
+        toggleCard(index) {
+            if (this.transitioning.has(index) || this.isBuilding) return;
+            const isActive = this.currentActiveIndices.has(index);
+            const isMulti = this.preferences.get('isMulti', false);
+            
+            if (isActive) {
+                this.currentActiveIndices.delete(index);
+            } else {
+                if (!isMulti) {
+                    this.previousActiveIndices = new Set(this.currentActiveIndices);
+                    this.currentActiveIndices.clear();
+                }
+                this.currentActiveIndices.add(index);
+            }
+            this.updateStates();
+        }
+    };
+}
+
+content\prefab\accordion\Card.js
+export default function createCard(Component, makeWith) {
+    return class Card extends Component {
+        constructor(title, cardContent, ...decorators) {
+            super('button');
+            if (!cardContent || !(cardContent.constructor.name === 'CardContent')) {
+                throw new Error('Card requires exactly one CardContent element');
+            }
+            
+            this.title = title;
+            this.cardContent = cardContent;
+            this.addDecorator(makeWith.text(title));
+            this.addDecorator(makeWith.attr({ type: 'button' }));
+            decorators.forEach(d => this.addDecorator(d));
+        }
+    };
+}
+
+content\prefab\accordion\CardContent.js
+export default function createCardContent(Component) {
+    return class CardContent extends Component {
+        constructor(...decorators) {
+            super('div');
+            decorators.forEach(d => this.addDecorator(d));
+        }
+    };
+}
+
+content\prefab\accordion\_.js
+import Card from './Card.js';
+import CardContent from './CardContent.js';
+import Accordion from './Accordion.js';
+
+export default {
+    Card,
+    CardContent,
+    Accordion
+};
+
 content\prefab\basic.js
 export default function(createComponent) {
     return {
         Div: (...d) => createComponent('div', ...d),
         Form: (...d) => createComponent('form', ...d),
-        H1: (...d) => createComponent('h1', ...d),
-        H2: (...d) => createComponent('h2', ...d),
-        H3: (...d) => createComponent('h3', ...d),
         Select: (...d) => createComponent('select', ...d),
         Option: (...d) => createComponent('option', ...d),
         Input: (...d) => createComponent('input', ...d),
         Label: (...d) => createComponent('label', ...d),
-        Paragraph: (...d) => createComponent('p', ...d),
         Button: (...d) => createComponent('button', ...d),
         Link: (...d) => createComponent('a', ...d),
     }
 }
 
+
 content\prefab\custom.js
-export default function(createComponent, makeInner) {
+export default function(createComponent, makeWith, makeInner) {
     return {
         Separator: (...d) => createComponent('div', makeInner.separator, ...d),
         Scrollbox: (...d) => createComponent('div', makeInner.scrollbox, ...d),
+        Paragraph: (txt, ...d) => typeof txt === 'string'
+            ? createComponent('p', makeWith.text(txt), ...d)
+            : createComponent('p', ...d),
+        h1: (txt, ...d) => typeof txt === 'string'
+            ? createComponent('h1', makeWith.text(txt), ...d)
+            : createComponent('h1', ...d),
+        h2: (txt, ...d) => typeof txt === 'string'
+            ? createComponent('h2', makeWith.text(txt), ...d)
+            : createComponent('h2', ...d),
+        h3: (txt, ...d) => typeof txt === 'string'
+            ? createComponent('h3', makeWith.text(txt), ...d)
+            : createComponent('h3', ...d),
     }
 }
-   
-        
-        
+
 
 content\prefab\notice.js
 export default function createNotice(core, Component) {
@@ -267,6 +559,7 @@ export default function createNotice(core, Component) {
         return notice;
     };
 }
+
 content\prefab\tabs\Tab.js
 export default function createTab(Component, makeWith) {
     return class Tab extends Component {
@@ -284,6 +577,7 @@ export default function createTab(Component, makeWith) {
         }
     };
 }
+
 content\prefab\tabs\TabContent.js
 export default function createTabContent(Component) {
     return class TabContent extends Component {
@@ -293,8 +587,9 @@ export default function createTabContent(Component) {
         }
     };
 }
+
 content\prefab\tabs\Tabs.js
-export default function createTabs(Component, makeWith, makeOn) {
+export default function createTabs(Component, createComponent, makeWith, makeOn) {
     return class Tabs extends Component {
         constructor(...tabs) {
             super('div');
@@ -305,8 +600,8 @@ export default function createTabs(Component, makeWith, makeOn) {
             }
             
             this.tabs = tabs;
-            this.menuContainer = new Component('div', makeWith.css('make-tabs-menu'));
-            this.contentContainer = new Component('div', makeWith.css('make-tabs-content'));
+            this.menuContainer = createComponent('div', makeWith.css('make-tabs-menu'));
+            this.contentContainer = createComponent('div', makeWith.css('make-tabs-content'));
             
             this.addChild(this.menuContainer, this.contentContainer);
             this.currentActiveIndex = 0;
@@ -323,12 +618,14 @@ export default function createTabs(Component, makeWith, makeOn) {
             this.tabs.forEach((tab, index) => {
                 // Кнопка вкладки
                 const button = tab.build();
+                button.classList.add('make-tab-button');
                 button.setAttribute('aria-controls', `tab-content-${index}`);
                 button.setAttribute('id', `tab-button-${index}`);
                 button.addEventListener('click', () => this.activateTab(index));
                 
                 // Контент вкладки
                 const content = tab.tabContent.build();
+                content.classList.add('make-tab-content');
                 content.setAttribute('id', `tab-content-${index}`);
                 content.setAttribute('role', 'tabpanel');
                 content.setAttribute('aria-labelledby', `tab-button-${index}`);
@@ -374,6 +671,7 @@ export default function createTabs(Component, makeWith, makeOn) {
         }
     };
 }
+
 content\prefab\tabs\_.js
 import Tab from './Tab.js';
 import TabContent from './TabContent.js';
@@ -384,6 +682,7 @@ export default {
     Tab,
     TabContent,
 }
+
 core\_.js
 import delay from "./delay.js";
 import mix from "./mix.js";
@@ -394,10 +693,12 @@ export default {
     mix,
     query
 };
+
 core\delay.js
 export default async function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
+
 core\mix.js
 export default function mix(Base, ...mixins) {
     class Mixed extends Base {}
@@ -430,6 +731,7 @@ export default function mix(Base, ...mixins) {
 
     return Mixed;
 }
+
 core\query.js
 export default async function query(route, method, data = null) {
     method = method.toUpperCase();
@@ -447,6 +749,7 @@ export default async function query(route, method, data = null) {
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     return response.json();
 }
+
 extension\_.js
 import wrapper from './wrapper/_.js';
 import mixin from './mixin/_.js';
@@ -455,6 +758,7 @@ export default {
     wrapper,
     mixin
 };
+
 extension\mixin\Applicable.js
 export default class Applicable {
     constructor() {}
@@ -462,24 +766,52 @@ export default class Applicable {
         throw new Error('Not implemented');
     }
 }
+
 extension\mixin\_.js
 import Applicable from './Applicable.js';
 
 export default {
     Applicable
 };
+
 extension\wrapper\Component.js
 import Applicable from '../mixin/Applicable.js';
 
 export default class Component extends Applicable {
     constructor(elementType, autoRebuild = true) {
-        super(); // Важно оставить super()
+        super();
         this.elementType = elementType;
         this.element = null;
         this.decorators = [];
         this.children = [];
         this.parent = null;
         this.autoRebuild = autoRebuild;
+        this.destroyed = false;
+    }
+
+    getChild(index) {
+        return this.children[index] || null;
+    }
+
+    getFirstChild() {
+        return this.children[0] || null;
+    }
+
+    getLastChild() {
+        return this.children[this.children.length - 1] || null;
+    }
+
+    removeChild(child) {
+        const index = this.children.indexOf(child);
+        if (index === -1) return false;
+        
+        this.children.splice(index, 1);
+        
+        if (this.autoRebuild && this.element) {
+            this.build(true);
+        }
+        
+        return true;
     }
 
     addDecorator(decorator) {
@@ -501,6 +833,10 @@ export default class Component extends Applicable {
     }
 
     build(force = false) {
+        if (this.destroyed) {
+            return null;
+        }
+        
         if (this.element) {
             if (force) this.element.innerHTML = '';
             else return this.element;
@@ -508,11 +844,14 @@ export default class Component extends Applicable {
         else this.element = document.createElement(this.elementType);
         
         for (const decorator of this.decorators) {
+            console.log(decorator);
             decorator.apply(this);
         }
 
         for (const child of this.children) {
-            this.element.appendChild(child.build());
+            if (!child.destroyed) {
+                this.element.appendChild(child.build());
+            }
         }
 
         return this.element;
@@ -523,8 +862,33 @@ export default class Component extends Applicable {
             parent.addChild(this);
         }
     }
-}
 
+    destroy() {
+        if (this.destroyed) return;
+        this.destroyed = true;
+        
+        try {
+            if (this.parent) {
+                this.parent.removeChild(this);
+            }
+            
+            this.decorators.forEach(decorator => {
+                if (decorator.cleanup) decorator.cleanup(this);
+            });
+            
+            [...this.children].forEach(child => child.destroy());
+            
+            if (this.element && this.element.parentNode) {
+                this.element.parentNode.removeChild(this.element);
+            }
+        } finally {
+            this.element = null;
+            this.decorators = [];
+            this.children = [];
+            this.parent = null;
+        }
+    }
+}
 
 extension\wrapper\Decorator.js
 import Applicable from '../mixin/Applicable.js';
@@ -544,14 +908,36 @@ export default class Decorator extends Applicable {
         }
     }
 }
+
+extension\wrapper\Preferences.js
+export default class Preferences {
+    constructor(options = {}) {
+        this.options = { ...options };
+    }
+
+    get(name, defaultValue = null) {
+        return this.options.hasOwnProperty(name) ? this.options[name] : defaultValue;
+    }
+
+    set(name, value, force = false) {
+        if (!this.options.hasOwnProperty(name) || force) {
+            this.options[name] = value;
+        }
+        return this; // Для цепочки вызовов
+    }
+}
+
 extension\wrapper\_.js
 import Component from './Component.js';
 import Decorator from './Decorator.js';
+import Preferences from './Preferences.js';
 
 export default {
     Component,
-    Decorator
-};
+    Decorator,
+    Preferences,
+}
+
 factory\Component.js
 export default (Component) => 
     
@@ -562,6 +948,7 @@ function (elementType, ...decorators) {
     }
     return component;
 };
+
 factory\Decorator.js
 export default (Decorator) =>
     
@@ -574,6 +961,7 @@ function (fn, needReApply = false) {
         )
     );
 } 
+
 
 factory\Event.js
 export default (Decorator) =>
@@ -589,6 +977,7 @@ function (eventType, options = {}) {
         true
     );
 } 
+
 factory\_.js
 // factory/_.js
 import createComponent from './Component.js';
@@ -601,11 +990,364 @@ export default {
     Event: createEvent,
 };
 
+
+make.css
+/* make.css */
+:root {
+    --red: hsla(0, 87%, 75%, 1);
+    --red-hover: hsla(0, 87%, 72%, 1);
+
+    --d-red: hsla(0, 87%, 60%, 1);
+    --d-red-hover: hsla(0, 87%, 55%, 1);
+    
+    --l-blue: hsla(200, 60%, 75%, 1);
+    --d-blue: hsla(200, 60%, 60%, 1);
+    --d-blue-hover: hsla(200, 65%, 55%, 1);
+    
+    --yellow: hsla(50, 82%, 63%, 1);
+    --yellow-hover: hsla(50, 82%, 60%, 1);
+
+    --green: hsla(120, 60%, 75%, 1);
+    --green-hover: hsla(120, 60%, 72%, 1);
+    --d-green: hsla(120, 60%, 60%, 1);
+    --d-green-hover: hsla(120, 65%, 55%, 1);
+    
+    --v-gray: #333333;
+    --d-gray: #666666;
+    --m-gray: #a0a0a0;
+    --l-gray: #ececec;
+
+    --error: #b57585;
+
+    --transition-fast: 0.1s;
+    --transition-avg: 0.2s;
+    --transition-slow: 0.3s;
+    --transition-very-slow: 0.5s;
+    --transition-very-very-slow: 1s;
+    --transition-very-very-very-slow: 2s;
+}
+
+/* fix agent */
+p, form {
+    margin: 0;
+}
+
+/* Аккордеон */
+/* Аккордеон */
+.make-accordion {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.make-accordion-header {
+    color: #000;
+    width: 100%;
+    padding: 12px 16px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: left;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    position: relative;
+    z-index: 10;
+}
+
+.make-accordion-header:hover {
+    background-color: #e9ecef;
+}
+
+.make-accordion-header:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+.make-accordion-content {
+    border: 1px solid #dee2e6;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    background-color: #fff;
+    overflow: hidden;
+    max-height: 0;
+    transition-property: max-height;
+    transition-timing-function: ease;
+    /* transition-duration будет устанавливаться динамически через JS */
+}
+
+/* Карточки аккордеона */
+.make-accordion-card {
+    color: black;
+}
+
+.make-accordion-card-content {
+    color: black;
+}
+
+/* Кнопки аккордеона */
+.make-accordion-toggle {
+    color: black;
+}
+
+.make-accordion-collapse {
+    color: black;
+}
+
+.make-accordion-show {
+    color: black;
+}
+
+.make-accordion-body {
+    color: black;
+}
+
+/* buttons */
+.btn {
+    border-radius: 12px;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    padding: 6px 12px;
+    cursor: pointer;
+}
+.btn-primary {
+    background-color: var(--d-blue);
+    color: white;
+    padding: 1%;
+    transition: background-color var(--transition-slow) ease;
+}
+.btn-primary:hover {
+    background-color: var(--d-blue-hover);
+}
+.btn-warning {
+    background-color: #ffc107;
+    color: black;
+}
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+}
+.btn-link {
+    background: transparent;
+    color: #007bff;
+    text-decoration: underline;
+}
+.btn-sm {
+    padding: 3px 6px;
+    font-size: .875rem;
+}
+
+.make-button {
+    border-radius: 12px;
+}
+
+.make-block-separator {
+    margin-top: 8px;
+}
+
+/* tabs */
+.make-tabs {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+.make-tabs-menu {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.make-tab-button {
+    color: #444;
+    font-weight: 700;
+    padding: 10px 15px;
+    border: 3px solid transparent;
+    cursor: pointer;
+    transition: filter var(--transition-very-slow) ease;
+    border-radius: 12px;
+    font-size: 16px;
+}
+
+.make-tab-button:hover {
+    filter: brightness(0.95);
+    transition: filter var(--transition-avg) ease;
+}
+
+.make-tab-button.active {
+    border-color: #000;
+}
+.make-tabs-content {
+    border-radius: 0 0 4px 4px;
+    padding: 15px;
+    background: white;
+}
+
+.make-tab-content {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+  height: auto;
+  overflow: hidden;
+  transition: opacity 0.5s ease, transform 0.5s ease, height 0.5s ease;
+}
+
+.make-tab-content[hidden] {
+  opacity: 0;
+  transform: translateY(-10px);
+  height: 0;
+}
+
+/* flexibility */
+.make-flex{
+    flex: 1;
+    display: flex;
+}
+.make-flex-row{
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+}
+.make-flex-column{
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+.make-gap-10px {
+    gap: 10px;
+}
+.make-gap-6px {
+    gap: 6px;
+}
+
+/* form elements parameters*/
+.make-form-group {
+    flex: 1;
+    text-align: left;
+}
+.make-delayed-margin-on-hover {
+    filter: brightness(0.98);
+    transition: margin-left var(--transition-very-very-slow) ease,
+                filter var(--transition-very-very-slow) ease;
+}
+.make-delayed-margin-on-hover:hover {
+    margin-left: 2px;
+    filter: brightness(0.95);
+    transition-duration: var(--transition-avg)
+}
+
+/* link */
+.make-simple-link:visited,
+.make-simple-link {
+    color: var(--d-gray);
+    font-size: 16px;
+    text-decoration: none;
+    transition: color var(--transition-avg) ease;
+}
+.make-simple-link:hover {
+    color: var(--m-gray);
+}
+
+.make-text-italic {
+    font-style: italic;
+}
+
+/* colors */
+.make-color-error {
+    color: var(--error);
+}
+.make-color-red {
+    background-color: var(--red);
+}
+.make-color-d-red {
+    background-color: var(--d-red);
+}
+.make-color-blue {
+    background-color: var(--d-blue);
+}
+.make-color-l-blue {
+    background-color: var(--l-blue);
+}
+.make-color-yellow {
+    background-color: var(--yellow);
+}
+.make-color-green {
+    background-color: var(--green);
+}
+
+/* ordering */
+.make-text-align-left {
+    text-align: left;
+}
+
+/* scrollbox */
+.scrollbox {
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+    overflow-y: scroll;
+    margin-left: 10px;
+    scrollbar-width: thin;
+    scrollbar-color: #ccc transparent;}
+.scrollbox::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;}
+.scrollbox::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 10px;
+    border: 2px solid transparent;}
+.scrollbox::-webkit-scrollbar-track {
+    background: transparent;}
+
+
+/* toggle button */
+.make-toggle-button-container {
+    display: inline-block;
+}
+
+.make-toggle-button-container .make-button {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-right: 12px;
+    padding-left: 12px;
+    border-radius: 12px;
+    border: 2px solid var(--l-gray);
+    background-color: white;
+    color: var(--d-gray);
+    transition: all var(--transition-slow) ease;
+}
+
+.make-toggle-button-container .make-button:hover {
+    background-color: var(--l-gray);
+    border-color: var(--m-gray);
+    transition: all var(--transition-avg) ease;
+}
+
+.make-toggle-button-container .make-button.make-toggle-active {
+    background-color: var(--d-blue);
+    border-color: var(--d-blue);
+    color: white;
+    filter: brightness(1);
+}
+
+.make-toggle-button-container .make-button.make-toggle-active:hover {
+    background-color: var(--d-blue-hover);
+    border-color: var(--d-blue-hover);
+    filter: brightness(0.95);
+    transition: all var(--transition-avg) ease;
+}
+
+/* memes */
+.make-goose p {
+    margin-top: -5px;
+}
+
 make.js
 import extension from './extension/_.js';
 import factory from './factory/_.js';
 import content from './content/_.js'
 import core from './core/_.js'
+import Preferences from './extension/wrapper/Preferences.js';
 
 const createComponent = factory.Component(extension.wrapper.Component);
 const createDecorator = factory.Decorator(extension.wrapper.Decorator);
@@ -618,8 +1360,17 @@ const Tab = content.prefab.tabs.Tab(extension.wrapper.Component, makeWith);
 const TabContent = content.prefab.tabs.TabContent(extension.wrapper.Component);
 const Tabs = content.prefab.tabs.Tabs(
     extension.wrapper.Component,
+    createComponent,
     makeWith,
     makeOn
+);
+
+const Card = content.prefab.accordion.Card(extension.wrapper.Component, makeWith);
+const CardContent = content.prefab.accordion.CardContent(extension.wrapper.Component);
+const Accordion = content.prefab.accordion.Accordion(
+    extension.wrapper.Component,
+    extension.wrapper.Preferences,
+    makeWith,
 );
 
 window.make = (function() {
@@ -631,21 +1382,31 @@ window.make = (function() {
         it: content.decorate.it(makeWith.css),
         size: content.decorate.size(makeWith.css),
         color: content.decorate.color(makeWith.css),
+        style: content.decorate.style(makeWith.style),
         Notice: content.prefab.Notice(core, extension.wrapper.Component),
         ...content.prefab.basic(createComponent),
-        ...content.prefab.custom(createComponent, content.decorate.inner(makeWith.css)),
+        ...content.prefab.custom(
+            createComponent, makeWith,
+            content.decorate.inner(makeWith.css),
+        ),
         Tabs: (...tabs) => new Tabs(...tabs),
         Tab: (title, ...decorators) => new Tab(title, ...decorators),
         TabContent: (...decorators) => new TabContent(...decorators),
-        // query: query
+
+        Accordion: (...cards) => new Accordion(...cards),
+        Card: (title, ...decorators) => new Card(title, ...decorators),
+        CardContent: (...decorators) => new CardContent(...decorators),
+
+        Preferences: (...args) => new Preferences(...args)
     };
 })();
+
 sandbox\prefabs.js
 const makePrefab = {
     inputGroup: ({ text, type = 'text', placeholder = '', value = '' }) => createComponent(
         'div', 
         makeIt.formGroup, 
-        makeIt.beautySelect, 
+        makeIt.delayedMarginOnHover, 
         createComponent(
             'label', 
             makeWith.text(text), 

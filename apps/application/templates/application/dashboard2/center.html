@@ -1,0 +1,148 @@
+{% load static %}
+
+<div id="center-data"
+     data-user-role="{{ data.user.role }}"
+     data-csrf-token="{{ csrf_token }}"
+     data-admin-urls='{
+        "form-manager": "{% url 'form-manager' %}",
+        "demo-1": "{% url 'demo-1' %}",
+        "demo-2": "{% url 'demo-2' %}",
+        "demo-3": "{% url 'demo-3' %}"
+     }'
+     data-forms='[{% for form in data.forms %}{"form_name": "{{ form.form_name|escapejs }}", "form_label": "{{ form.form_label|escapejs }}"}{% if not forloop.last %},{% endif %}{% endfor %}]'
+     {% if data.user.role == "MODERATOR" or data.user.role == "ADMIN" %}
+     data-manager='[{% for form in manager %}{"form_name": "{{ form_name|escapejs }}", "text": "{{ form.text|escapejs }}"}{% if not forloop.last %},{% endif %}{% endfor %}]'
+     {% endif %}>
+</div>
+
+<script type="module">
+  await import("{% static 'deps/make/make.js' %}");
+  
+  const centerData = document.getElementById('center-data');
+  const userRole = centerData.dataset.userRole;
+  const csrfToken = centerData.dataset.csrfToken;
+  const adminUrls = JSON.parse(centerData.dataset.adminUrls);
+  const formsData = JSON.parse(centerData.dataset.forms);
+  const managerData = centerData.dataset.manager ? JSON.parse(centerData.dataset.manager) : [];
+  
+  const adminActions = [
+    { title: "Менеджер форм", urlName: "form-manager" },
+    { title: "Демо 1", urlName: "demo-1" },
+    { title: "Демо 2", urlName: "demo-2" },
+    { title: "Демо 3", urlName: "demo-3" },
+    { title: "Перечисления", action: "create_new_form" }
+  ];
+
+  const userTab = [
+    make.it.flexColumn,
+    make.it.gap10px,
+    make.Paragraph("Выберите форму заявки:"),
+    ...formsData.map(form => 
+      make.Form(
+        make.with.csrf(csrfToken),
+        make.it.marginOnHover,
+        make.Input(
+          make.with.attr({ 
+            type: "hidden", 
+            name: "form_name", 
+            value: form.form_name 
+          })
+        ),
+        make.Button(
+          make.with.text(form.form_label),
+          make.it.redir,
+          make.with.attr({ type: "submit" })
+        )
+      )
+    )
+  ]
+
+  const moderTab = [
+    make.Paragraph("ЭТО МОДЕРСКАЯ ФОРМА"),
+    ...managerData.map(form => 
+      make.Form(
+        make.with.csrf(csrfToken),
+        make.it.marginOnHover,
+        make.Input(
+          make.with.attr({ 
+            type: "hidden", 
+            name: "form_name", 
+            value: form.form_name 
+          })
+        ),
+        make.Button(
+          make.with.text(form.text),
+          make.it.redir,
+          make.with.attr({ type: "submit" })
+        )
+      )
+    )
+  ]
+  
+  const adminTab = [
+    make.it.flexColumn,
+    make.it.gap10px,
+    ...adminActions.map(action => 
+      make.Form(
+        make.with.csrf(csrfToken),
+        make.it.marginOnHover,
+        make.with.attr({ 
+          method: "POST", 
+          action: adminUrls[action.urlName] 
+        }),
+        make.Button(
+          make.with.text(action.title),
+          make.it.redir,
+        make.with.attr({ type: "submit" }))
+      )
+    )
+  ]
+
+  if (userRole === 'USER') {
+    centerData.appendChild(
+      make.Div(...userTab).build()
+    )
+  }
+  else {
+    centerData.appendChild(
+      make.Tabs(
+        make.Tab( "Создать заявку",
+        make.TabContent(...userTab)
+        ),
+        ...make.if(userRole === 'MODERATOR' || userRole === 'ADMIN',
+            make.Tab( "Поступившие заявки",
+            make.TabContent(...moderTab)
+          )
+        ),
+        ...make.if(userRole === 'ADMIN',
+            make.Tab( "Администрирование",
+            make.TabContent(...adminTab)
+          )
+        ),
+      ).build()
+    );
+  }
+  var recursiveNotice;
+  var counter = 1;
+
+  recursiveNotice = (() => {
+    make.Notice(500/(counter**0.8), 1500/(counter**0.8), 500/(counter**0.8),
+      make.Div(
+        make.it.noticeBody,
+        make.color.green,
+        make.Paragraph(`Кликнуто x ${counter}`),
+        make.on.click(recursiveNotice)
+      )
+    )
+    counter++;
+  })
+
+  make.Notice(500, 1500, 500,
+    make.Div(
+      make.it.noticeBody,
+      make.color.green,
+      make.Paragraph("Загружено!"),
+      make.on.click(recursiveNotice)
+    )
+  )
+</script>
