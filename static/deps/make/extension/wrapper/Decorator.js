@@ -2,7 +2,7 @@ import Applicable from '../mixin/Applicable.js';
 
 export default class Decorator extends Applicable {
     constructor(func, needReApply = true) {
-        super(); // Важно оставить super()
+        super();
         this.func = func;
         this.needReApply = needReApply;
         this.applied = false;

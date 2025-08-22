@@ -1,8 +1,16 @@
 *.pyc
 __pycache__/
+node_modules/
 db.sqlite3
 venv/
 .env
 *.log
+*.txt
 db_config.py
 staticfiles/
+# build outputs
+collected/
+
+# build outputs
+static/collected/
+*.txt

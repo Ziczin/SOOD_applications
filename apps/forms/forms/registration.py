@@ -2,7 +2,7 @@ from apps.users.models import Department
 
 registration_form_data = {
     'name': 'Registration',
-    "action": "/users/register/",
+    "action": "/api/auth/register/",
     'title': 'Регистрация',
     'btn_confirm': 'Зарегистрироваться',
     'sub_btn_link': '/users/login',

@@ -6,7 +6,7 @@ export default function(createComponent, makeWith) {
                 ...decorators
             );
         },
-        Scrollbox: (...d) => createComponent('div', withCss('make-scrollbox'), ...d),
+        Scrollbox: (...d) => createComponent('div', makeWith.css('make-scrollbox'), ...d),
         Paragraph: (txt, ...d) => typeof txt === 'string'
             ? createComponent('p', makeWith.text(txt), ...d)
             : createComponent('p', ...d),

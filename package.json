@@ -1,0 +1,26 @@
+{
+  "name": "sood_applications",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node build-esbuild.js",
+    "watch": "node build-esbuild.js --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ziczin/SOOD_applications.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Ziczin/SOOD_applications/issues"
+  },
+  "homepage": "https://github.com/Ziczin/SOOD_applications#readme",
+  "devDependencies": {
+    "esbuild": "^0.25.9"
+  }
+}

@@ -58,6 +58,17 @@ def demo_dashboard(request):
         }
     )
 
+@login_required
+def demo_form_manager(request):
+    forms_list = list(Form.objects.all().values())
+    return render(
+        request, 'application/builder.html',
+        {
+            'variant': 'demo_form_manager',
+            'data': {'forms': forms_list}
+        }
+    )
+
 
 @login_required
 def demo_2(request):

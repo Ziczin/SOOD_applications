@@ -1,9 +1,7 @@
 export default (Component) => 
     
-function (elementType, ...decorators) {
-    const component = new Component(elementType);
-    for (const decorator of decorators) {
-        component.addDecorator(decorator);
-    }
+function (elementType, ...modifiers) {
+    const component = new Component(elementType, false);
+    component.addModifiers(...modifiers).autoRebuild = true;
     return component;
 };

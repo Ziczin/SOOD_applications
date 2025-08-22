@@ -1,0 +1,185 @@
+{% load static %}
+
+{{ form_data|json_script:"form-data" }}
+{{ errors|json_script:"errors-data" }}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {% csrf_token %}
+  <meta charset="UTF-8">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="{% static 'deps/make/make.css' %}">
+  <link rel="stylesheet" href="{% static 'deps/css/bright.css' %}">
+
+  <title>Сервис заявок</title>
+</head>
+
+<body>
+  <div class='container p-1p content w-40p' id="form-template">
+  </div>
+</body>
+</html>
+
+<script type="module">
+  await import("{% static 'collected/static.js' %}");
+  const maindiv = document.getElementById('form-template');
+  let content;
+  let accordion;
+  const lst = [1, 2, 3, 4]
+  var iter = 0
+  const innerMakeTemplate = make.Scrollbox(
+    make.it.flexColumn,
+    make.it.gap10px,
+    make.Button(
+      make.with.text("add"),
+      make.on.click(() =>
+        innerMakeTemplate.addChild(
+          make.Paragraph(`Test ${iter++}`)
+        )
+      )
+    ),
+    ...lst.map((elem) =>
+      make.Card(
+        make.it.contented,
+        make.color.yellow,
+        make.style.rounded(10),
+      )
+      .header(
+        make.Div(
+          make.it.flexRow,
+          make.it.gap10px,
+          make.Div(
+            make.it.leftAlign,
+            make.Paragraph(`Дубликат ${elem}`),
+            make.Paragraph('Просто текст'),
+          ),
+          make.Button(
+            make.color.blue,
+            make.with.text('Это кнопка внутри заголовка'),
+            make.on.click((e) => {
+              e.stopPropagation()
+              make.Notice(500, 1000, 500,
+                make.Div(
+                  make.with.css('content'),
+                  make.Paragraph("Кнопка нажата!"),
+                  make.Separator(),
+                  make.Button(
+                    make.it.redir,
+                    make.with.text("Теперь нажми на эту кнопку!"),
+                    make.on.click(() => {
+                      console.log(123123)
+                      make.Notice(500, 150000, 500,
+                        make.Div(
+                          make.style.margin(20),
+                          make.it.contented,
+                          make.Accordion(
+                            make.it.flexColumn,
+                            make.it.gap6px,
+                            ...lst.map(
+                              (n) =>
+                              make.Card(
+                                make.it.marginOnHover,
+                                make.color.lblue,
+                                make.style.rounded(10),
+                                make.it.leftAlign,
+                              )
+                              .header(
+                                make.Div(
+                                  make.it.contented,
+                                  make.color.lblue,
+                                  make.Paragraph(`Карточка №${n}`)
+                                )
+                              )
+                              .content(
+                                make.Div(
+                                  make.Div(
+                                    make.it.contented,
+                                    make.style.margin(8),
+                                    make.Paragraph(`Контент карточки №${n}`)
+                                  )
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    })
+                  )
+                )
+              )
+            })
+          ),
+        )
+      )
+      .content(
+        make.Div(
+          make.Separator(),
+          make.Div(
+            make.it.contented,
+            make.color.lyellow,
+            make.Paragraph('Это просто внутренний текст'),
+            make.Separator(),
+            make.Card(
+              make.it.contented,
+              make.color.green,
+            )
+            .header(
+              make.Div(
+                make.it.leftAlign,
+                make.style.padding(8),
+                make.Paragraph('Это вложенная карточка'),
+                make.Paragraph('где заголовок состоит из трёх'),
+                make.Paragraph('элементов make.Paragraph'),
+              )
+            )
+            .content(
+              make.Div(
+                make.Div(
+                  make.it.contented,
+                  make.color.lgreen,
+                  make.Paragraph('А тут можно посмотреть аккордеон у которого'),
+                  make.Paragraph('одновременно может быть открыта только одна карточка'),
+                  make.Separator(),
+                  make.Accordion(
+                    make.it.flexColumn,
+                    make.it.gap6px,
+                    ...lst.map(
+                      (n) =>
+                      make.Card(
+                        make.it.marginOnHover,
+                        make.color.lblue,
+                        make.style.rounded(10),
+                        make.it.leftAlign,
+                      )
+                      .header(
+                        make.Div(
+                          make.it.contented,
+                          make.color.lblue,
+                          make.Paragraph(`Карточка №${n}`)
+                        )
+                      )
+                      .content(
+                        make.Div(
+                          make.Div(
+                            make.style.margin(8),
+                            make.it.contented,
+                            make.Paragraph(`Контент карточки №${n}`)
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      ),
+    )
+  )
+  
+  maindiv.appendChild(innerMakeTemplate.build());
+</script>

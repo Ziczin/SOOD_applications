@@ -7,6 +7,8 @@ export default (withCss) =>
         blue: withCss('make-color-blue'),
         lblue: withCss('make-color-l-blue'),
         yellow: withCss('make-color-yellow'),
+        lyellow: withCss('make-color-l-yellow'),
         green: withCss('make-color-green'),
+        lgreen: withCss('make-color-l-green'),
     }
 }

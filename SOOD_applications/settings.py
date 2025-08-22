@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
 
+    'rest_framework',
+
     'apps.users',
     'apps.forms',
     'apps.application',
@@ -73,6 +75,17 @@ DATABASES = db_config
 ##### AUTH #####
 ################
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ],
+}
+
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SECURE = True
+CSRF_USE_SESSIONS = False
+
 AUTH_USER_MODEL = 'users.CustomUser'
 AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend',]
 
@@ -96,6 +109,7 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     BASE_DIR / "static",
+    BASE_DIR / "collected",
 ]
 
 ##### FORMS #####

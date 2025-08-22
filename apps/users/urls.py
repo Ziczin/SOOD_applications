@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import register, login_view, logout_view, sandbox
+from .views import register, login_view, logout_view, sandbox, sandbox2
 from .views import change_role
 
 urlpatterns = [
@@ -8,5 +8,6 @@ urlpatterns = [
     path('logout/', logout_view, name='logout'),
     path('change-role/', change_role, name='change-role'),
     path('sandbox/', sandbox, name='sandbox'),
+    path('sandbox2/', sandbox2, name='sandbox2'),
 ]
 

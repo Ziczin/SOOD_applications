@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import dashboard, form_manager, demo_1, demo_2, demo_3, demo_dashboard
+from .views import dashboard, form_manager, demo_1, demo_2, demo_3, demo_dashboard, demo_form_manager
 
 urlpatterns = [
     path('dashboard/', dashboard, name='dashboard'),
@@ -8,5 +8,6 @@ urlpatterns = [
     path('demo-2/', demo_2, name="demo-2"),
     path('demo-3/', demo_3, name="demo-3"),
     path('demo-dashboard/', demo_dashboard, name="demo-dashboard"),
+    path('demo-form-manager/', demo_form_manager, name="demo-form-manager"),
 ]
 

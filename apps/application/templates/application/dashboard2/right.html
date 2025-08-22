@@ -1,133 +1,19 @@
 {% load static %}
 {% if user.role == "ADMIN" %}
-<div id="admin-section">
-  <!-- Контент будет динамически сгенерирован через make.js -->
-</div>
+  <script type="module">
+    await import("{% static 'deps/make/make.js' %}");
+    console.log("{{data}}")
+    const users = [
+      {% for u in data.users %}
+        {
+          id: {{ u.id }},
+          username: "{{ u.username|escapejs }}",
+          fullname: "{{ u.full_name|escapejs }}",
+          role: "{{ u.role|escapejs }}"
+        }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    ];
 
-<script type="module">
-  // Строго используем правильный импорт как требуется
-  await import("{% static 'deps/make/make.js' %}");
-  
-  // Функция для безопасного парсинга JSON
-  const safeParse = (jsonString) => {
-    try {
-      return JSON.parse(jsonString);
-    } catch (e) {
-      console.error("Ошибка парсинга JSON:", e, "Строка:", jsonString);
-      return null;
-    }
-  };
-  
-  // Подготовка данных из Django
-  const userData = {
-    user: {{ user|safe }},
-    data: {
-      users: {{ data.users|safe }},
-      roles: {{ data.roles|safe }}
-    },
-    csrf_token: "{{ csrf_token|escapejs }}"
-  };
-  
-  // Ждем, пока make.js загрузится и создаст глобальный объект make
-  const waitForMake = async () => {
-    let attempts = 0;
-    const maxAttempts = 50;
-    const delay = 100;
-    
-    while (!window.make && attempts < maxAttempts) {
-      await new Promise(resolve => setTimeout(resolve, delay));
-      attempts++;
-    }
-    
-    if (!window.make) {
-      throw new Error('make.js не загрузился за отведенное время');
-    }
-    
-    return window.make;
-  };
-  
-  // Инициализация после загрузки make.js
-  const init = async () => {
-    try {
-      const make = await waitForMake();
-      
-      // Проверяем, что пользователь - ADMIN
-      if (userData.user.role === "ADMIN") {
-        // Создаем аккордеон с пользователями
-        const accordion = make.Accordion(
-          ...userData.data.users.map(user => 
-            make.Card(
-              user.full_name,
-              make.CardContent(
-                make.with.css('margin'),
-                make.Paragraph(`Логин: ${user.username}`, make.with.style({ 'margin-left': '2%' })),
-                make.Form(
-                  make.with.attr({ method: "post", action: "/users/change-role/" }),
-                  make.with.csrf(userData.csrf_token),
-                  make.Select(
-                    make.with.attr({ name: "role" }),
-                    make.with.css('ml-2p', 'mb-2p', 'acc-select'),
-                    make.with.style({ 'margin-left': '2%', 'margin-bottom': '2%' }),
-                    ...userData.data.roles.map(role => 
-                      make.Option(
-                        role[1],
-                        make.with.attr({ value: role[0] }),
-                        ...(user.role === role[0] ? [make.with.attrs('selected')] : [])
-                      )
-                    ),
-                    make.on.change(event => {
-                      const formData = new FormData(event.target.form);
-                      fetch(event.target.form.action, {
-                        method: 'POST',
-                        body: formData,
-                        headers: { 
-                          'X-CSRFToken': userData.csrf_token,
-                          'X-Requested-With': 'XMLHttpRequest'
-                        }
-                      })
-                      .catch(error => {
-                        console.error('Ошибка:', error);
-                        make.Notice(300, 2000, 300, 
-                          make.Paragraph('Не удалось изменить роль пользователя', 
-                            make.with.css('make-notice-body', 'make-color-error')
-                          )
-                        );
-                      });
-                    })
-                  ),
-                  make.Input(
-                    make.with.attr({ type: "hidden", name: "username", value: user.username })
-                  )
-                )
-              ),
-              make.with.css('bg-red')
-            )
-          )
-        );
 
-        // Создаем основной контент
-        const adminContent = make.Div(
-          make.with.css('content'),
-          make.h2('Мой отдел'),
-          make.Div(
-            make.with.css('accordion'),
-            accordion
-          )
-        );
-        
-        // Вставляем в DOM
-        const container = document.getElementById('admin-section');
-        if (container) {
-          container.innerHTML = '';
-          container.appendChild(adminContent.build());
-        }
-      }
-    } catch (error) {
-      console.error('Ошибка инициализации:', error);
-    }
-  };
-  
-  // Запускаем инициализацию
-  init();
-</script>
+  </script>
 {% endif %}

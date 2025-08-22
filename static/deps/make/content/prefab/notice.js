@@ -63,9 +63,7 @@ export default function createNotice(core, Component) {
     return function createNotice (timeIn, timeStay, timeOut, ...decorators) {
         const notice = new Notice(timeIn, timeStay, timeOut);
         
-        for (const decorator of decorators) {
-            notice.addDecorator(decorator);
-        };
+        notice.addModifiers(...decorators);
         
         notice.build();
         noticeHandler.add(notice, timeIn, timeStay, timeOut);

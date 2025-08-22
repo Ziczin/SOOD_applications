@@ -1,4 +1,5 @@
 import Applicable from '../mixin/Applicable.js';
+import Decorator from './Decorator.js';
 
 export default class Component extends Applicable {
     constructor(elementType, autoRebuild = true) {
@@ -9,7 +10,73 @@ export default class Component extends Applicable {
         this.children = [];
         this.parent = null;
         this.autoRebuild = autoRebuild;
+        this.buildLock = true
         this.destroyed = false;
+    }
+
+    addModifiers(...modifiers) {
+        for (const modifier of modifiers) {
+            modifier instanceof Component && this.addChild(modifier);   
+            modifier instanceof Decorator && this.addDecorator(modifier);
+            modifier instanceof Function && this.addDecorator(modifier)
+        }
+        return this
+    }
+
+    addDecorator(decorator) {
+        this.decorators.push(decorator)
+    }
+
+    addChild(child) {
+        child.parent = this;
+        this.children.push(child);
+        this.autoRebuild && this.build(true);
+    }
+
+    build(force = false) {
+        if (this.testField) {
+            console.log(this.testField)
+            if (this.element) {
+                console.log(this.element)
+            }
+        }
+        if (this.element) {
+            if (force) this.element.innerHTML = '';
+            else return this.element;
+        }
+        else this.element = document.createElement(this.elementType);
+
+        for (const decorator of this.decorators) {
+            this.testField && console.log(this.testField)
+
+            decorator.apply(this);
+        }
+
+        for (const child of this.children) {
+            if (!child.destroyed) {
+                this.element.appendChild(child.build());
+            }
+        }
+        return this.element;
+    }
+
+    destroy() {
+        if (this.destroyed) return;
+        this.destroyed = true;
+        
+        if (this.parent) {
+            this.parent.removeChild(this);
+            this.parent = null;
+        }
+        this.decorators = [];
+        
+        this.children.forEach(child => child.destroy());
+        this.children = [];
+        
+        if (this.element && this.element.parentNode) {
+            this.element.parentNode.removeChild(this.element);
+        }
+        this.element = null;
     }
 
     getChild(index) {
@@ -35,86 +102,5 @@ export default class Component extends Applicable {
         }
         
         return true;
-    }
-
-    addDecorator(decorator) {
-        this.decorators.push(decorator);
-        return this;
-    }
-
-    addChild(...items) {
-        for (const item of items) {
-            if (item instanceof Component) {
-                item.parent = this;
-                this.children.push(item);
-            }
-        }
-        if (this.autoRebuild) {
-            this.build(true);
-        }
-        return this;
-    }
-
-    build(force = false) {
-        if (this.destroyed) {
-            return null;
-        }
-        
-        if (this.element) {
-            if (force) this.element.innerHTML = '';
-            else return this.element;
-        }
-        else this.element = document.createElement(this.elementType);
-        
-        for (const decorator of this.decorators) {
-            try {
-                decorator.apply(this);
-            }
-            catch (e) {
-                console.log(this)
-                console.log(e)
-                console.log(decorator)
-            }
-        }
-
-        for (const child of this.children) {
-            if (!child.destroyed) {
-                this.element.appendChild(child.build());
-            }
-        }
-
-        return this.element;
-    }
-
-    apply(parent) {
-        if (parent instanceof Component && !this.parent) {
-            parent.addChild(this);
-        }
-    }
-
-    destroy() {
-        if (this.destroyed) return;
-        this.destroyed = true;
-        
-        try {
-            if (this.parent) {
-                this.parent.removeChild(this);
-            }
-            
-            this.decorators.forEach(decorator => {
-                if (decorator.cleanup) decorator.cleanup(this);
-            });
-            
-            [...this.children].forEach(child => child.destroy());
-            
-            if (this.element && this.element.parentNode) {
-                this.element.parentNode.removeChild(this.element);
-            }
-        } finally {
-            this.element = null;
-            this.decorators = [];
-            this.children = [];
-            this.parent = null;
-        }
     }
 }

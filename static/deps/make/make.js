@@ -3,6 +3,7 @@ import factory from './factory/_.js';
 import content from './content/_.js'
 import core from './core/_.js'
 import Preferences from './extension/wrapper/Preferences.js';
+import other from './other/_.js';
 
 const createComponent = factory.Component(extension.wrapper.Component);
 const createDecorator = factory.Decorator(extension.wrapper.Decorator);
@@ -20,18 +21,16 @@ const Tabs = content.prefab.tabs.Tabs(
     makeOn
 );
 
-const Card = content.prefab.accordion.Card(extension.wrapper.Component, makeWith);
-const CardContent = content.prefab.accordion.CardContent(extension.wrapper.Component);
+const Card = content.prefab.accordion.Card(extension.wrapper.Component, makeWith, makeOn);
 const Accordion = content.prefab.accordion.Accordion(
-    extension.wrapper.Component,
-    extension.wrapper.Preferences,
-    makeWith,
+    extension.wrapper.Component, Card
 );
 
 window.make = (function() {
-    console.log('Powered by make.js')
+    console.log('Powered by make.js v0.0.1.2dev')
 
     return {
+        other: other,
         with: makeWith,
         on: makeOn,
         it: content.decorate.it(makeWith.css),
@@ -49,8 +48,7 @@ window.make = (function() {
         TabContent: (...decorators) => new TabContent(...decorators),
 
         Accordion: (...cards) => new Accordion(...cards),
-        Card: (title, ...decorators) => new Card(title, ...decorators),
-        CardContent: (...decorators) => new CardContent(...decorators),
+        Card: (...decorators) => new Card(...decorators),
 
         Preferences: (...args) => new Preferences(...args),
         'if': (condition, ...components) => condition ? components : [],
@@ -62,6 +60,7 @@ window.make = (function() {
                 }
             }
             return [];
-        }
+        },
+        Query: (...params) => new extension.wrapper.Query(...params)
     };
 })();

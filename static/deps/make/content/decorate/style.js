@@ -7,5 +7,8 @@ export default (withStyle) =>
         margin: (marg) => withStyle({
             margin: `${marg}px`,
         }),
+        rounded: (rad) => withStyle({
+            borderRadius: `${rad}px`,
+        })
     }
 }

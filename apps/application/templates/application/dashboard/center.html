@@ -51,6 +51,10 @@
             {% csrf_token %}
             <button type="submit" class="redir">Демо дашборд</button>
         </form>
+        <form class="margin-on-hover" method="POST" action="{% url 'demo-form-manager' %}">
+            {% csrf_token %}
+            <button type="submit" class="redir">Демо менеджер форм</button>
+        </form>
         <form class="margin-on-hover" method="POST" action="{% url 'demo-1' %}">
             {% csrf_token %}
             <button type="submit" class="redir">Демо 1</button>

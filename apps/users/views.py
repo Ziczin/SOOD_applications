@@ -1,8 +1,9 @@
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate, logout
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login, logout
 
+from flask_login import login_required
+from rest_framework.views import APIView
 from apps.users.models import CustomUser, UserRole, Department
 from apps.forms.forms import login_form_data, registration_form_data
 from apps.forms.form_checker import form_checker
@@ -33,24 +34,12 @@ def register(request):
     data['_errors'] = errors
     return render(request, 'forms/form_builder.html', {'form_data': data})
 
-def login_view(request):
-    errors = []
-    if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            return redirect('/applications/dashboard')
-        else:
-            errors.append({
-                'text': "Неправильный логин или пароль!",
-                'desc': "Если вы забыли пароль, то обратитесь в отдел программирования"
-                })
 
-    data = form_checker(login_form_data)
-    data["_errors"] = errors
-    return render(request, 'forms/form_builder.html', {"form_data": data})
+def login_view(request):
+        errors = []
+        data = form_checker(login_form_data)
+        data["_errors"] = errors
+        return render(request, 'forms/form_builder.html', {"form_data": data})
 
 def logout_view(request):
     logout(request)
@@ -69,3 +58,7 @@ def change_role(request):
 
 def sandbox(request):
     return render(request, 'users/sandbox.html')
+
+def sandbox2(request):
+    return render(request, 'users/sandbox2.html')
+

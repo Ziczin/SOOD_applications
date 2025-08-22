@@ -1,0 +1,49 @@
+{% load static %}
+{% csrf_token %}
+<meta name="csrf-token" content="{{ csrf_token }}">
+
+<form method="POST" action="{% url 'dashboard' %}">
+  {% csrf_token %}
+  <button type="submit" class="content back flex">Вернуться в аккаунт</button>
+</form>
+
+<div class="content" id="forms-list">
+</div>
+
+<script type="module">
+  await import("{% static 'deps/make/make.js' %}");
+
+  const qBase = make.Query({ route: '/api', redirect_request_key: 'redirect_request',})
+                    .via({ 'X-CSRFToken': make.other.getCookie('csrftoken') });
+
+  const qGetFormList = qBase.copy()
+                            .as('GET')
+                            .at('forms')
+
+  const csrftoken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+  document.getElementById("forms-list").appendChild(
+    make.Div(
+      make.Div(
+        make.it.flexColumn,
+        make.it.gap6px,
+        ...(await qGetFormList.fetch()).map(
+          (form) =>
+          make.Button(
+            make.it.marginOnHover,
+            make.it.redir,
+            make.with.text(form.label),
+            make.on.click(() => console.log(form.name))
+          )
+        )
+      ),
+      make.Separator(),
+      make.Button(
+        make.it.primary,
+        make.with.text("Создать форму"),
+        make.on.click(() => qTest.fetch())
+      )
+    ).build()
+  )
+
+</script>

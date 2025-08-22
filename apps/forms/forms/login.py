@@ -1,7 +1,7 @@
 
 login_form_data = {
     "name": "Login",
-    "action": "/users/login/",
+    "action": "/api/auth/login/",
     "title": "Вход",
     "btn_confirm": "Войти",
     "sub_btn_link": "/users/register/",
