@@ -23,11 +23,8 @@ export default class Query {
         this._headers = {};
         this._body = {};
         this._mergedBody = null;
-    }
-
-    setMethod(method) {
-        this._method = method;
-        return this;
+        this._queryParams = null;
+        this._queryString = '';
     }
 
     at(param) {
@@ -47,6 +44,48 @@ export default class Query {
 
     with(body) {
         this._body = { ...this._body, ...body };
+        this._queryString = '';
+
+        if (this._method && String(this._method).toUpperCase() === 'GET') {
+            const source = { ...this._baseBody, ...this._body };
+            const pairs = [];
+
+            const encode = (k, v) => encodeURIComponent(k) + '=' + encodeURIComponent(String(v));
+
+            const processValue = (key, val) => {
+                if (val === undefined || val === null) return;
+                if (Array.isArray(val)) {
+                    for (let i = 0; i < val.length; i++) {
+                        const item = val[i];
+                        if (item === undefined || item === null) continue;
+                        if (typeof item === 'object' && !Array.isArray(item)) {
+                            for (const subKey of Object.keys(item)) {
+                                const subVal = item[subKey];
+                                if (subVal === undefined || subVal === null) continue;
+                                pairs.push(encode(`${key}[${i}].${subKey}`, subVal));
+                            }
+                        } else {
+                            pairs.push(encode(`${key}[${i}]`, item));
+                        }
+                    }
+                } else if (typeof val === 'object') {
+                    for (const subKey of Object.keys(val)) {
+                        const subVal = val[subKey];
+                        if (subVal === undefined || subVal === null) continue;
+                        pairs.push(encode(`${key}.${subKey}`, subVal));
+                    }
+                } else {
+                    pairs.push(encode(key, val));
+                }
+            };
+
+            for (const key of Object.keys(source)) {
+                processValue(key, source[key]);
+            }
+
+            this._queryString = pairs.join('&');
+        }
+
         return this;
     }
 
@@ -80,6 +119,7 @@ export default class Query {
         this._headers = {};
         this._body = {};
         this._mergedBody = null;
+        this._queryString = '';
         return this;
     }
 
@@ -142,6 +182,9 @@ export default class Query {
         let result = this._baseRoute;
         for (const param of this._route) {
             result += '/' + encodeURIComponent(param);
+        }
+        if (this._queryString && this._queryString.length > 0) {
+            result += (result.includes('?') ? '&' : '?') + this._queryString;
         }
         return result;
     }

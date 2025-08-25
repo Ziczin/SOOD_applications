@@ -1,13 +1,14 @@
 from django.urls import path
-from .views import dashboard, form_manager, demo_1, demo_2, demo_3, demo_dashboard, demo_form_manager
-
+from .views import (
+    DashboardView,
+    FormManagerView,
+    DemoDashboardView,
+    DemoFormManagerView,
+)
 urlpatterns = [
-    path('dashboard/', dashboard, name='dashboard'),
-    path('form-manager/', form_manager, name="form-manager"),
-    path('demo-1/', demo_1, name="demo-1"),
-    path('demo-2/', demo_2, name="demo-2"),
-    path('demo-3/', demo_3, name="demo-3"),
-    path('demo-dashboard/', demo_dashboard, name="demo-dashboard"),
-    path('demo-form-manager/', demo_form_manager, name="demo-form-manager"),
+    path('dashboard/', DashboardView.as_view(), name='dashboard'),
+    path('form-manager/', FormManagerView.as_view(), name="form-manager"),
+    path('demo-dashboard/', DemoDashboardView.as_view(), name="demo-dashboard"),
+    path('demo-form-manager/', DemoFormManagerView.as_view(), name="demo-form-manager"),
 ]
 

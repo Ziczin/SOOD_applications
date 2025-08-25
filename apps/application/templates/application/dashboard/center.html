@@ -55,23 +55,6 @@
             {% csrf_token %}
             <button type="submit" class="redir">Демо менеджер форм</button>
         </form>
-        <form class="margin-on-hover" method="POST" action="{% url 'demo-1' %}">
-            {% csrf_token %}
-            <button type="submit" class="redir">Демо 1</button>
-        </form>
-        <form class="margin-on-hover" method="POST" action="{% url 'demo-2' %}">
-            {% csrf_token %}
-            <button type="submit" class="redir">Демо 2</button>
-        </form>
-        <form class="margin-on-hover" method="POST" action="{% url 'demo-3' %}">
-            {% csrf_token %}
-            <button type="submit" class="redir">Демо 3</button>
-        </form>
-        <form class="margin-on-hover" method="POST">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="create_new_form">
-            <button type="submit" class="redir">Перечисления</button>
-        </form>
     </div>
 </div>
 {% endif %}

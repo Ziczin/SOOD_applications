@@ -1,49 +1,73 @@
 {% load static %}
-{% csrf_token %}
-<meta name="csrf-token" content="{{ csrf_token }}">
 
 <form method="POST" action="{% url 'dashboard' %}">
   {% csrf_token %}
   <button type="submit" class="content back flex">Вернуться в аккаунт</button>
 </form>
 
-<div class="content" id="forms-list">
+<div class="content">
+  <h2>Формы:</h2>
+  {% for form in data.forms %}
+  <div class="margin-on-hover">
+    <button class='redir' onclick="init()">
+      {{ form.form_label }}
+    </button>
+  </div>
+  {% endfor %}
 </div>
 
+<link rel="stylesheet" href="{% static 'deps/make/make.css' %}">
+
 <script type="module">
-  await import("{% static 'deps/make/make.js' %}");
+  await import("{% static 'collected/static.js' %}");
+  
 
-  const qBase = make.Query({ route: '/api', redirect_request_key: 'redirect_request',})
-                    .via({ 'X-CSRFToken': make.other.getCookie('csrftoken') });
+  const THEtext = [
+    "Что вершит судьбу человечества в этом мире?",
+    "Не слепая удача и не воля богов, но хрупкий порядок, выстраданный веками.",
+    "Инструкция — вот та Длань Господня, что удерживает мир от падения в хаос.",
+    "Она — воплощение опыта, закон, написанный кровью тех, кто ослушался прежде.",
+    "Игнорировать её — не акт свободы, но величайшее высокомерие и глухота.",
+    "Одно «незачем» пилота — и металл падает на землю.",
+    "Одно «проигнорирую» учёного — и чума вырывается из пробирки.",
+    "Мы сплетаем безопасность из миллионов нитей, и каждая нить — это исполненное правило.",
+    "Непослушание рвёт эти нити, обнажая уязвимую плоть мира.",
+    "Судьба человечества вершится не в звездах, а в том, выбираем ли мы читать руководство или нет.",
+    "Выбираем ли мы слушать предупреждения или обрекать себя на повторение ошибок.",
+    "И потому тот, кто следует инструкции, — не раб, а зодчий будущего.",
+    "А тот, кто игнорирует её, — не герой, а слепец, роющий могилу для всех нас."
+]
 
-  const qGetFormList = qBase.copy()
-                            .as('GET')
-                            .at('forms')
+  const gooseText = [
+    `⠸⣿⣦⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⡠⠔⠒⠒⠒⢤⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀`,
+    `⠀⠀⠙⠻⣿⣷⣦⣀⠀⠀⠀⢀⣾⣷⠀⠘⠀⠀⠀⠙⢆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀`,
+    `⠀⠀⠀⠀⠀⠉⠛⠙⢏⢩⣶⣿⣿⠿⠖⠒⠤⣄⠀⠀⠈⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀`,
+    `⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠋⢅⡈⠐⠠⢀⠀⠈⢆⠀⠀⣷⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀`,
+    `⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠐⠠⢀⠩⠀⢸⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀`,
+    `⠀⣿⣹⠆⣿⣉⢀⡟⡄⣰⠉⠂⢸⣏⠁⠀⠀⠀⡌⠀⠀⠸⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀`,
+    `⠀⠛⠀⠀⠓⠒⠘⠉⠛⠘⠒⠃⠘⠒⠂⠀⠀⢰⠁⠀⠀⠀⠑⢤⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀`,
+    `⠀⠀⠀⢦⢠⡄⡄⢠⣦⠀⣔⠢⠀⠀⠀⠀⡠⠃⠀⠀⠀⠀⠀⠀⠀⠈⠉⠉⠙⠒⠒⠤⢄⣀⠤⠔⠒⡄`,
+    `⠀⠀⠀⠸⠏⠳⠃⠟⠺⠆⠬⠽⠀⠀⠀⢰⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇`,
+    `⠀⣄⢀⡀⣠⠀⢠⡀⣠⢠⡀⠀⣠⢀⡀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡼⠀`,
+    `⠀⡏⢿⡇⣿⣒⠈⣧⡇⢸⣒⡂⣿⢺⡁⠀⢧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡤⠊⠀⠀`,
+    `⠀⠀⠈⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡸⠀⠀⠀⠀`,
+    `⠀⠀⠀⠀⠀⣼⣳⠀⡟⣼⠀⠀⠀⠀⠀⠀⠀⠈⢆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠇⠀⠀⠀⠀`,
+    `⠀⠀⠀⠀⠀⠃⠈⠃⠃⠘⠀⠀⠀⠀⠀⠀⠀⠀⠈⢆⣀⣀⣀⡀⠀⠀⠀⠀⠀⠀⠀⢀⠎⠀⠀⠀⠀⠀`,
+    `⡖⢲⡄⣶⣲⡆⢲⠒⣶⢀⡖⢲⠀⡶⡄⡆⠀⠀⠀⠀⣿⠁⠀⠈⠑⠢⣄⠀⠀⠀⢠⠎⠀⠀⠀⠀⠀⠀`,
+    `⠳⠼⠃⠿⠀⠀⠸⠀⠿⠈⠣⠞⠀⠇⠹⠇⠀⠀⠀⢸⣿⠀⠀⠀⠀⠀⠀⠙⣢⡴⠁⠀⠀⠀⠀⠀⠀⠀`,
+    `⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠠⣶⣶⣶⣾⣿⡿⠀⠀⠀⠀⠀⠀⠀⣿⠇⠀⠀⠀⠀⠀⠀⠀⠀`,
+    `⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠛⠛⠿⠛⠉⠀⠀⠀⠀⠀⠀⠀⢀⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀`,
+    `⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣴⣶⣿⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀`,
+    `⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠻⠛⠉⠻⠀⠀⠀⠀⠀⠀⠀⠀⠀`,
+  ]
 
-  const csrftoken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+  const qBase = make.Query('/api/forms');
+  const qGetForms = qBase.copy(true)
+                         .as('get')
+                         .with({department: "{{ user.department }}"})
 
-  document.getElementById("forms-list").appendChild(
-    make.Div(
-      make.Div(
-        make.it.flexColumn,
-        make.it.gap6px,
-        ...(await qGetFormList.fetch()).map(
-          (form) =>
-          make.Button(
-            make.it.marginOnHover,
-            make.it.redir,
-            make.with.text(form.label),
-            make.on.click(() => console.log(form.name))
-          )
-        )
-      ),
-      make.Separator(),
-      make.Button(
-        make.it.primary,
-        make.with.text("Создать форму"),
-        make.on.click(() => qTest.fetch())
-      )
-    ).build()
+  const formMenu = make.Div(
+    
   )
 
 </script>

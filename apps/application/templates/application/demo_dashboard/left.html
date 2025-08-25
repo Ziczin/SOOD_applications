@@ -1,0 +1,20 @@
+{% load static %}
+
+<form method="POST" action="{% url 'dashboard' %}">
+    {% csrf_token %}
+    <button type="submit" class="content back flex">Вернуться в аккаунт</button>
+</form>
+
+<div class="content" id="left-content"></div>
+
+<script type="module">
+  await import("{% static 'deps/make/make.js' %}");
+  
+  document.getElementById('left-container').appendChild(
+    make.Div(
+      make.it.content,
+
+    )
+  )
+
+</script>

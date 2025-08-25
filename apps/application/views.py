@@ -1,79 +1,21 @@
-from django.shortcuts import render, HttpResponse
-from django.contrib.auth.decorators import login_required
+from django.views.generic import TemplateView
+from django.contrib.auth.mixins import LoginRequiredMixin
 
-from .models import Form
-from apps.users.models import CustomUser, UserRole
-
-@login_required
-def dashboard(request):
-    forms_list = list(Form.objects.all().values())
-    user_data = CustomUser.objects.get(username=request.user)
-    users = CustomUser.objects.filter(department=user_data.department)
-    roles = UserRole.choices
-    
-    return render(
-        request, 'application/builder.html',
-        {
-            'variant': 'dashboard',
-            'data': {'forms': forms_list, 'user': user_data, 'users': users, 'roles': roles}
-        }
-    )
-
-@login_required
-def form_manager(request):
-    forms_list = list(Form.objects.all().values())
-    
-    return render(
-        request, 'application/builder.html',
-        {
-            'variant': 'form_manager',
-            'data': {'forms': forms_list}
-        }
-    )
-
-@login_required
-def demo_1(request):
-    forms_list = list(Form.objects.all().values())
-    
-    return render(
-        request, 'application/builder.html',
-        {
-            'variant': 'form_manager2',
-            'data': {'forms': forms_list}
-        }
-    )
-
-@login_required
-def demo_dashboard(request):
-    forms_list = list(Form.objects.all().values())
-    user_data = CustomUser.objects.get(username=request.user)
-    users = CustomUser.objects.filter(department=user_data.department)
-    roles = UserRole.choices
-    
-    return render(
-        request, 'application/builder.html',
-        {
-            'variant': 'dashboard2',
-            'data': {'forms': forms_list, 'user': user_data, 'users': users, 'roles': roles}
-        }
-    )
-
-@login_required
-def demo_form_manager(request):
-    forms_list = list(Form.objects.all().values())
-    return render(
-        request, 'application/builder.html',
-        {
-            'variant': 'demo_form_manager',
-            'data': {'forms': forms_list}
-        }
-    )
+class DashboardView(LoginRequiredMixin, TemplateView):
+    template_name = 'application/builder.html'
+    extra_context = {'variant': 'dashboard'}
 
 
-@login_required
-def demo_2(request):
-    return render(request, 'application/test2.html',)
+class FormManagerView(LoginRequiredMixin, TemplateView):
+    template_name = 'application/builder.html'
+    extra_context = {'variant': 'form_manager'}
 
-@login_required
-def demo_3(request):
-    return render(request, 'application/test3.html',)
+
+class DemoDashboardView(TemplateView):
+    template_name = 'application/builder.html'
+    extra_context = {'variant': 'demo_dashboard'}
+
+
+class DemoFormManagerView(TemplateView):
+    template_name = 'application/builder.html'
+    extra_context = {'variant': 'demo_form_manager'}
