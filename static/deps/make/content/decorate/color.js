@@ -10,5 +10,9 @@ export default (withCss) =>
         lyellow: withCss('make-color-l-yellow'),
         green: withCss('make-color-green'),
         lgreen: withCss('make-color-l-green'),
+        lgray: withCss('make-color-l-gray'),
+        mgray: withCss('make-color-m-gray'),
+        dgray: withCss('make-color-d-gray'),
+        vgray: withCss('make-color-v-gray'),
     }
 }

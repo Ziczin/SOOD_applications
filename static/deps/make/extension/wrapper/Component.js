@@ -4,6 +4,7 @@ import Decorator from './Decorator.js';
 export default class Component extends Applicable {
     constructor(elementType, autoRebuild = true) {
         super();
+        this.name = 'component'
         this.elementType = elementType;
         this.element = null;
         this.decorators = [];
@@ -12,6 +13,10 @@ export default class Component extends Applicable {
         this.autoRebuild = autoRebuild;
         this.buildLock = true
         this.destroyed = false;
+    }
+
+    view() {
+        return `${this.elementType}=${this.name}`
     }
 
     addModifiers(...modifiers) {
@@ -28,18 +33,13 @@ export default class Component extends Applicable {
     }
 
     addChild(child) {
+        //console.log(`${this.view()} <- ${child.view()}`)
         child.parent = this;
         this.children.push(child);
         this.autoRebuild && this.build(true);
     }
 
     build(force = false) {
-        if (this.testField) {
-            console.log(this.testField)
-            if (this.element) {
-                console.log(this.element)
-            }
-        }
         if (this.element) {
             if (force) this.element.innerHTML = '';
             else return this.element;
@@ -47,8 +47,6 @@ export default class Component extends Applicable {
         else this.element = document.createElement(this.elementType);
 
         for (const decorator of this.decorators) {
-            this.testField && console.log(this.testField)
-
             decorator.apply(this);
         }
 

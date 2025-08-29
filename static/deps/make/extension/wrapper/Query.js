@@ -123,28 +123,53 @@ export default class Query {
         return this;
     }
 
-    copy(deep = false) {
+    view() {
         const currentHeaders = { ...this._baseHeaders, ...this._headers };
         const currentBody = { ...this._baseBody, ...this._body };
-
-        let newBaseHeaders = currentHeaders;
-        let newBaseBody = currentBody;
-
-        if (deep) {
-            newBaseHeaders = { ...currentHeaders };
-            newBaseBody = { ...currentBody };
-        }
 
         return new Query(
             this._buildRoute(),
             this._method,
-            newBaseHeaders,
-            newBaseBody,
+            currentHeaders,
+            currentBody,
             this._redirect_request_key
         );
     }
 
-    async fetch() {
+    copy() {
+        const q = new Query(
+            this._baseRoute,
+            this._method,
+            { ...this._baseHeaders },
+            { ...this._baseBody },
+            this._redirect_request_key
+        );
+        q._route = [...this._route];
+        q._headers = { ...this._headers };
+        q._body = { ...this._body };
+        q._mergedBody = this._mergedBody === null ? null : { ...this._mergedBody };
+        q._queryParams = this._queryParams === null ? null : { ...this._queryParams };
+        q._queryString = this._queryString;
+        return q;
+    }
+
+    async get() {
+        return await this.fetch('GET')
+    }
+    async post() {
+        return await this.fetch('POST')
+    }
+    async put() {
+        return await this.fetch('PUT')
+    }
+    async delete() {
+        return await this.fetch('DELETE')
+    }
+    async patch() {
+        return await this.fetch('PATCH')
+    }
+
+    async fetch(method=null) {
         const url = this._buildRoute() + '/';
         const headers = this._buildHeaders();
         const body = this._mergedBody !== null 
@@ -152,7 +177,7 @@ export default class Query {
             : this._buildBody();
         
         const options = {
-            method: this._method,
+            method: method ?? this._method,
             headers: {
                 'Content-Type': 'application/json',
                 ...headers,
@@ -164,10 +189,6 @@ export default class Query {
         }
 
         const response = await fetch(url, options);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
         
         const data = await response.json();
 

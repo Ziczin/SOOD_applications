@@ -24,7 +24,7 @@ def register(request):
             CustomUser.objects.create_user(
                 username=request.POST['username'],
                 password=request.POST['password1'],
-                full_name=request.POST['full_name'],
+                fullname=request.POST['fullname'],
                 department=Department.objects.order_by('id')[int(request.POST['department'])],
                 role=UserRole.USER
                 )
@@ -54,11 +54,13 @@ def change_role(request):
     user.save()
     return JsonResponse({'status': 'success', 'message': 'Роль успешно изменена.'})
 
-
-
 def sandbox(request):
     return render(request, 'users/sandbox.html')
 
 def sandbox2(request):
     return render(request, 'users/sandbox2.html')
 
+def permission_denied_view(request):
+    resp = render(request, 'users/403.html')
+    resp.status_code = 403
+    return resp

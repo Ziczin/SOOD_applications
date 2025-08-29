@@ -21,13 +21,15 @@ def create_superuser():
         User.objects.create_superuser(username='toster', password='imposter', email='toster@example.com')
 
     super_user = User.objects.get(username='toster')
-    super_user.full_name = 'SUPERUSER'
+    super_user.fullname = 'SUPERUSER'
     super_user.role = UserRole.ADMIN
+    super_user.verified = True
+    super_user.proxy = True
     super_user.save()
 
 def on_test_setup():
-    user_department, created = Department.objects.get_or_create(name='User')
-    remont_department, created = Department.objects.get_or_create(name='Remont')
+    user_department, created = Department.objects.get_or_create(name='prog', label='Отдел программирования')
+    remont_department, created = Department.objects.get_or_create(name='net', label='Отдел сетевой поддержки')
 
     print("-- Создание тэгов перечислений")
     obj1, created = EnumTag.objects.get_or_create(name='Принтер')

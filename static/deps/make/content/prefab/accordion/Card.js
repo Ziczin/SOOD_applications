@@ -1,4 +1,4 @@
-export default function createCard(Component, makeWith, makeOn) {
+export default function createCard(Component, createComponent, makeWith, makeOn) {
   return class Card extends Component {
     constructor(...modifiers) {
       super('div');
@@ -22,16 +22,18 @@ export default function createCard(Component, makeWith, makeOn) {
       this.accordion = accordion;
     }
 
-    header(component) {
-      component.addDecorator(makeWith.css('make-card-header'));
-      component.addDecorator(makeOn.click(this._onHeaderClick));
-      this.cardHeader = component;
+    header(...modifiers) {
+      this.cardHeader = createComponent(
+        'div',
+        makeWith.css('make-card-header'),
+        makeOn.click(this._onHeaderClick),
+        ...modifiers)
       this.addChild(this.cardHeader);
       return this;
     }
 
-    content(component) {
-      this.cardContent = component;
+    content(...modifier) {
+      this.cardContent = createComponent('div', ...modifier)
       this.addChild(this.cardContent);
       this.setupContentAnimation();
       return this;

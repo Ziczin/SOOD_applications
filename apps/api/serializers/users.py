@@ -4,10 +4,11 @@ from apps.users.models import CustomUser, UserRole, Department
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password1 = serializers.CharField(write_only=True)
     password2 = serializers.CharField(write_only=True)
+    department = serializers.CharField()
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'password1', 'password2', 'full_name', 'department']
+        fields = ['username', 'password1', 'password2', 'fullname', 'department']
 
     def validate(self, data):
         if CustomUser.objects.filter(username=data['username']).exists():
@@ -17,11 +18,12 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
+        print(validated_data)
         user = CustomUser.objects.create_user(
             username=validated_data['username'],
             password=validated_data['password1'],
-            full_name=validated_data['full_name'],
-            department=Department.objects.get(id=validated_data['department']),
+            fullname=validated_data['fullname'],
+            department=Department.objects.get(name=validated_data['department']),
             role=UserRole.USER
         )
         return user
@@ -33,37 +35,31 @@ class UserLoginSerializer(serializers.Serializer):
 class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ('id', 'username', 'full_name', 'email', 'department', 'role')
+        fields = ('id', 'username', 'fullname', 'email', 'department', 'role')
 
 class UserDetailSerializer(serializers.ModelSerializer):
     department = serializers.StringRelatedField()
     class Meta:
         model = CustomUser
-        fields = ('id', 'username', 'full_name', 'first_name', 'last_name', 'email', 'department', 'role', 'date_joined')
+        fields = ('id', 'username', 'fullname', 'first_name', 'last_name', 'email', 'department', 'role', 'date_joined')
 
 class CurrentUserSerializer(serializers.ModelSerializer):
     department = serializers.StringRelatedField()
     class Meta:
         model = CustomUser
-        fields = ('id', 'username', 'full_name', 'first_name', 'last_name', 'email', 'department', 'role')
-
-class ChangeRoleSerializer(serializers.Serializer):
-    username = serializers.CharField()
-    role = serializers.ChoiceField(choices=UserRole.choices)
+        fields = ('id', 'username', 'fullname', 'email', 'department', 'role')
 
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Department
-        fields = ('id', 'name')
-
+        fields = ('id', 'name', 'label')
 
 class UserListSerializer(serializers.ModelSerializer):
     department = DepartmentSerializer(read_only=True)
 
     class Meta:
         model = CustomUser
-        fields = ('id', 'username', 'full_name', 'first_name', 'last_name', 'email', 'department', 'role')
-
+        fields = ('id', 'username', 'fullname', 'first_name', 'last_name', 'email', 'department', 'role')
 
 class UserDetailSerializer(serializers.ModelSerializer):
     department = DepartmentSerializer(read_only=True)
@@ -71,18 +67,16 @@ class UserDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = (
-            'id', 'username', 'full_name', 'first_name', 'last_name',
+            'id', 'username', 'fullname', 'first_name', 'last_name',
             'email', 'department', 'role', 'date_joined', 'is_active'
         )
-
 
 class CurrentUserSerializer(serializers.ModelSerializer):
     department = DepartmentSerializer(read_only=True)
 
     class Meta:
         model = CustomUser
-        fields = ('id', 'username', 'full_name', 'first_name', 'last_name', 'email', 'department', 'role')
-
+        fields = ('id', 'username', 'fullname', 'department', 'role')
 
 class ChangeRoleSerializer(serializers.Serializer):
     username = serializers.CharField()

@@ -23,100 +23,181 @@
 </html>
 
 <script type="module">
-  await import("{% static 'deps/make/make.js' %}");
+  await import("{% static 'collected/static.js' %}");
   const maindiv = document.getElementById('form-template');
   let content;
   let accordion;
 
-  const innerMakeTemplate = make.Div(
-    accordion = make.Accordion(
-      make.Preferences({
-        isMulti: false
-      }),
-      make.Card("Заголовок 1",
-        make.CardContent(
-          make.Paragraph("Содержимое первой карточки"),
-          make.Div(
-            make.Input(
-              make.with.attr({
-                type: 'text',
-                placeholder: 'inp'
-              })
-            )
-          )
-        )
-      ),
-      make.Card("Заголовок 2",
-        make.CardContent(
-          content = make.Div(
-            make.it.flexColumn, make.it.leftAlign,
-            make.style.padding(12),
-            make.Paragraph("test1", make.it.delayedMarginOnHover),
-            make.Paragraph("test2", make.it.delayedMarginOnHover),
-            make.Paragraph("test3", make.it.delayedMarginOnHover)
-          ),
-          make.Button(
-            make.color.dred,
-            make.with.text("Добавить"),
-            make.on.click(() => content.addChild(
-              make.Paragraph("test_new", make.it.delayedMarginOnHover)
-            ))
-          )
-        )
-      ),
-      make.Card("Заголовок 3",
-        make.CardContent(
-          make.Div(
-            make.style.padding(16),
-            make.Accordion(
-              make.Preferences({
-                isMulti: true
-              }),
-              make.Card('Подзаголовок 1',
-                make.CardContent(
-                  make.Paragraph("test 4"),
-                  make.Paragraph("test 4"),
-                  make.Paragraph("test 4")
-                )
-              ),
-              make.Card('Подзаголовок 2',
-                make.CardContent(
-                  make.Paragraph("test 5"),
-                  make.Paragraph("test 5"),
-                  make.Paragraph("test 5")
-                )
-              ),
-              make.Card('Подзаголовок 3',
-                make.CardContent(
-                  make.Paragraph("test 6"),
-                  make.Paragraph("test 6"),
-                  make.Paragraph("test 65")
-                )
-              )
-            )
-          )
-        )
+  const aaaaaaaaa = make.Div(
+    make.it.flexColumn,
+    make.it.gap10px,
+    make.Card(
+      make.color.green,
+      make.style.rounded(12),
+      make.style.padding(8),
+    )
+    .header(
+      make.Paragraph("Вкладки без скролла"),
+      make.Separator(4),
+    )
+    .content(
+      make.color.lgreen,
+      make.style.rounded(12),
+      make.Tabs(
+        make.style.margin(8),
       )
-    ),
-    make.Button(
-      make.with.text('add'),
-      make.color.blue,
-      make.on.click(() => {
-        console.log('123');
-        accordion.addChild(
-          make.Card("Заголовок новый",
-            make.CardContent(
-              make.Div(
-                make.Paragraph("test1"),
-                make.Paragraph("test2"),
-                make.Paragraph("test3")
+      .menu(
+        make.style.padding(8),
+        make.style.rounded(12),
+        make.it.littleDarker,
+        make.it.flexRow,
+        make.style.gap(8)
+      )
+      .tab('Тестовая вкладка 1')
+        .header(
+          make.it.contented,
+          make.Paragraph('Вкладка 1'),
+          make.Button(
+            make.it.redir,
+            make.with.text('bnt'),
+            make.on.click((e) => {
+              e.stopPropagation()
+              make.Notice(500, 1000, 500,
+                make.Div(
+                  make.style.rounded(12),
+                  make.style.padding(12),
+                  make.color.green,
+                  make.Paragraph("bnt tab 1")
+                )
               )
-            )
+            })
           )
         )
-      })
+        .content(
+          make.it.flexColumn, make.it.leftAlign,
+          make.Paragraph('Текстовый контент'),
+          make.Paragraph('На вкладке 1')
+        )
+      .tab('Тестовая вкладка 2')
+        .header(
+          make.it.contented,
+          make.Paragraph('Вкладка 2'),
+          make.Button(
+            make.it.redir,
+            make.with.text('bnt'),
+            make.on.click((e) => {
+              e.stopPropagation()
+              make.Notice(500, 1000, 500,
+                make.Div(
+                  make.style.rounded(12),
+                  make.style.padding(12),
+                  make.color.yellow,
+                  make.Paragraph("bnt tab 2")
+                )
+              )
+            })
+          )
+        )
+        .content(
+          make.it.flexColumn, make.it.leftAlign,
+          make.Paragraph('Другой текстовый контент'),
+          make.Paragraph('На вкладке 2')
+        )
+      .tab('Тестовая вкладка 3')
+        .header(
+          make.it.contented,
+          make.Paragraph('Вкладка 3')
+        )
+        .content(
+          make.it.flexColumn, make.it.leftAlign,
+          make.Paragraph('Другой текстовый контент eragrgagrdgsdrgdxr'),
+          make.Paragraph('На вкладке 3'),
+          make.Paragraph('На вкладке 3'),
+          make.Paragraph('На вкладке 3')
+        )
+    ),
+    make.Card(
+      make.color.dred,
+      make.style.padding(8),
+      make.style.rounded(12),
+    )
+    .header(
+      make.Paragraph('Вкладки с включённым скроллом'),
+      make.Separator(4),
+    )
+    .content(
+      make.color.red,
+      make.style.rounded(12),
+      make.Tabs({scroll: true},
+        make.style.margin(8),
+        make.it.flexColumn,
+      )
+      .menu(
+        make.style.padding(8),
+        make.style.rounded(12),
+        make.it.littleLighter,
+        make.it.flexRow,
+        make.style.gap(8)
+      )
+      .tab()
+        .header(
+          make.with.style({minWidth: '100px'}),
+          make.it.contented,
+          make.Paragraph('Вкладка 1')
+        )
+        .content(
+          make.it.flexColumn, make.it.leftAlign,
+          make.Paragraph('Текстовый контент'),
+          make.Paragraph('На вкладке 1')
+        )
+      .tab('Тестовая вкладка 2')
+        .header(
+          make.with.style({minWidth: '100px'}),
+          make.it.contented,
+          make.Paragraph('Вкладка 2')
+        )
+        .content(
+          make.it.flexColumn, make.it.leftAlign,
+          make.Paragraph('Другой текстовый контент'),
+          make.Paragraph('На вкладке 2')
+        )
+      .tab('Тестовая вкладка 3')
+        .header(
+          make.with.style({minWidth: '100px'}),
+          make.it.contented,
+          make.Paragraph('Вкладка 3')
+        )
+        .content(
+          make.it.flexColumn, make.it.leftAlign,
+          make.Paragraph('Другой текстовый контент eragrgagrdgsdrgdxr'),
+          make.Paragraph('На вкладке 3'),
+          make.Paragraph('На вкладке 3'),
+          make.Paragraph('На вкладке 3')
+        )
+      .tab()
+      .header(make.with.style({minWidth: '100px'}), make.Paragraph("Тестовая вкладка 4"))
+      .content(make.h1("Тестовая вкладка 4"))
+      .tab()
+      .header(make.with.style({minWidth: '100px'}), make.Paragraph("Тестовая вкладка 5"))
+      .content(make.h1("Тестовая вкладка 5"))
+      .tab()
+      .header(make.with.style({minWidth: '100px'}), make.Paragraph("Тестовая вкладка 6"))
+      .content(make.h1("Тестовая вкладка 6"))
+      .tab()
+      .header(make.with.style({minWidth: '100px'}), make.Paragraph("Тестовая вкладка 7"))
+      .content(make.h1("Тестовая вкладка 7"))
+      .tab()
+      .header(make.with.style({minWidth: '100px'}), make.Paragraph("Тестовая вкладка 8"))
+      .content(make.h1("Тестовая вкладка 8"))
+      .tab()
+      .header(make.with.style({minWidth: '100px'}), make.Paragraph("Тестовая вкладка 9"))
+      .content(make.h1("Тестовая вкладка 9"))
+      .tab()
+      .header(make.with.style({minWidth: '100px'}), make.Paragraph("Тестовая вкладка 0"))
+      .content(make.h1("Тестовая вкладка 0"))
     )
   );
 
-  maindiv.appendChild(innerMakeTemplate.build());
+  maindiv.appendChild(aaaaaaaaa.build());
+  window.aaaaaaaaa=aaaaaaaaa
 </script>

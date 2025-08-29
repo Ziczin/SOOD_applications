@@ -12,22 +12,28 @@ const createEvent = factory.Event(extension.wrapper.Decorator);
 const makeWith = content.decorate.with(createDecorator);
 const makeOn = content.decorate.on(createEvent);
 
-const Tab = content.prefab.tabs.Tab(extension.wrapper.Component, makeWith);
-const TabContent = content.prefab.tabs.TabContent(extension.wrapper.Component);
-const Tabs = content.prefab.tabs.Tabs(
+const Tabs = content.prefab.Tabs(
     extension.wrapper.Component,
     createComponent,
     makeWith,
     makeOn
 );
 
-const Card = content.prefab.accordion.Card(extension.wrapper.Component, makeWith, makeOn);
+const Card = content.prefab.accordion.Card(extension.wrapper.Component, createComponent, makeWith, makeOn);
 const Accordion = content.prefab.accordion.Accordion(
     extension.wrapper.Component, Card
 );
 
 window.make = (function() {
-    console.log('Powered by make.js v0.0.1.2dev')
+    console.log('Powered by make.js v0.0.5-dev')
+    console.log(`
+    CHANGE LOG
+    - Some fixes on Query component allows to use 5 base REST methods
+    - Card now gen it\`s own div-component
+    - Rework Tabs component to use new chain syntax
+    - Change versioning system
+    - Added changelog :3
+    `)
 
     return {
         other: other,
@@ -44,8 +50,6 @@ window.make = (function() {
             content.decorate.inner(makeWith.css),
         ),
         Tabs: (...tabs) => new Tabs(...tabs),
-        Tab: (title, ...decorators) => new Tab(title, ...decorators),
-        TabContent: (...decorators) => new TabContent(...decorators),
 
         Accordion: (...cards) => new Accordion(...cards),
         Card: (...decorators) => new Card(...decorators),

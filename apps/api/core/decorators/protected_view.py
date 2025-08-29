@@ -1,4 +1,6 @@
+from django.contrib.auth.decorators import login_required as django_login_required
 from functools import wraps
+from django.shortcuts import redirect
 
 def protected_method(*permissions):
     """
@@ -32,8 +34,6 @@ def protected_api_view(cls):
             func = member.__func__
 
         if func:
-            # func._method_permissions содержит mapping {method_name: [permissions]}
-            # используем update, чтобы объединить все найденные записи
             permissions.update(func._method_permissions)
 
     cls.permissions_dict = permissions
@@ -50,9 +50,6 @@ def role_required(role, redir='/applications/dashboard/'):
     возможно предпочтительнее проверять роль внутри функции/метода или
     использовать DRF permissions.
     """
-    from django.contrib.auth.decorators import login_required as django_login_required
-    from functools import wraps
-    from django.shortcuts import redirect
 
     def decorator(func):
         @django_login_required

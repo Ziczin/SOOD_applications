@@ -7,19 +7,22 @@ class UserRole(models.TextChoices):
     ADMIN = 'ADMIN', 'Администратор'
 
 class Department(models.Model):
-    name = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=63, unique=True)
+    label = models.CharField(max_length=127)
 
     def __str__(self):
-        return self.name
+        return self.label
 
 class CustomUser(AbstractUser):
-    full_name = models.CharField(max_length=100, blank=True)
+    fullname = models.CharField(max_length=100, blank=True)
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True)
     role = models.CharField(
         max_length=20,
         choices=UserRole.choices,
         default=UserRole.USER,
     )
+    verified = models.BooleanField(default=False)
+    proxy = models.BooleanField(default=False)
 
     def __str__(self):
         return self.username

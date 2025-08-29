@@ -5,7 +5,7 @@
     <div class="accordion">
     {% for user in data.users %}
         <div class="accordion-back bg-red">
-        <button class="accordion-header">{{ user.full_name }}</button>
+        <button class="accordion-header">{{ user.fullname }}</button>
         <div class="accordion-content margin">
             <p class="ml-2p">Логин: {{ user.username }}</p>
             <form method="post" action="/users/change-role/" style="display:inline;"> {% csrf_token %}

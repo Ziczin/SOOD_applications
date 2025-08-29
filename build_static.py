@@ -204,7 +204,6 @@ def main():
     ap.add_argument("--entry", default=str(DEFAULT_ENTRY), help="Entry JS file (default: ./make.js)")
     args = ap.parse_args()
 
-    # 1) ensure node/npm (no automatic install)
     if not args.skip_node_install:
         node_present, npm_present = node_npm_present()
         if not (node_present and npm_present):
@@ -222,18 +221,15 @@ def main():
     ensure_build_js(force=args.force)
     ensure_package_scripts()
 
-    # 3) install esbuild
     installed = npm_install_esbuild(skip_install=args.skip_install)
     if not installed:
         print("esbuild installation failed or skipped. If esbuild is already installed, you can continue with --skip-install.")
         if not args.skip_install:
             sys.exit(1)
 
-    # 4) ensure collected ignored
     out_dir = Path(args.out).resolve()
     ensure_gitignore_collected()
 
-    # 5) run build/watch
     entry = Path(args.entry).resolve()
     if not entry.exists():
         print(f"Warning: entry file {entry} not found. The build may fail. You can specify entry with --entry.")

@@ -1,13 +1,20 @@
 from django.urls import path
-from .views import register, login_view, logout_view, sandbox, sandbox2
-from .views import change_role
+from .views import (
+    register,
+    login_view,
+    logout_view,
+    sandbox,
+    sandbox2,
+    permission_denied_view
+)
 
-urlpatterns = [
-    path('register/', register, name='register'),
-    path('login/', login_view, name='login'),
-    path('logout/', logout_view, name='logout'),
-    path('change-role/', change_role, name='change-role'),
-    path('sandbox/', sandbox, name='sandbox'),
-    path('sandbox2/', sandbox2, name='sandbox2'),
-]
+urls = {
+    'register/': register,
+    'login/': login_view,
+    'logout/': logout_view,
+    'sandbox/': sandbox,
+    'sandbox2/': sandbox2,
+    '403/': permission_denied_view
+}
 
+urlpatterns = [path(url, urls[url], name=url[:-1]) for url in urls]

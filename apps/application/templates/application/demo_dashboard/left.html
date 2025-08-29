@@ -1,8 +1,8 @@
 {% load static %}
 
-<form method="POST" action="{% url 'dashboard' %}">
+<form method="POST" action="{% url 'logout' %}">
     {% csrf_token %}
-    <button type="submit" class="content back flex">Вернуться в аккаунт</button>
+    <button type="submit" class="content exit flex">Сменить аккаунт</button>
 </form>
 
 <div class="content" id="left-content"></div>
@@ -10,11 +10,116 @@
 <script type="module">
   await import("{% static 'deps/make/make.js' %}");
   
-  document.getElementById('left-container').appendChild(
-    make.Div(
-      make.it.content,
+  const csrf = make.other.getCookie('csrftoken')
 
-    )
-  )
+  const qBase = make.Query('/api').via({'X-CSRFToken': csrf});
+  const qUsers = qBase.view().at('users');
+  const qRoles = qBase.view().at('roles')
+  const qCurrentUser = qBase.view().at('me');
+  const qCurrentUserValues = qBase.view().at('my-role');
+
+  const currentUser = await qCurrentUser.get();
+  const valuesUser = await qCurrentUserValues.get()
+
+  document.getElementById('left-content').appendChild(
+    make.Div(
+      make.it.flexColumn,
+      make.h1(`${currentUser.fullname}`),
+      make.Separator(2),
+      make.Paragraph(`@${currentUser.username}`, make.it.subtitleText),
+      make.Separator(6),
+      make.Paragraph(valuesUser.role),
+      ...valuesUser.proxy
+      ? [
+        make.Paragraph(
+          "Вы - ",
+          make.with.style({
+            color: "magenta",
+          }),
+          make.Span('прокси',
+            make.on.click(
+              createNoiseCycler(1000, 1000, [
+                "суперюзер", "агент", "допельгангер",
+                "прокси", "мимик", "???", "призрак", "шпион"
+              ])
+            )
+          )
+        )
+      ]
+      : []
+    ).build()
+  );
+
+function createNoiseCycler(animDuration = 1000, displayDuration = 1000, list = []) {
+  const noiseChars = '$¢£¥€₽₩₹₺₫₱₪₦₴₲₵₼₡ $¢£¥€₽₩₹₺₫₱₪₦₴₲₵₼₡' +
+                     '₭йцукенгшщзхъфывапролджэячсмитьбюё' +
+                     '!?@#$%&@#$%&@#$%& !?@#$%&@#$%&@#$%&';
+  const k = 20;
+  const totalTicks = Math.max(0, Math.floor(animDuration / k));
+  const randInt = n => Math.floor(Math.random() * n);
+  const randNoise = () => noiseChars.charAt(randInt(noiseChars.length));
+  const sleep = ms => new Promise(res => setTimeout(res, ms));
+
+  return async function handlePointerEvent(event, startIndex = 0) {
+    const el = event.currentTarget;
+    let idx = startIndex % list.length;
+
+    while (true) {
+      const target = String(list[idx]);
+      const len = target.length;
+      const noiseTicks = Math.max(0, totalTicks - len);
+      const repairTicks = totalTicks - noiseTicks;
+
+      const work = Array.from(target);
+      let displayed = Array.from(el.textContent || '');
+
+      const diff = displayed.length - len;
+      const remaining = Math.abs(diff);
+      const step = remaining > 0 ? Math.max(1, Math.floor(noiseTicks / remaining)) : Infinity;
+
+      for (let t=0; t < noiseTicks; t++) {
+        if (remaining > 0 && (t % step) === 0) {
+          if (diff < 0) {
+            const insertPos = randInt(displayed.length + 1);
+            displayed.splice(insertPos, 0, randNoise());
+          } else if (diff > 0) {
+            const removePos = randInt(displayed.length);
+            displayed.splice(removePos, 1);
+          }
+        } else {
+          if (displayed.length > 0) {
+            displayed[randInt(displayed.length)] = randNoise();
+          } else {
+            displayed.push(randNoise());
+          }
+        }
+        el.textContent = displayed.join('');
+        await sleep(k);
+      }
+      if (displayed.length > len) displayed.length = len;
+
+      for (let t=0; t < repairTicks; t++) {
+        const wrong = [];
+        for (let k = 0; k < len; k++) {
+          if (displayed[k] !== work[k]) wrong.push(k);
+        }
+        if (wrong.length > 0) {
+          const pick = wrong[randInt(wrong.length)];
+          displayed[pick] = work[pick];
+          el.textContent = displayed.join('');
+        }
+        await sleep(k);
+      }
+
+      await sleep(displayDuration);
+      idx = (idx + 1) % list.length;
+    }
+  };
+}
+
+
+
+
+
 
 </script>

@@ -1,0 +1,67 @@
+{% load static %}
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"><title>Нет доступа</title>
+  <link rel="stylesheet" href="{% static 'deps/css/bright.css' %}">
+  <link rel="stylesheet" href="{% static 'deps/make/make.css' %}">
+</head>
+
+<body>
+  <div class="side-container"></div>
+  <div class="center-container" id="content"></div>
+  <div class="side-container"></div>
+</body>
+</html>
+
+<script type="module">
+  await import("{% static 'collected/static.js' %}");
+  const content = document.getElementById("content").appendChild(
+    make.Div(
+      make.it.flexColumn,
+      make.it.gap10px,
+      make.h1("Ошибка 403!"),
+      make.it.content,
+      make.Paragraph("У вас нет нужной роли для выполнения этого действия."),
+      make.Paragraph(
+        "Возможно, у вас истёк авторизационный токен, "+
+        "попробуйте вернуться на страницу входа и снова "+
+        "зайти на сервис, если ошибка сохранится"),
+      make.Button(
+        make.it.redir,
+        make.with.text("Вернуться на страницу входа"),
+        make.on.click((e) => {
+          e.stopPropagation()
+          window.location.href="/users/login"
+        })
+      ),
+      make.Button(
+        make.it.redir,
+        make.with.text("Вернуться на главную"),
+        make.on.click((e) => {
+          e.stopPropagation()
+          window.location.href="/applications/dashboard"
+        })
+      ),
+      make.on.click(()=>
+        make.Notice(1500, 5000, 1500,
+          make.Div(
+            make.Div(
+              make.style.rounded(12),
+              make.style.margin(12),
+              make.with.style({overflow: "hidden"}),
+              make.Image(
+                "{{ MEDIA_URL }}not_allowed.png",
+                make.it.flex,
+                make.with.style({width: "100%"}),
+              )
+            )
+          )
+        )
+      )
+    ).build()
+  )
+
+  
+</script>
+

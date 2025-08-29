@@ -22,15 +22,15 @@ registration_form_data = {
             'id': 'password2', 'type': 'password',
             'label': 'Повторите пароль',
             'placeholder': 'Введите пароль. Снова',
-            'error_messages': {'password_mismatch': 'Gfhj'},
         },
         {
-            'id': 'full_name', 'type': 'text',
+            'id': 'fullname', 'type': 'text',
             'label': 'Полное имя',
             'placeholder': 'Например: Иванов Иван Иванович',
         },
         {
-            'id': 'department', 'type': [Department, ],
+            'id': 'department', 'type': 'enum',
+            'enum': {'model': Department, 'config': {'value': 'name', 'text': 'label'}},
             'label': 'Выберите ваш отдел',
             'placeholder': 'Без отдела',
         },

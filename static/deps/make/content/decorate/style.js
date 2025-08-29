@@ -22,5 +22,8 @@ export default (withStyle) =>
         maxHeight: (h) => withStyle({
             maxHeight: `${h}px`,
         }),
+        gap: (h) => withStyle({
+            gap: `${h}px`,
+        }),
     }
 }

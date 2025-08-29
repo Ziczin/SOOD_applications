@@ -6,5 +6,6 @@ export default (Event) =>
         click: Event('click', { passive: true }),
         focus: Event('focus', { passive: true }),
         defocus: Event('blur', { passive: true }),
+        change: Event('change', { passive: true }),
     }
 }
