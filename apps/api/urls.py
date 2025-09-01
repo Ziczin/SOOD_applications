@@ -13,5 +13,6 @@ urlpatterns = [
     path('users/', UsersAPIView.as_view(), name='api-users-list'),
     path('me/', CurrentUserAPIView.as_view(), name='api-current-user'),
     path('roles/', RolesAPIView.as_view(), name='api-roles-list'),
+    path('roles/<str:username>/', RolesAPIView.as_view(), name='api-roles-list'),
     path('my-role/', CurrentUserRoleAPIView.as_view(), name='api-current-user-role'),
 ]

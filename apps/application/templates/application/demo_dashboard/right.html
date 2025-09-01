@@ -1,0 +1,32 @@
+{% load static %}
+
+<div id="right-content"></div>
+
+<script type="module">
+  await import("{% static 'deps/make/make.js' %}");
+	
+  const csrf = make.other.getCookie('csrftoken')
+
+  const buildProxyTab = (await import("{% static 'deps/js/dashboard/proxy.js' %}")).default;
+  
+  const qBase = make.Query('/api').via({'X-CSRFToken': csrf});
+  const qUsers = qBase.view().at('users').view();
+  const qRoles = qBase.view().at('roles').view()
+  const qCurrentUser = qBase.view().at('me').view();
+  const qCurrentUserRole = qBase.view().at('my-role').view();
+
+  const status = await qCurrentUserRole.get()
+  const roles = await qRoles.get()
+  const currentUser = await qCurrentUser.get()
+
+	const has = (p) => Array.isArray(status.permissions) ? status.permissions.includes(p) : (p in status.permissions);
+
+	if (has('proxy'))
+		document.getElementById("right-content").appendChild(
+			make.Div(
+				make.it.content,
+				make.style.padding(12),
+				...buildProxyTab(make, roles, currentUser, qRoles)
+			).build()
+		)
+</script>

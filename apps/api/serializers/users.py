@@ -78,12 +78,7 @@ class CurrentUserSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ('id', 'username', 'fullname', 'department', 'role')
 
-class ChangeRoleSerializer(serializers.Serializer):
-    username = serializers.CharField()
-    role = serializers.ChoiceField(choices=UserRole.choices)
-
-    def validate_role(self, value):
-        valid = [r for r, _ in UserRole.choices]
-        if value not in valid:
-            raise serializers.ValidationError("Недопустимая роль.")
-        return value
+class ChangeRoleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['role']

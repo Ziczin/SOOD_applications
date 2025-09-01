@@ -190,7 +190,13 @@ export default class Query {
 
         const response = await fetch(url, options);
         
-        const data = await response.json();
+        var data;
+        try {
+            data = await response.json();
+        }
+        catch (error) {
+            console.error('Make-Query error:', error)
+        }
 
         if (this._redirect_request_key && this._redirect_request_key in data) {
             window.location.href = data[this._redirect_request_key];

@@ -10,7 +10,8 @@ from apps.users.models import CustomUser, UserRole
 
 from apps.api.core.conditions.query_check import is_from_form
 from apps.api.core.errors.ErrorStorage import ErrorStorage
-from apps.api.core.decorators.protected_view import protected_api_view, role_required, login_required
+from apps.api.core.decorators.protected_view import reqall, reqany, protected_api_view
+from apps.api.core.decorators.checks import is_authenticated, role_admin, role_moderator, status_proxy
 
 from apps.api.serializers.users import (
     ChangeRoleSerializer, CurrentUserSerializer, UserDetailSerializer,
@@ -71,7 +72,7 @@ class LogoutView(APIView):
 
 @protected_api_view
 class UsersAPIView(APIView):
-    @login_required
+    @reqall(is_authenticated)
     def get(self, request, *args, **kwargs):
         err = ErrorStorage()
 
@@ -96,14 +97,14 @@ class UsersAPIView(APIView):
 
 @protected_api_view
 class CurrentUserAPIView(APIView):
-    @login_required
+    @reqall(is_authenticated)
     def get(self, request, *args, **kwargs):
         serializer = CurrentUserSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 @protected_api_view
 class CurrentUserRoleAPIView(APIView):
-    @login_required
+    @reqall(is_authenticated)
     def get(self, request, *args, **kwargs):
         role = request.user.role
         permissions = []
@@ -126,7 +127,7 @@ class CurrentUserRoleAPIView(APIView):
 
 @protected_api_view
 class RolesAPIView(APIView):
-    @login_required
+    @reqall(is_authenticated)
     def get(self, request, *args, **kwargs):
         err = ErrorStorage()
 
@@ -153,8 +154,53 @@ class RolesAPIView(APIView):
         code = err.general.invalid_request.include() if hasattr(err, 'general') else status.HTTP_400_BAD_REQUEST
         return Response({"errorStorage": err.as_list()}, status=code)
 
-    @role_required('admin')
-    def post(self, request, *args, **kwargs):
-        serializer = ChangeRoleSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
+    @reqany(status_proxy, role_admin)
+    def patch(self, request, username, *args, **kwargs):
+        try:
+            user = CustomUser.objects.get(username=username)
+        except CustomUser.DoesNotExist:
+            return Response({"detail": "Not found"}, status=405)
+        serializer = ChangeRoleSerializer(instance=user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"success": True}, status=204)
+    
+@protected_api_view
+class DepartmentAPIView(APIView):
+    @reqall(is_authenticated)
+    def get(self, request, *args, **kwargs):
+        err = ErrorStorage()
+
+        q_username = request.GET.get('username')
+        q_role = request.GET.get('role')
+        
+        if not q_username and not q_role:
+            roles = [{'value': v, 'label': l} for v, l in UserRole.choices]
+            return Response(roles, status=status.HTTP_200_OK)
+
+        if q_username:
+            try:
+                user = CustomUser.objects.get(username=q_username)
+            except CustomUser.DoesNotExist:
+                code = err.users.user_not_found.include()
+                return Response({"errorStorage": err.as_list()}, status=code)
+
+            if q_role:
+                matches = (user.role == q_role)
+                return Response({'matches': matches}, status=status.HTTP_200_OK)
+
+            return Response({'role': user.role}, status=status.HTTP_200_OK)
+
+        code = err.general.invalid_request.include() if hasattr(err, 'general') else status.HTTP_400_BAD_REQUEST
+        return Response({"errorStorage": err.as_list()}, status=code)
+
+    @reqall(status_proxy)
+    def patch(self, request, username, *args, **kwargs):
+        try:
+            user = CustomUser.objects.get(username=username)
+        except CustomUser.DoesNotExist:
+            return Response({"detail": "Not found"}, status=405)
+        serializer = ChangeRoleSerializer(instance=user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"success": True}, status=204)

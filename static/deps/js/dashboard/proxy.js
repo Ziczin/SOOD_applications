@@ -2,8 +2,10 @@ export default function dashboardProxy(make, roles, currentUser, qRoles) {
   return [
     make.it.flexColumn,
     make.it.gap10px,
-    make.h1('Панель управление прокси-юзера'),
-    make.Separator(12),
+    make.Div(
+     make.h1('Панель управления'),
+      make.h1('прокси-юзера'),
+    ),
     make.Div(
       make.it.flexRow,
       make.it.gap10px,
@@ -21,10 +23,15 @@ export default function dashboardProxy(make, roles, currentUser, qRoles) {
           )
         ),
         make.on.change((e) => {
-          qRoles.with({
-            username: currentUser.username,
+          qRoles.view()
+          .at(currentUser.username)
+          .with({
             role: e.target.value,
-          }).post().then(()=>{});
+          })
+          .patch()
+          .then(()=>{
+            location.reload()
+          });
         })
       )
     )
