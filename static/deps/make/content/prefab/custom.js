@@ -31,5 +31,8 @@ export default function(createComponent, makeWith) {
         Option: (txt, value, ...d) => typeof txt === 'string'
             ? createComponent('option', makeWith.text(txt), makeWith.attr({value: value}), ...d)
             : createComponent('option', ...d),
+        OptionPlaceholder: (txt, ...d) => typeof txt === 'string'
+            ? createComponent('option', makeWith.text(txt), makeWith.attr({value: ''}), ...d)
+            : createComponent('option', ...d),
     }
 }

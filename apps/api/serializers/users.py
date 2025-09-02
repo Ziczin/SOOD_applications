@@ -82,3 +82,13 @@ class ChangeRoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ['role']
+
+class ChangeDepartmentSerializer(serializers.ModelSerializer):
+    department = serializers.SlugRelatedField(
+        slug_field='name',
+        queryset=Department.objects.all(),
+    )
+
+    class Meta:
+        model = CustomUser
+        fields = ['department']

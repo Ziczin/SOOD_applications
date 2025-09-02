@@ -28,6 +28,7 @@ window.make = (function() {
     console.log('Powered by make.js v0.0.5-dev')
     console.log(`
     CHANGE LOG
+    v0.0.5
     - Some fixes on Query component allows to use 5 base REST methods
     - Card now gen it\`s own div-component
     - Rework Tabs component to use new chain syntax

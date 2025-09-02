@@ -14,6 +14,11 @@ registration_form_data = {
             'placeholder': 'Например IvanovAV',
         },
         {
+            'id': 'fullname', 'type': 'text',
+            'label': 'Полное имя',
+            'placeholder': 'Например: Иванов Иван Иванович',
+        },
+        {
             'id': 'password1', 'type': 'password',
             'label': 'Пароль',
             'placeholder': 'Введите пароль',
@@ -22,11 +27,6 @@ registration_form_data = {
             'id': 'password2', 'type': 'password',
             'label': 'Повторите пароль',
             'placeholder': 'Введите пароль. Снова',
-        },
-        {
-            'id': 'fullname', 'type': 'text',
-            'label': 'Полное имя',
-            'placeholder': 'Например: Иванов Иван Иванович',
         },
         {
             'id': 'department', 'type': 'enum',

@@ -18,6 +18,7 @@ def form_checker(form_config: dict):
                     value=F(config['value']),
                     text=F(config['text'])
             ))
+            print('-'*111, field['enum'])
         if field.get('attrs') is None:
             field['attrs'] = ['required', ]
         else:

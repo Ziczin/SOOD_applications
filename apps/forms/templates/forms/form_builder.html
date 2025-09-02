@@ -46,7 +46,7 @@
     ...data.fields.map(el =>
       make.Div(
         make.it.formGroup,
-        ...(el.type !== 'enum' ? [make.it.delayedMarginOnHover] : []),
+        ...(el.type === 'enum' ? [] : [make.it.delayedMarginOnHover]),
         make.Label(
           make.with.text(el.label),
           make.with.attr({ for: el.id })
@@ -59,16 +59,13 @@
             type: el.type,
             placeholder: el.placeholder
           }),
-          make.with.attrs(...el.attrs),
-        ) : make.Select(
-          make.with.attr({ name: el.id, id: el.id }),
-          make.with.attrs(...el.attrs),
-          make.Option(make.with.text(el.placeholder), make.with.attrs('value', 'disabled')),
-          ...el.enum.map(elEnum =>
-            make.Option(
-              make.with.text(elEnum.text),
-              make.with.attr({ value: elEnum.value })
-            )
+          make.with.attrs(...el.attrs)) :
+          make.Select(
+            make.with.attr({ name: el.id, id: el.id }),
+            make.with.attrs(...el.attrs),
+            make.OptionPlaceholder(el.placeholder),
+            ...el.enum.map(elEnum =>
+              make.Option(elEnum.text, elEnum.value)
           )
         )
       )

@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import get_object_or_404, redirect
 
-from apps.users.models import CustomUser, UserRole
+from apps.users.models import CustomUser, UserRole, Department
 
 from apps.api.core.conditions.query_check import is_from_form
 from apps.api.core.errors.ErrorStorage import ErrorStorage
@@ -15,7 +15,8 @@ from apps.api.core.decorators.checks import is_authenticated, role_admin, role_m
 
 from apps.api.serializers.users import (
     ChangeRoleSerializer, CurrentUserSerializer, UserDetailSerializer,
-    UserListSerializer, UserRegistrationSerializer, UserLoginSerializer
+    UserListSerializer, UserRegistrationSerializer, UserLoginSerializer,
+    ChangeDepartmentSerializer
 )
 
 class RegisterView(APIView):
@@ -170,14 +171,8 @@ class DepartmentAPIView(APIView):
     @reqall(is_authenticated)
     def get(self, request, *args, **kwargs):
         err = ErrorStorage()
-
         q_username = request.GET.get('username')
-        q_role = request.GET.get('role')
-        
-        if not q_username and not q_role:
-            roles = [{'value': v, 'label': l} for v, l in UserRole.choices]
-            return Response(roles, status=status.HTTP_200_OK)
-
+        q_department = request.GET.get('department')
         if q_username:
             try:
                 user = CustomUser.objects.get(username=q_username)
@@ -185,22 +180,21 @@ class DepartmentAPIView(APIView):
                 code = err.users.user_not_found.include()
                 return Response({"errorStorage": err.as_list()}, status=code)
 
-            if q_role:
-                matches = (user.role == q_role)
-                return Response({'matches': matches}, status=status.HTTP_200_OK)
+            return Response(user.department, status=status.HTTP_200_OK)
+        else:
+            deps = [
+                {'value': v, 'label': l} for v, l in
+                Department.objects.all().values_list('name', 'label').order_by('label')
+            ]
+            return Response(deps, status=status.HTTP_200_OK)
 
-            return Response({'role': user.role}, status=status.HTTP_200_OK)
-
-        code = err.general.invalid_request.include() if hasattr(err, 'general') else status.HTTP_400_BAD_REQUEST
-        return Response({"errorStorage": err.as_list()}, status=code)
-
-    @reqall(status_proxy)
+    @reqall(status_proxy, is_authenticated)
     def patch(self, request, username, *args, **kwargs):
         try:
             user = CustomUser.objects.get(username=username)
         except CustomUser.DoesNotExist:
             return Response({"detail": "Not found"}, status=405)
-        serializer = ChangeRoleSerializer(instance=user, data=request.data, partial=True)
+        serializer = ChangeDepartmentSerializer(instance=user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"success": True}, status=204)

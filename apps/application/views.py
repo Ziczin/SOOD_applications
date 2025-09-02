@@ -11,7 +11,7 @@ class FormManagerView(LoginRequiredMixin, TemplateView):
 
 class DemoDashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'application/builder.html'
-    extra_context = {'variant': 'demo_dashboard'}
+    extra_context = {'variant': 'dashboard'}
 
 class DemoFormManagerView(LoginRequiredMixin, TemplateView):
     template_name = 'application/builder.html'
