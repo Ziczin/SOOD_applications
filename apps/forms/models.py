@@ -19,13 +19,15 @@ class FieldType(models.Model):
 class EnumTag(models.Model):
     def __str__(self): return self.name
     name = models.CharField(max_length=50)
-    available = models.BooleanField(default=False)
+    shared = models.BooleanField(default=False)
+    available = models.BooleanField(default=True)
 
 class Enum(models.Model):
     def __str__(self): return str(self.enum_tag) + ' | ' + str(self.value) 
     value = models.CharField(max_length=50)
     enum_tag = models.ForeignKey(EnumTag, on_delete=models.SET_NULL, null=True)
-    available = models.BooleanField(default=False)
+    available = models.BooleanField(default=True)
+    visible = models.BooleanField(default=True)
 
 class Field(models.Model):
     def __str__(self): return str(self.type) + ' | ' + str(self.label)
