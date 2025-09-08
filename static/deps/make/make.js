@@ -4,6 +4,7 @@ import content from './content/_.js'
 import core from './core/_.js'
 import Preferences from './extension/wrapper/Preferences.js';
 import other from './other/_.js';
+import changelog from './changelog.js';
 
 const createComponent = factory.Component(extension.wrapper.Component);
 const createDecorator = factory.Decorator(extension.wrapper.Decorator);
@@ -24,17 +25,11 @@ const Accordion = content.prefab.accordion.Accordion(
     extension.wrapper.Component, Card
 );
 
+const noticeCollection = content.prefab.Notice(core, extension.wrapper.Component)
+other.closeCurrentNotice = noticeCollection.noticeHandler.closeActive.bind(noticeCollection.noticeHandler);
 window.make = (function() {
-    console.log('Powered by make.js v0.0.5-dev')
-    console.log(`
-    CHANGE LOG
-    v0.0.5
-    - Some fixes on Query component allows to use 5 base REST methods
-    - Card now gen it\`s own div-component
-    - Rework Tabs component to use new chain syntax
-    - Change versioning system
-    - Added changelog :3
-    `)
+    console.log('Powered by make.js v0.0.6-dev')
+    console.log(changelog)
 
     return {
         other: other,
@@ -44,7 +39,8 @@ window.make = (function() {
         size: content.decorate.size(makeWith.css),
         color: content.decorate.color(makeWith.css),
         style: content.decorate.style(makeWith.style),
-        Notice: content.prefab.Notice(core, extension.wrapper.Component),
+        Notice: noticeCollection.createNotice,
+        UniqueNotice: noticeCollection.createUniqueNotice,
         ...content.prefab.basic(createComponent),
         ...content.prefab.custom(
             createComponent, makeWith,

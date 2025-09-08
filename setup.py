@@ -5,14 +5,10 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'SOOD_applications.settings')
 django.setup()
 
 from django.contrib.auth import get_user_model
-# from django.forms import ModelForm
 
-from apps.users.models import Department, UserRole # CustomUser
-# from apps.application.models import Application, ApplicationField, ApplicationService
+from apps.users.models import Department, UserRole
 from apps.forms.models import Enum, EnumTag, FieldType
 from apps.application.models import Field, Form
-# from apps.application.models import Service, ServiceValue
-
 
 def create_superuser():
     User = get_user_model()
@@ -28,9 +24,24 @@ def create_superuser():
     super_user.save()
 
 def on_test_setup():
-    user_department, created = Department.objects.get_or_create(name='prog', label='Отдел программирования')
-    remont_department, created = Department.objects.get_or_create(name='net', label='Отдел сетевой поддержки')
+    prog_dep, created = Department.objects.get_or_create(name='prog', label='Отдел программирования')
+    rem_dep, created = Department.objects.get_or_create(name='net', label='Отдел сетевой поддержки')
 
+    User = get_user_model()
+    usrs = [
+        [prog_dep, UserRole.USER],
+        [prog_dep, UserRole.USER],
+        [prog_dep, UserRole.MODERATOR],
+        [prog_dep, UserRole.ADMIN],
+        [rem_dep, UserRole.USER],
+        [rem_dep, UserRole.ADMIN],
+    ]
+    for i, us in enumerate(usrs):
+        User.objects.create_user(
+            username=str(i), password=str(i), fullname=str(i),
+            department=us[0], role=us[1], verified=bool(i), proxy=i>3,
+        ).save()
+    
     print("-- Создание тэгов перечислений")
     obj1, created = EnumTag.objects.get_or_create(name='Принтер')
     obj2, created = EnumTag.objects.get_or_create(name='Блюда')
@@ -50,7 +61,7 @@ def on_test_setup():
     print("-- Создание форм")
     form1, created = Form.objects.get_or_create(
         form_name='TestForm1',
-        department=remont_department,
+        department=rem_dep,
         page_label='Test',
         form_label='Testovaya Forma',
         confirm_button_text='Confirm Button Text',

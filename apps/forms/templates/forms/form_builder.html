@@ -29,11 +29,21 @@
   const data = JSON.parse(document.getElementById("form-data").textContent);
   const errors = JSON.parse(document.getElementById("errors-data").textContent);
   
-  const title = make.h1(
-    data.title,
-    make.on.click(() => {
-      window.location.href = '/users/sandbox/'
-    })
+  const title = make.Div(
+    make.it.flexRow,
+    make.it.centered,
+    make.style.gap(10),
+    make.h1(data.title),
+    make.h1('SB-1',
+      make.on.click(() => {
+        window.location.href = '/users/sandbox/'
+      })
+    ),
+    make.h1('SB-2',
+      make.on.click(() => {
+        window.location.href = '/users/sandbox2/'
+      })
+    )
   );
   const fields = make.Form(
     make.it.flexColumn,

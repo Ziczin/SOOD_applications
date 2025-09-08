@@ -5,9 +5,45 @@ from apps.api.views.users import (
     CurrentUserAPIView, CurrentUserRoleAPIView,
     DepartmentAPIView
 )
-from apps.api.views.forms import FormListView
+from django.urls import path
+from apps.api.views.enums import EnumTagViewSet, EnumViewSet
+
+enumtag_list = EnumTagViewSet.as_view({
+    'get': 'list', 'post': 'create'
+})
+enumtag_detail = EnumTagViewSet.as_view({
+    'get': 'retrieve',
+    'put': 'update',
+    'patch': 'partial_update',
+    'delete': 'destroy'
+})
+enums_list = EnumViewSet.as_view({
+    'get': 'list', 'post': 'create'
+})
+enums_detail = EnumViewSet.as_view({
+    'get': 'retrieve',
+    'put': 'update',
+    'patch': 'partial_update',
+    'delete': 'destroy'
+})
+enumtag_items_list = EnumTagViewSet.as_view({
+    'get': 'items_list',
+    'post': 'items_create'
+})
+enumtag_item_detail = EnumTagViewSet.as_view({
+    'get': 'item_detail',
+    'put': 'item_detail',
+    'patch': 'item_detail',
+    'delete': 'item_detail'
+})
 
 urlpatterns = [
+    path('enum-tags/', enumtag_list, name='enumtag-list'),
+    path('enum-tags/<int:pk>/', enumtag_detail, name='enumtag-detail'),
+    path('enums/', enums_list, name='enum-list'),
+    path('enums/<int:pk>/', enums_detail, name='enum-detail'),
+    path('enum-tags/<int:pk>/items/', enumtag_items_list, name='enumtag-items-list'),
+    path('enum-tags/<int:pk>/items/<int:item_pk>/', enumtag_item_detail, name='enumtag-item-detail'),
     path('auth/register/', RegisterView.as_view(), name='register'),
     path('auth/login/', LoginView.as_view(), name='login'),
     path('auth/logout/', LogoutView.as_view(), name='logout'),

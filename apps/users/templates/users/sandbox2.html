@@ -24,12 +24,14 @@
 </html>
 
 <script type="module">
-  await import("{% static 'collected/static.js' %}");
+  await import("{% static 'deps/make/make.js' %}");
   const maindiv = document.getElementById('form-template');
   let content;
   let accordion;
   const lst = [1, 2, 3, 4]
   var iter = 0
+  var toCloseContainer;
+  var toCloseNotice;
   const innerMakeTemplate = make.Scrollbox(
     make.it.flexColumn,
     make.it.gap10px,
@@ -61,7 +63,7 @@
             make.with.text('Это кнопка внутри заголовка'),
             make.on.click((e) => {
               e.stopPropagation()
-              make.Notice(500, 1000, 500,
+              toCloseNotice = make.UniqueNotice('alert', 500, Infinity, 500,
                 make.Div(
                   make.with.css('content'),
                   make.Paragraph("Кнопка нажата!"),
@@ -70,10 +72,20 @@
                     make.it.redir,
                     make.with.text("Теперь нажми на эту кнопку!"),
                     make.on.click(() => {
-                      make.Notice(500, 150000, 500,
+                      make.other.closeCurrentNotice()
+
+                      toCloseContainer = make.UniqueNotice('list', 500, 150000, 500,
                         make.Div(
                           make.style.margin(20),
                           make.it.contented,
+                          make.Button(
+                            make.with.text("Закрыть уведомление"),
+                            make.it.redir,
+                            make.on.click(() => {
+                              make.other.closeCurrentNotice()
+                            })
+                          ),
+                          make.Separator(6),
                           make.Accordion(
                             make.it.flexColumn,
                             make.it.gap6px,

@@ -78,6 +78,12 @@ class CurrentUserSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ('id', 'username', 'fullname', 'department', 'role')
 
+class DepartmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Department
+        fields = ('id', 'name', 'label')
+        read_only_fields = ('id',)
+        
 class ChangeRoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
