@@ -1,0 +1,134 @@
+{% load static %}
+
+{{ form_data|json_script:"form-data" }}
+{{ errors|json_script:"errors-data" }}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {% csrf_token %}
+  <meta charset="UTF-8">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="{% static 'deps/make/make.css' %}">
+  <link rel="stylesheet" href="{% static 'deps/css/bright.css' %}">
+
+  <title>Сервис заявок</title>
+</head>
+
+<body>
+  <div class='container p-1p' id="form-template">
+  </div>
+</body>
+</html>
+
+<script type="module">
+  await import("{% static 'deps/make/make.js' %}");
+  var collector;
+  var area;
+  var collector2;
+  var area2;
+  document.getElementById('form-template').appendChild(
+    make.Div(
+      make.it.content,
+      make.it.flexRow,
+      make.style.width('80%'),
+      make.style.gap(12),
+      make.Div(
+        collector = make.Collector(
+          make.it.flexColumn,
+          make.style.gap(6),
+          make.Input(
+            make.with.attr({
+              id: 'test-id',
+              name: 'test-name-2',
+              type: 'text',
+              placeholder: 'placeholder'
+            }),
+          ),
+          make.Input(
+            make.with.attr({
+              id: 'test-id-2',
+              name: 'test-name',
+              type: 'text',
+              placeholder: 'placeholder-2'
+            }),
+          ),
+          make.Input(
+            make.with.attr({
+              type: 'text',
+              placeholder: 'placeholder-3'
+            }),
+          ),
+          make.Select(
+            make.OptionPlaceholder('unselected'),
+            make.Option("var 1", 111),
+            make.Option("var 2", 222),
+            make.Option("var 3", 333),
+          )
+        ),
+        make.Separator(12),
+        make.Button(
+          make.it.redir,
+          make.with.text("Collect"),
+          make.on.click(() =>{
+            let collected = collector.collect()
+            console.log(collected)
+            area.element.textContent = JSON.stringify(collected, null, 2);
+          })
+        ),
+        area = make.Preform(
+          make.it.leftAlign
+        )
+      ),
+      make.Div(
+        collector2 = make.Collector(
+          make.it.flexColumn,
+          make.style.gap(6),
+          make.Input(
+            make.with.attr({
+              id: 'test-id',
+              name: 'test-name-2',
+              type: 'text',
+              placeholder: 'placeholder'
+            }),
+          ),
+          make.Input(
+            make.with.attr({
+              id: 'test-id-2',
+              name: 'test-name',
+              type: 'text',
+              placeholder: 'placeholder-2'
+            }),
+          ),
+          make.Input(
+            make.with.attr({
+              type: 'text',
+              placeholder: 'placeholder-3'
+            }),
+          ),
+          make.Select(
+            make.OptionPlaceholder('unselected'),
+            make.Option("var 1", 111),
+            make.Option("var 2", 222),
+            make.Option("var 3", 333),
+          )
+        ),
+        make.Separator(12),
+        make.Button(
+          make.it.redir,
+          make.with.text("Collect"),
+          make.on.click(() =>{
+            let collected = collector2.collect()
+            console.log(collected)
+            area2.element.textContent = JSON.stringify(collected, null, 2);
+          })
+        ),
+        area2 = make.Preform(
+          make.it.leftAlign
+        )
+      )
+    ).build()
+  )
+</script>

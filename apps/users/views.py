@@ -54,12 +54,6 @@ def change_role(request):
     user.save()
     return JsonResponse({'status': 'success', 'message': 'Роль успешно изменена.'})
 
-def sandbox(request):
-    return render(request, 'users/sandbox.html')
-
-def sandbox2(request):
-    return render(request, 'users/sandbox2.html')
-
 def permission_denied_view(request):
     resp = render(request, 'users/403.html')
     resp.status_code = 403

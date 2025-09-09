@@ -6,5 +6,7 @@ export default function(createComponent) {
         Input: (...d) => createComponent('input', ...d),
         Select: (...d) => createComponent('select', ...d),
         Button: (...d) => createComponent('button', ...d),
+        TextArea: (...d) => createComponent('textarea', ...d),
+        Preform: (...d) => createComponent('pre', ...d),
     }
 }
