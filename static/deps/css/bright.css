@@ -55,6 +55,14 @@ button.content.exit:hover {
     padding-right: 50%;
     color: #000;
     background-color: #ffe0e5;}
+button.content.exit2:hover {
+    padding-right: 40%;
+    color: #000;
+    background-color: #ffe0e5;}
+button.content.forward:hover {
+    padding-right: 70%;
+    color: #000;
+    background-color: #ffe;}
 button.content.back:hover {
     padding-right: 42%;
     color: #000;

@@ -24,8 +24,8 @@ def create_superuser():
     super_user.save()
 
 def on_test_setup():
-    prog_dep, created = Department.objects.get_or_create(name='prog', label='Отдел программирования')
-    rem_dep, created = Department.objects.get_or_create(name='net', label='Отдел сетевой поддержки')
+    prog_dep, c = Department.objects.get_or_create(name='prog', label='Отдел программирования')
+    rem_dep, c = Department.objects.get_or_create(name='net', label='Отдел сетевой поддержки')
 
     User = get_user_model()
     usrs = [
@@ -43,23 +43,28 @@ def on_test_setup():
         ).save()
     
     print("-- Создание тэгов перечислений")
-    obj1, created = EnumTag.objects.get_or_create(name='Принтер')
-    obj2, created = EnumTag.objects.get_or_create(name='Блюда')
+    obj1, c = EnumTag.objects.get_or_create(name='Принтер', department=rem_dep, shared=True)
+    obj2, c = EnumTag.objects.get_or_create(name='Блюда')
+    obj3, c = EnumTag.objects.get_or_create(name='Компьютеры', department=prog_dep)
 
     print("-- Создание элементов перечислений")
     Enum.objects.get_or_create(value='Принтер п-1', enum_tag=obj1)
     Enum.objects.get_or_create(value='Принтер Lenovo', enum_tag=obj1)
     Enum.objects.get_or_create(value='Мьясо', enum_tag=obj2)
     Enum.objects.get_or_create(value='Пирожки с пирожками', enum_tag=obj2)
+    Enum.objects.get_or_create(value='OIDI-123', enum_tag=obj3)
+    Enum.objects.get_or_create(value='UZI-1', enum_tag=obj3)
+    Enum.objects.get_or_create(value='UZI-2', enum_tag=obj3)
+    Enum.objects.get_or_create(value='kpo-866', enum_tag=obj3)
 
     print("-- Создание типов полей")
-    t1, created = FieldType.objects.get_or_create(name='Int')
-    t2, created = FieldType.objects.get_or_create(name='Float')
-    t3, created = FieldType.objects.get_or_create(name='Str')
-    t4, created = FieldType.objects.get_or_create(name='Enum')
+    t1, c = FieldType.objects.get_or_create(name='Int')
+    t2, c = FieldType.objects.get_or_create(name='Float')
+    t3, c = FieldType.objects.get_or_create(name='Str')
+    t4, c = FieldType.objects.get_or_create(name='Enum')
 
     print("-- Создание форм")
-    form1, created = Form.objects.get_or_create(
+    form1, c = Form.objects.get_or_create(
         form_name='TestForm1',
         department=rem_dep,
         page_label='Test',
@@ -70,14 +75,14 @@ def on_test_setup():
         )
     
     print("-- Создание примеров полей")
-    f1, created = Field.objects.get_or_create(label='Количество', type=t1, form=form1)
-    f2, created = Field.objects.get_or_create(label='Новое количество', type=t1)
-    f3, created = Field.objects.get_or_create(label='Цена', type=t2, form=form1)
-    f4, created = Field.objects.get_or_create(label='Стоимость', type=t2)
-    f5, created = Field.objects.get_or_create(label='Наименование', type=t3, form=form1)
-    f6, created = Field.objects.get_or_create(label='Описание', type=t3, form=form1)
-    f7, created = Field.objects.get_or_create(label='Отдел', type=t4, enum_tag=obj1)
-    f8, created = Field.objects.get_or_create(label='Имя принтера', type=t4, enum_tag=obj2)
+    f1, c = Field.objects.get_or_create(label='Количество', type=t1, form=form1)
+    f2, c = Field.objects.get_or_create(label='Новое количество', type=t1)
+    f3, c = Field.objects.get_or_create(label='Цена', type=t2, form=form1)
+    f4, c = Field.objects.get_or_create(label='Стоимость', type=t2)
+    f5, c = Field.objects.get_or_create(label='Наименование', type=t3, form=form1)
+    f6, c = Field.objects.get_or_create(label='Описание', type=t3, form=form1)
+    f7, c = Field.objects.get_or_create(label='Отдел', type=t4, enum_tag=obj1)
+    f8, c = Field.objects.get_or_create(label='Имя принтера', type=t4, enum_tag=obj2)
 
     print("База данных заполнена начальными данными!")
 

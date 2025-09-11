@@ -35,6 +35,15 @@
     --transition-very-very-very-slow: 2s;
 }
 
+.make-mark-filtered {
+  filter: opacity(1) blur(0) brightness(1);
+  transition: filter var(--transition-slow) ease;
+}
+
+.make-mark-deactivated {
+  filter: opacity(0.9) blur(1px) brightness(1.2);
+}
+
 /* fix agent */
 p, form, h1, h2, h3, h4, h5, h6 {
     margin: 0;
@@ -136,6 +145,42 @@ p, form, h1, h2, h3, h4, h5, h6 {
     background-color: #bce;
 }
 
+
+.make-squared {
+    aspect-ratio: 1;
+    box-sizing: border-box;
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    
+}
+.make-squared::after {
+    content: '';
+    display: block;
+    padding-bottom: 100%;
+}
+
+.make-btn-action {
+    text-align: center;
+    background-color: #ddd;
+    color: #222;
+    transition: background-color var(--transition-avg) ease;
+}
+
+.make-img-btn {
+    text-align: center;
+    background-color: #fff;
+    transition: background-color var(--transition-avg) ease;
+}
+.make-img-bnt.make-btn-action-neutral:hover,
+.make-btn-action.make-btn-action-neutral:hover {background-color: #bce; }
+.make-img-bnt.make-btn-action-positive:hover,
+.make-btn-action.make-btn-action-positive:hover {background-color: #bec;}
+.make-img-bnt.make-btn-action-negative:hover,
+.make-btn-action.make-btn-action-negative:hover {background-color: #ebc;}
+.make-img-bnt.make-btn-action-alternative:hover,
+.make-btn-action.make-btn-action-alternative:hover {background-color: #ecb;}
 
 .make-button {
     border-radius: 12px;
@@ -299,6 +344,9 @@ p, form, h1, h2, h3, h4, h5, h6 {
     background-color: #fff1;
 }
 
+.make-color-white {
+    background-color: white;
+}
 .make-color-red {
     background-color: var(--red);
 }
@@ -335,7 +383,6 @@ p, form, h1, h2, h3, h4, h5, h6 {
     flex-direction: column;
     max-height: 90vh;
     overflow-y: scroll;
-    margin-left: 10px;
     scrollbar-width: thin;
     scrollbar-color: #ccc transparent;}
 .make-scrollbox::-webkit-scrollbar {
@@ -346,6 +393,7 @@ p, form, h1, h2, h3, h4, h5, h6 {
     border-radius: 10px;
     border: 2px solid transparent;}
 .make-scrollbox::-webkit-scrollbar-track {
+    margin-left: 100px;
     background: transparent;}
 
 

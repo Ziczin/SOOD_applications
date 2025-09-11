@@ -18,7 +18,7 @@ class EnumTagViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        dept = user.department(user)
+        dept = user.department
         qs = EnumTag.objects.filter(available=True)
         if dept is not None:
             return qs.filter(Q(department=dept) | Q(shared=True))
@@ -26,7 +26,7 @@ class EnumTagViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         user = self.request.user
-        dept = user.department(user)
+        dept = user.department
         with transaction.atomic():
             if dept is not None:
                 serializer.save(department=dept)
@@ -36,7 +36,7 @@ class EnumTagViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'], url_path='items')
     def items_list(self, request, pk=None):
         tag = self.get_object()
-        qs = tag.enums.filter(available=True)
+        qs = Enum.objects.filter(available=True, enum_tag=tag)
         serializer = EnumSerializer(qs, many=True)
         return Response(serializer.data)
 

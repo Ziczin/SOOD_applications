@@ -13,6 +13,7 @@ export default class Component extends Applicable {
         this.autoRebuild = autoRebuild;
         this.buildLock = true
         this.destroyed = false;
+        this.args = {}
     }
 
     view() {
@@ -45,7 +46,7 @@ export default class Component extends Applicable {
             else return this.element;
         }
         else this.element = document.createElement(this.elementType);
-
+        this.element.makeComponent = this
         for (const decorator of this.decorators) {
             decorator.apply(this);
         }

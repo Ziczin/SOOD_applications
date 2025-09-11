@@ -14,5 +14,6 @@ export default (withCss) =>
         mgray: withCss('make-color-m-gray'),
         dgray: withCss('make-color-d-gray'),
         vgray: withCss('make-color-v-gray'),
+        white: withCss('make-color-white'),
     }
 }

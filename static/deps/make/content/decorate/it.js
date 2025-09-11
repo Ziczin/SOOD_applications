@@ -38,5 +38,14 @@ export default (withCss) =>
         onConfirmationMargin: withCss('make-confirmation-margin'),
         
         shadeAtBorder: withCss('make-shade-at-border'),
+        squared: withCss('make-squared'),
+        action: withCss('make-btn-action'),
+        imageAction: withCss('make-img-btn'),
+        act: {
+            positive: withCss('make-btn-action-positive'),
+            negative: withCss('make-btn-action-negative'),
+            neutral: withCss('make-btn-action-neutral'),
+            alternative: withCss('make-btn-action-alternative'),
+        }
     }
 }
