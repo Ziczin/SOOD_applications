@@ -4,6 +4,7 @@ import Notice from './Notice.js';
 import Tabs from './Tabs.js';
 import accordion from './accordion/_.js';
 import Collector from './Collector.js';
+import Annotation from './Annotation.js';
 
 export default {
     basic,
@@ -12,4 +13,5 @@ export default {
     Tabs,
     accordion,
     Collector,
+    Annotation,
 }

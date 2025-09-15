@@ -1,5 +1,5 @@
 let meta = {
-    version: `v0.1.1-dev`,
+    version: `v0.2.0-dev`,
     greetings: `Powered by make.js`,
     subgreetings: 'Call window.make.meta.help() for more info',
     help: () => console.log(`
@@ -13,6 +13,14 @@ window.make.meta.<...>
 }
 
 let changelog = {
+    '0.2.0': `
+v0.2.0-dev
+- Added Annotation(time ...components) component, which appears in time milliseconds after hovering over the component to which it is attached
+`,
+    '0.1.2': `
+v0.1.2-dev
+- Changed Query component operation logic: now it restores the state to the last checkpoint received via view() using get, post, put, patch, delete
+`,
     '0.1.1': `
 v0.1.1-dev
 - Improved meta.js file!

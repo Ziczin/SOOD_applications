@@ -29,6 +29,8 @@ const Accordion = content.prefab.accordion.Accordion(
     extension.wrapper.Component, Card
 );
 
+const Annotation = content.prefab.Annotation(core, extension.wrapper.Component)
+
 const noticeCollection = content.prefab.Notice(core, extension.wrapper.Component)
 other.closeCurrentNotice = noticeCollection.noticeHandler.closeActive.bind(noticeCollection.noticeHandler);
 window.make = (function() {
@@ -66,6 +68,7 @@ window.make = (function() {
         Notice: noticeCollection.createNotice,
         Query: (...params) => new extension.wrapper.Query(...params),
         Collector: (...params) => new Collector(...params),
+        Annotation: (t, ...params) => new Annotation(t, ...params),
         meta: meta,
     };
 })();

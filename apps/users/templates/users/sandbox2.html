@@ -33,13 +33,21 @@
   var toCloseContainer;
   var toCloseNotice;
   const innerMakeTemplate = make.Scrollbox(
+    make.with.css("make-mark-changed"),
     make.it.flexColumn,
     make.it.gap10px,
     make.Button(
       make.with.text("add"),
-      make.on.click(() =>
+      make.on.click(() => {
         innerMakeTemplate.addChild(
           make.Paragraph(`Test ${iter++}`)
+        )
+      }),
+      make.Annotation(1000, 
+        make.Div(
+          make.it.popup,
+          make.Paragraph("Это какой-то текст"),
+          make.Paragraph("Который описывает какое-то что-то"),
         )
       )
     ),

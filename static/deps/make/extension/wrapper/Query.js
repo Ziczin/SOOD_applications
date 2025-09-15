@@ -127,14 +127,26 @@ export default class Query {
         const currentHeaders = { ...this._baseHeaders, ...this._headers };
         const currentBody = { ...this._baseBody, ...this._body };
 
-        return new Query(
+        const snapshot = new Query(
             this._buildRoute(),
             this._method,
             currentHeaders,
             currentBody,
             this._redirect_request_key
         );
+
+        this.clear()
+        return snapshot;
     }
+    clear() {
+        this._route = [],
+        this._headers = {},
+        this._body = {},
+        this._mergedBody = null,
+        this._queryParams = null,
+        this._queryString = '';
+    }
+
 
     copy() {
         const q = new Query(
@@ -202,6 +214,7 @@ export default class Query {
             window.location.href = data[this._redirect_request_key];
         }
         
+        this.clear()
         return data;
     }
 

@@ -44,6 +44,21 @@
   filter: opacity(0.9) blur(1px) brightness(1.2);
 }
 
+.make-mark-changed {
+  position: relative;
+  border-radius: 12px;
+}
+
+.make-mark-changed::before{
+  border-radius: 12px;
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: #fc02;
+  pointer-events: none;
+  z-index: 1;
+}
+
 /* fix agent */
 p, form, h1, h2, h3, h4, h5, h6 {
     margin: 0;
@@ -62,6 +77,13 @@ p, form, h1, h2, h3, h4, h5, h6 {
                 color 0.3s ease,
                 box-shadow 0.1s ease,
                 padding-right 0.5s cubic-bezier(0, 0, 0.01, 1);}
+
+.make-popup {
+    background: #fffc;
+    border-radius: 12px;
+    padding: 8px;
+    box-shadow: 0 0 20px #0004;
+}
 
 .make-contented {
     color: #444;

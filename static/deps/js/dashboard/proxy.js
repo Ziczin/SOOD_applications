@@ -63,7 +63,7 @@ export default function dashboardProxy(make, roles, departments, currentUser, qR
           })
           .patch()
           .then(()=>{
-            location.reload()
+            //location.reload()
           });
         })
       )

@@ -37,8 +37,18 @@
     ).build()
   )
 
-  function deletionNotice(container, component, name, placeholder='PLACEHOLDER') {
-    make.Notice(500, Infinity, 500,
+  function paragraphNotice(text, addit) {
+    make.Notice(500, 500, 500,
+      make.Div(
+        make.it.content,
+        addit,
+        make.Paragraph(text)
+      )
+    )
+  }
+  function deletionNotice(container, component, name, placeholder='PLACEHOLDER', deletion=()=>{}) {
+    let result
+    make.UniqueNotice('deletion', 500, Infinity, 500,
       make.Div(
         make.it.flexColumn,
         make.style.gap(6),
@@ -54,28 +64,51 @@
             make.on.click(() => {
               container.removeChild(component),
               make.other.closeCurrentNotice()
+              deletion()
             })
           ),
           make.Button(
             make.it.action,
             make.it.act.alternative,
             make.with.text('Отмена'),
-            make.on.click(() => make.other.closeCurrentNotice())
+            make.on.click(() => {
+              make.other.closeCurrentNotice()
+            })
           ),
         )
       )
     )
   }
-  function enumElem({val='', ph, enabled=true, container, exists=true, visible=true}) {
+  function enumElem({id, value, ph, enabled=true, container, visible, makeQuery}) {
     let acc;
     let out = make.Div(make.it.marginOnHover)
-    let inp = make.Input(
+    out.id = id
+    let inp
+    inp = make.Input(
       make.with.attr({
-        value: val,
-        placeholder: ph ? ph : val
+        value: value,
+        placeholder: ph ? ph : value
       }),
+      make.on.change((e) =>
+        out.element.classList.add("make-mark-changed")
+      ),
       ...make.if(!enabled,
-        make.with.attrs('disabled')
+        make.with.attrs('disabled'),
+        make.Annotation(1500, 
+          make.Div(
+            make.it.popup,
+            make.Paragraph("Вы не можете редактировать этот элемент"),
+          )
+        ),
+      ),
+      ...make.if(enabled,
+        make.Annotation(1500, 
+          make.Div(
+            make.it.popup,
+            make.Paragraph("Нажмите на поле ввода для редактирования"),
+            make.Paragraph("После редактирования не забудьте сохранить!"),
+          )
+        )
       )
     )
     inp.build()
@@ -88,54 +121,56 @@
       make.style.gap(6),
       inp,
       ...make.if(enabled,
-        make.Button(
-          make.it.action,
-          make.it.act.positive,
-          make.style.padding(5),
-          make.Div(
-            make.with.style({overflow: "hidden"}),
-            make.Image(
-              "{{ MEDIA_URL }}save.png",
-              make.it.flex,
-              make.with.style({width: "20px", height: "20px"}),
-            )
-          ),
-          make.on.click(() => {
-            acc.element.classList.toggle('make-mark-deactivated')
-            acc.args.activated = !acc.args.activated
-          })
-        ),
-        make.Button(
-          make.it.action,
-          make.it.act.alternative,
-          make.style.padding(5),
-          make.Div(
-            make.with.style({overflow: "hidden"}),
-            make.Image(
-              "{{ MEDIA_URL }}hide.png",
-              make.it.flex,
-              make.with.style({width: "20px", height: "20px"}),
-            )
-          ),
-          make.on.click(() => {
-            acc.element.classList.toggle('make-mark-deactivated')
-            acc.args.activated = !acc.args.activated
-          })
-        ),
-        make.Button(
-          make.it.action,
-          make.it.act.negative,
-          make.style.padding(5),
-          make.Div(
-            make.with.style({overflow: "hidden"}),
-            make.Image(
-              "{{ MEDIA_URL }}delete.png",
-              make.it.flex,
-              make.with.style({width: "20px", height: "20px"}),
-            )
-          ),
-          make.on.click(() => deletionNotice(container, out, inp.element.value, '*пустой элемент*'))
-        ),
+        ...[
+          {
+            popupText: "Сохранить текст элемента",
+            style: make.it.act.positive, img: "save",
+            action: () => {
+              makeQuery.at(out.id).with({value: inp.element.value}).patch(),
+              out.element.classList.remove("make-mark-changed")
+              paragraphNotice("Сохранено!", make.color.lgreen)
+            }
+          },{
+            popupText: "Скрыть элемент от пользователя",
+            style: make.it.act.alternative, img: "hide",
+            action: () => {
+              acc.element.classList.toggle('make-mark-deactivated')
+              makeQuery.at(out.id).with({visible: !visible}).patch()
+              paragraphNotice("Видимость изменена!", make.color.yellow)
+            }
+          },{
+            popupText: "Удалить элемент",
+            style: make.it.act.negative, img: "delete",
+            action: () => {
+              deletionNotice(
+                container, out, inp.element.value,
+                '*пустой элемент*', ()=>{
+                  makeQuery.at(out.id).with({available: false}).patch()
+                  paragraphNotice("Удалено!", make.color.red)
+                })
+            }
+          }].map(
+          (btn) => make.Button(
+            make.it.action,
+            btn.style,
+            make.style.padding(5),
+            make.Annotation(1500, 
+              make.Div(
+                make.it.popup,
+                make.Paragraph(btn.popupText),
+              )
+            ),
+            make.Div(
+              make.with.style({overflow: "hidden"}),
+              make.Image(
+                `{{ MEDIA_URL }}${btn.img}.png`,
+                make.it.flex,
+                make.with.style({width: "20px", height: "20px"}),
+              )
+            ),
+            make.on.click(btn.action)
+          )
+        )
       )
     )
     out.addChild(acc)
@@ -151,9 +186,11 @@
       ...items.map((item) => 
         enumElem({
           id: item.id,
-          val: item.value,
+          value: item.value,
+          visible: item.visible,
           enabled: enabled,
           container: collector,
+          makeQuery: qEnum,
         })
       )
     )
@@ -161,17 +198,18 @@
   }
   
   const csrf = make.other.getCookie('csrftoken')
-  const qBase = make.Query('/api').via({'X-CSRFToken': csrf});
-  const qCurrentUser = qBase.view().at('me');
-  const qCurrentUserValues = qBase.view().at('my-role');
-  const qEnum = qBase.view().at('enums')
-  const qEnumTag = qBase.view().at('enum-tags')
+  const qBase = make.Query('/api').via({'X-CSRFToken': csrf}).view();
+  const qCurrentUser = qBase.at('me').view();
+  const qCurrentUserValues = qBase.at('my-role').view();
+  const qEnum = qBase.at('enums').view()
+  const qEnumTag = qBase.at('enum-tags').view()
   
-  const me = await qBase.view().at('me').get()
   let enumCollector = make.Scrollbox();
   let enumTagCollector;
+  let counter = 0;
 
-  console.log(await qEnumTag.view().get())
+  const me = await qCurrentUser.get()
+  
   document.getElementById("left-content").appendChild(
     make.Div(
       make.it.flexColumn,
@@ -189,14 +227,31 @@
               make.Input(
                 ...make.if(
                   tag.department !== me.department.id,
-                  make.with.attrs("readonly")
+                  make.with.attrs("readonly"),
+                  make.Annotation(1500, 
+                    make.Div(
+                      make.it.popup,
+                      make.Paragraph("Другой отдел поделился этим перечислением"),
+                      make.Paragraph("Вы не можете его редактировать. Кликните для просмотра"),
+                    )
+                  ),
+                ),
+                ...make.if(
+                  tag.department === me.department.id,
+                  make.Annotation(1500, 
+                    make.Div(
+                      make.it.popup,
+                      make.Paragraph("Это перечисление вашего отдела"),
+                      make.Paragraph("Кликните по полю ввода для управления элементами"),
+                    ),
+                  ),
                 ),
                 make.with.attr({ value: tag.name }),
                 make.style.padding(6),
                 make.on.click(async () => {
                   let center = document.getElementById("center-content")
                   center.innerHTML = ''
-                  let items = await qEnumTag.view().at(tag.id).at("items").get()
+                  let items = await qEnumTag.at(tag.id).at("items").get()
                   center.appendChild(
                     make.Div(
                       make.it.flexColumn,
@@ -212,12 +267,18 @@
                             make.it.act.neutral,
                             make.with.text('Добавить элемент'),
                             make.on.click(
-                              () => {
+                              async () => {
+                                let res = await qEnum.with({
+                                  value: `Новый элемент ${++counter}`,
+                                  enum_tag: tag.id
+                                }).post()
                                 let enEl = enumElem({
                                   container: enumCollector,
-                                  ph: "*введите значение*",
+                                  makeQuery: qEnum,
+                                  ...res,
                                 })
                                 enumCollector.addChild(enEl)
+                                paragraphNotice("Создано!", make.color.lblue)
                                 enEl.element.querySelector('input').focus()
                               }
                             )
@@ -227,7 +288,7 @@
                             make.it.act.positive,
                             make.with.text("Сохранить"),
                           )
-                      )
+                        )
                       )
                     ).build()
                   )
@@ -236,12 +297,18 @@
 
               ...make.if(!tag.shared,
                 ...[
-                  {pic: 'save', style: make.it.act.positive},
-                  {pic: 'hide', style: make.it.act.alternative},
-                  {pic: 'share', style: make.it.act.neutral},
-                  {pic: 'delete', style: make.it.act.negative},
+                  {pic: 'save', popupText: 'Сохранить имя группы', style: make.it.act.positive},
+                  {pic: 'hide', popupText: 'Скрыть из вариантов при создании форм', style: make.it.act.alternative},
+                  {pic: 'share', popupText: 'Поделиться перечислением с другим отделом', style: make.it.act.neutral},
+                  {pic: 'delete', popupText: 'Удалить группу', style: make.it.act.negative},
                 ].map((btn) => 
                   make.Button(
+                    make.Annotation(1500, 
+                      make.Div(
+                        make.it.popup,
+                        make.Paragraph(btn.popupText),
+                      )
+                    ),
                     make.it.action,
                     btn.style,
                     make.style.padding(5),
@@ -265,7 +332,7 @@
         make.it.act.neutral,
         make.with.text("Создать группу"),
         make.on.click(() => {
-          
+          paragraphNotice("НЕ Создано!", make.color.lblue)
         })
       ),
       make.Button(

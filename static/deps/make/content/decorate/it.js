@@ -2,20 +2,27 @@ export default (withCss) =>
 {
     return {
         goose: withCss('make-goose'),
+
+        popup: withCss('make-popup'),
         content: withCss('make-content'),
         contented: withCss('make-contented'),
         noticeBody: withCss('make-notice-body'),
+
         textItalic: withCss('make-text-italic'),
-        subtitleText: withCss('make-text-subtitle'),
         textBold: withCss('make-text-bold'),
-        leftAlign: withCss('make-text-align-left'),
-        simpleLink: withCss('make-simple-link'),
-        cardHeader: withCss('make-card-header-additional'),
-        cardContent: withCss('make-card-content-additional'),
-        littleDarker: withCss('make-little-darker'),
-        littleLighter: withCss('make-little-lighter'),
+
         centered: withCss('make-it-centered'),
         textCentered: withCss('make-it-text-centered'),
+        leftAlign: withCss('make-text-align-left'),
+
+        subtitleText: withCss('make-text-subtitle'),
+        simpleLink: withCss('make-simple-link'),
+
+        cardHeader: withCss('make-card-header-additional'),
+        cardContent: withCss('make-card-content-additional'),
+
+        littleDarker: withCss('make-little-darker'),
+        littleLighter: withCss('make-little-lighter'),
 
         flex: withCss('make-flex'),
         flexRow: withCss('make-flex-row'),
