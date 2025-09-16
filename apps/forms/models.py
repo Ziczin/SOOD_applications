@@ -18,7 +18,7 @@ class FieldType(models.Model):
 
 class EnumTag(models.Model):
     def __str__(self): return self.name
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, default='')
     shared = models.BooleanField(default=False)
     available = models.BooleanField(default=True)
     department = models.ForeignKey(
@@ -26,7 +26,7 @@ class EnumTag(models.Model):
 
 class Enum(models.Model):
     def __str__(self): return str(self.enum_tag) + ' | ' + str(self.value) 
-    value = models.CharField(max_length=50)
+    value = models.CharField(max_length=50, default='')
     enum_tag = models.ForeignKey(EnumTag, on_delete=models.SET_NULL, null=True)
     available = models.BooleanField(default=True)
     visible = models.BooleanField(default=True)

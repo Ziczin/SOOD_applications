@@ -34,7 +34,7 @@ def on_test_setup():
         [prog_dep, UserRole.MODERATOR],
         [prog_dep, UserRole.ADMIN],
         [rem_dep, UserRole.USER],
-        [rem_dep, UserRole.ADMIN],
+        [prog_dep, UserRole.ADMIN],
     ]
     for i, us in enumerate(usrs):
         User.objects.create_user(

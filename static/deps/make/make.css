@@ -45,18 +45,18 @@
 }
 
 .make-mark-changed {
-  position: relative;
-  border-radius: 12px;
+    position: relative;
 }
 
 .make-mark-changed::before{
-  border-radius: 12px;
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-color: #fc02;
-  pointer-events: none;
-  z-index: 1;
+    border-radius: 12px;
+    border: 2px dashed black;
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: #fc02;
+    pointer-events: none;
+    z-index: 1;
 }
 
 /* fix agent */
@@ -79,10 +79,13 @@ p, form, h1, h2, h3, h4, h5, h6 {
                 padding-right 0.5s cubic-bezier(0, 0, 0.01, 1);}
 
 .make-popup {
-    background: #fffc;
+    font-size: 16px;
+    background: #fffa;
     border-radius: 12px;
-    padding: 8px;
-    box-shadow: 0 0 20px #0004;
+    padding: 12px;
+    box-shadow: 0 0 20px #0003;
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
 }
 
 .make-contented {
@@ -359,11 +362,29 @@ p, form, h1, h2, h3, h4, h5, h6 {
 }
 
 .make-little-darker {
+    position: relative;
+}
+
+.make-little-darker::before{
+    content: "";
+    position: absolute;
+    inset: 0;
     background-color: #0001;
+    pointer-events: none;
+    z-index: 1;
 }
 
 .make-little-lighter {
+    position: relative;
+}
+
+.make-little-lighter::before{
+    content: "";
+    position: absolute;
+    inset: 0;
     background-color: #fff1;
+    pointer-events: none;
+    z-index: 1;
 }
 
 .make-color-white {

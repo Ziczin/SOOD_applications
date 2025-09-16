@@ -1,35 +1,15 @@
-export default (withStyle) =>
-{
-    return {
-        padding: (pad) => withStyle({
-            padding: `${pad}px`,
-        }),
-        margin: (marg) => withStyle({
-            margin: `${marg}px`,
-        }),
-        rounded: (rad) => withStyle({
-            borderRadius: `${rad}px`,
-        }),
-        width: (w) => withStyle({
-            width: `${w}px`,
-        }),
-        height: (h) => withStyle({
-            height: `${h}px`,
-        }),
-        maxWidth: (w) => withStyle({
-            maxWidth: `${w}px`,
-        }),
-        maxHeight: (h) => withStyle({
-            maxHeight: `${h}px`,
-        }),
-        minWidth: (w) => withStyle({
-            minWidth: `${w}px`,
-        }),
-        minHeight: (h) => withStyle({
-            minHeight: `${h}px`,
-        }),
-        gap: (h) => withStyle({
-            gap: `${h}px`,
-        }),
-    }
-}
+export default (withStyle) => {
+  const format = (v) => (typeof v === "number" ? `${v}px` : v);
+  return {
+    padding: (pad) => withStyle({ padding: format(pad) }),
+    margin: (marg) => withStyle({ margin: format(marg) }),
+    rounded: (rad) => withStyle({ borderRadius: format(rad) }),
+    width: (w) => withStyle({ width: format(w) }),
+    height: (h) => withStyle({ height: format(h) }),
+    maxWidth: (w) => withStyle({ maxWidth: format(w) }),
+    maxHeight: (h) => withStyle({ maxHeight: format(h) }),
+    minWidth: (w) => withStyle({ minWidth: format(w) }),
+    minHeight: (h) => withStyle({ minHeight: format(h) }),
+    gap: (h) => withStyle({ gap: format(h) }),
+  };
+};

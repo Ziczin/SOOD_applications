@@ -7,35 +7,13 @@
 <script type="module">
   await import("{% static 'deps/make/make.js' %}");
 
-  document.getElementById('left-exit-button').appendChild(
-    make.Button(
-      make.with.css('content', 'back', 'flex'),
-      make.with.text("Вернуться в аккаунт"),
-      make.on.click(() =>
-        make.Notice(500, Infinity, 500,
-          make.Div(
-            make.it.flexColumn,
-            make.style.gap(6),
-            make.Button(
-              make.with.text("Выйти без сохранения"),
-              make.with.css('content', 'exit2', 'flex'),
-              make.on.click(() => window.location.href='/applications/dashboard/'),
-            ),
-            make.Button(
-              make.with.text("Сохранить и выйти"),
-              make.with.css('content', 'back', 'flex'),
-              make.on.click(() => window.location.href='/applications/dashboard/'),
-            ),
-            make.Button(
-              make.with.text("Отмена"),
-              make.with.css('content', 'forward', 'flex'),
-              make.on.click(() => make.other.closeCurrentNotice())
-            )
-          )
-        )
-      )
-    ).build()
-  )
+  function exitButtonInvariant(text, style) {
+    return make.Button(
+      make.with.text(text),
+      make.with.css("content", style, "flex"),
+      make.on.click(() => window.location.href="/applications/dashboard/"),
+    )
+  }
 
   function paragraphNotice(text, addit) {
     make.Notice(500, 500, 500,
@@ -46,9 +24,26 @@
       )
     )
   }
-  function deletionNotice(container, component, name, placeholder='PLACEHOLDER', deletion=()=>{}) {
+
+  function makePopup(time = 1500, text = []) {
+    if (typeof time === 'string' || Array.isArray(time)) {
+      text = time;
+      time = 1500;
+    }
+    if (typeof text === 'string') text = [text];
+
+    return make.Annotation(
+      time,
+      make.Div(
+        make.it.popup,
+        ...text.map(txt => make.Paragraph(txt))
+      )
+    );
+  }
+
+  function deletionNotice(container, component, name, placeholder="PLACEHOLDER", deletion=()=>{}) {
     let result
-    make.UniqueNotice('deletion', 500, Infinity, 500,
+    make.UniqueNotice("deletion", 500, Infinity, 500,
       make.Div(
         make.it.flexColumn,
         make.style.gap(6),
@@ -60,7 +55,7 @@
           make.Button(
             make.it.action,
             make.it.act.negative,
-            make.with.text('Удалить'),
+            make.with.text("Удалить"),
             make.on.click(() => {
               container.removeChild(component),
               make.other.closeCurrentNotice()
@@ -70,7 +65,7 @@
           make.Button(
             make.it.action,
             make.it.act.alternative,
-            make.with.text('Отмена'),
+            make.with.text("Отмена"),
             make.on.click(() => {
               make.other.closeCurrentNotice()
             })
@@ -79,7 +74,28 @@
       )
     )
   }
-  function enumElem({id, value, ph, enabled=true, container, visible, makeQuery}) {
+
+  function makePicButton(pic, txt, style=[], onClick=()=>{}) {
+    if (!Array.isArray(style)) {
+      style = [style, ]
+    }
+    return make.Div(
+      make.Button(
+        makePopup(800, txt),
+        make.it.action,
+        ...[style],
+        make.style.padding(6),
+        make.Image(
+          `{{ MEDIA_URL }}${pic}.png`,
+          make.it.flex,
+          make.with.style({width: "24px", height: "24px"}),
+        ),
+        make.on.click(onClick)
+      )
+    )
+  }
+
+  function enumElem({id, value, ph, enabled=true, container, visible, makeQuery, test=false}) {
     let acc;
     let out = make.Div(make.it.marginOnHover)
     out.id = id
@@ -87,13 +103,13 @@
     inp = make.Input(
       make.with.attr({
         value: value,
-        placeholder: ph ? ph : value
+        placeholder: ph ? ph : value ? value : "Пустой элемент"
       }),
       make.on.change((e) =>
         out.element.classList.add("make-mark-changed")
       ),
       ...make.if(!enabled,
-        make.with.attrs('disabled'),
+        make.with.attrs("disabled"),
         make.Annotation(1500, 
           make.Div(
             make.it.popup,
@@ -106,71 +122,49 @@
           make.Div(
             make.it.popup,
             make.Paragraph("Нажмите на поле ввода для редактирования"),
-            make.Paragraph("После редактирования не забудьте сохранить!"),
+            make.Paragraph("Если элемент подсвечен, то его необходимо сохранить!"),
           )
         )
       )
     )
     inp.build()
     acc = make.Div(
-      make.with.css('make-mark-filtered'),
+      make.with.css("make-mark-filtered"),
       ...make.if(!visible,
-        make.with.css('make-mark-deactivated')
+        make.with.css("make-mark-deactivated")
       ),
       make.it.flexRow,
       make.style.gap(6),
       inp,
       ...make.if(enabled,
-        ...[
-          {
-            popupText: "Сохранить текст элемента",
-            style: make.it.act.positive, img: "save",
-            action: () => {
-              makeQuery.at(out.id).with({value: inp.element.value}).patch(),
-              out.element.classList.remove("make-mark-changed")
-              paragraphNotice("Сохранено!", make.color.lgreen)
-            }
-          },{
-            popupText: "Скрыть элемент от пользователя",
-            style: make.it.act.alternative, img: "hide",
-            action: () => {
-              acc.element.classList.toggle('make-mark-deactivated')
-              makeQuery.at(out.id).with({visible: !visible}).patch()
-              paragraphNotice("Видимость изменена!", make.color.yellow)
-            }
-          },{
-            popupText: "Удалить элемент",
-            style: make.it.act.negative, img: "delete",
-            action: () => {
-              deletionNotice(
-                container, out, inp.element.value,
-                '*пустой элемент*', ()=>{
-                  makeQuery.at(out.id).with({available: false}).patch()
-                  paragraphNotice("Удалено!", make.color.red)
-                })
-            }
-          }].map(
-          (btn) => make.Button(
-            make.it.action,
-            btn.style,
-            make.style.padding(5),
-            make.Annotation(1500, 
-              make.Div(
-                make.it.popup,
-                make.Paragraph(btn.popupText),
-              )
-            ),
-            make.Div(
-              make.with.style({overflow: "hidden"}),
-              make.Image(
-                `{{ MEDIA_URL }}${btn.img}.png`,
-                make.it.flex,
-                make.with.style({width: "20px", height: "20px"}),
-              )
-            ),
-            make.on.click(btn.action)
-          )
-        )
+        makePicButton("save", "Сохранить текст элемента", make.it.act.positive,
+        () => {
+          out.element.classList.remove("make-mark-changed")
+          if (!test) {
+            makeQuery.at(out.id).with({value: inp.element.value}).patch()
+            paragraphNotice("Сохранено!", make.color.lgreen)
+          }
+        }),
+        makePicButton("hide", "Скрыть элемент от пользователя", make.it.act.alternative,
+        () => {
+          acc.element.classList.toggle("make-mark-deactivated")
+          if (!test) {
+            makeQuery.at(out.id).with({visible: !visible}).patch()
+            paragraphNotice("Видимость изменена!", make.color.yellow)
+          }
+        }),
+        makePicButton("trash", "Удалить элемент", make.it.act.negative,
+        () => {
+          if (!test) {
+            deletionNotice(
+              container, out, inp.element.value,
+              "*пустой элемент*", ()=>{
+                makeQuery.at(out.id).with({available: false}).patch()
+                paragraphNotice("Удалено!", make.color.red)
+              }
+            )
+          }
+        }),
       )
     )
     out.addChild(acc)
@@ -179,6 +173,7 @@
 
   function createCollector(items, enabled=true) {
     let collector = make.Scrollbox(
+      make.with.style({maxHeight: "89vh"}),
       make.it.flexColumn,
       make.style.gap(6)
     )
@@ -197,152 +192,319 @@
     return collector
   }
   
-  const csrf = make.other.getCookie('csrftoken')
-  const qBase = make.Query('/api').via({'X-CSRFToken': csrf}).view();
-  const qCurrentUser = qBase.at('me').view();
-  const qCurrentUserValues = qBase.at('my-role').view();
-  const qEnum = qBase.at('enums').view()
-  const qEnumTag = qBase.at('enum-tags').view()
-  
-  let enumCollector = make.Scrollbox();
-  let enumTagCollector;
-  let counter = 0;
+  function addElementButton(enumCollector, qEnum, tag) {
+    return make.Button(
+      make.it.action,
+      make.it.act.neutral,
+      make.with.text("Добавить элемент"),
+      make.on.click(
+        async () => {
+          let enEl = enumElem({
+            container: enumCollector,
+            makeQuery: qEnum,
+            ...(
+              await qEnum.with({
+                enum_tag: tag.id
+              }).post()
+            ),
+          })
+          enumCollector.addChild(enEl)
+          paragraphNotice("Создано!", make.color.lblue)
+          enEl.element.querySelector("input").focus()
+        }
+      )
+    )
+  }
 
-  const me = await qCurrentUser.get()
-  
-  document.getElementById("left-content").appendChild(
-    make.Div(
+  function centerComponent(qEnumm, items, tag, me) {
+    return make.Div(
+      make.it.flexColumn,
+      make.style.gap(6),
+      enumCollector = createCollector(items, tag.department === me.department.id),
+      ...make.if(
+        tag.department === me.department.id,
+        make.Div(
+          make.it.flexRow,
+          make.style.gap(6),
+          addElementButton(enumCollector, qEnum, tag)
+        ),
+      ),
+    ).build()
+  }
+
+  function makeEnumTagPopup(owner_dep) {
+    if (owner_dep) {
+      return [makePopup([
+        "Это перечисление вашего отдела",
+        "Кликните по полю ввода для управления элементами"])]
+    } else {
+      return [
+        make.with.attrs("readonly"),
+        makePopup([
+          "Другой отдел поделился этим перечислением",
+          "Вы не можете его редактировать. Кликните для просмотра"
+        ])
+      ]
+    }
+  }
+
+  async function fillCenter(qEnum, qEnumTag, tag, me) {
+    let center = document.getElementById("center-content")
+    center.innerHTML = ""
+    center.appendChild(
+      centerComponent(qEnum, (await qEnumTag.at(tag.id).at("items").get()), tag, me)
+    )
+  }
+
+  function enumTagElem(qEnum, qEnumTag, tag, me) {
+    return make.Div(
+      make.it.flexRow,
+      make.style.gap(6),
+      make.it.marginOnHover,
+      make.Input(
+        makeEnumTagPopup(tag.department === me.department.id),
+        make.with.attr({ value: tag.name }),
+        make.style.padding(6),
+        make.on.click(async () => await fillCenter(qEnum, qEnumTag, tag, me))
+      ),
+      ...make.if(!tag.shared,
+        makePicButton("save", "Сохранить имя группы", make.it.act.positive),
+        makePicButton("hide", "Скрыть из вариантов при создании форм", make.it.act.alternative),
+        makePicButton("share", "Поделиться перечислением с другим отделом", make.it.act.neutral),
+        makePicButton("trash", "Удалить группу", make.it.act.negative),
+      )
+    )
+  }
+
+  function enumsManualContent() {
+    let styleTab = [make.style.padding(4), make.it.littleDarker]
+    return [
+      make.Div(
+        make.it.flexRow, make.style.gap(6), make.style.maxHeight('10%'),
+        make.h1("Руководство"),
+        enumsManualCloseText(),
+      ),
+      make.Separator(6),
+      make.Tabs()
+      .menu(make.it.littleDarker, make.style.gap(6), make.style.rounded(12), make.style.padding(4))
+      .tab()
+      .header(...styleTab, make.Paragraph("Главная")
+      ).content(
+        make.it.flexColumn, make.style.gap(6),
+        make.Paragraph("• Это руководство кратко описывает алгоритм работы с данной страницей"),
+        make.Paragraph("• Выше, находятся вкладки, на которых расписан основной функционал"),
+        make.Paragraph("• Руководство предназначено для тех, кто в отделе был назначен администратором"),
+        make.Paragraph("• Пишите в отдел программирования если остался вопрос, на который в данном руководстве нет ответа"),
+        make.Separator(0),
+        make.Paragraph(`Можете перейти на вкладку "Подсказки"`)
+      )
+      .tab()
+      .header(...styleTab, make.Paragraph("Подсказки")
+      ).content(
+        make.it.flexColumn, make.style.gap(6),
+        make.Paragraph("• Большая часть элементов при наведении выведет вам подсказку через 1.5 секунды"),
+        make.Paragraph("Наведитесь на эту строку и подождите несколько секунд", make.with.style({textDecoration: "underline"}),
+        makePopup([
+          "Так будет выглядить подсказка",
+          "Зачастую, в подсказках будут проянены некоторые моменты",
+          "которые могут показаться неочевидными на первый взгляд"
+        ]),
+        make.on.click((e) => {
+          e.target.textContent = "НЕ НУЖНО НАЖИМАТЬ, ПРОСТО НАВЕДИТЕСЬ";
+        })),
+        make.Separator(),
+        make.Paragraph('• Подсказки могут быть не только над текстом, но и над элементами'),
+        make.Paragraph('• Ниже находятся различные элементы. Наведитесь на любой из них и подождите несколько секунд'),
+        make.Div(
+          make.it.flexRow,
+          make.style.gap(6),
+          make.Input(make.with.attr({placeholder: "Это поле ввода"}),
+            makePopup(800, "Это подсказка на поле ввода"), make.style.maxWidth('20%'),
+          ),
+          make.Input(make.with.attr({placeholder: "Это поле ввода отключено", disabled: ''}),
+            makePopup(800, [
+              "Это подсказка на поле ввода",
+              "подсказки могут находиться на элементах, даже если те отключены"
+            ])
+          ),
+          make.Button(make.it.redir, make.with.text("это кнопка"),
+            makePopup(800, "Это подсказка на кнопке"), make.with.style({whiteSpace: "nowrap"}),
+            make.on.click((e) => e.target.textContent = "Тут нет ничего интересного")
+          ),
+          make.Div(
+            make.it.flexRow,
+            make.style.gap(6),
+            make.style.minWidth("24%"),
+            makePicButton('save', "Это подсказка на кнопке сохранения"),
+            makePicButton('hide', "Подсказка на кнопке сохранения"),
+            makePicButton('share', `Это кнопка "Поделиться"`),
+            makePicButton('trash', `Это "Удалить"`),
+          )
+        ),
+        make.Separator(),
+        make.Paragraph("• Список элементов не ограничивается кнопками и полями ввода"),
+        make.Separator(),
+        make.Paragraph(`Можете перейти на вкладку "Кнопки управления"`)
+      )
+      .tab()
+      .header(...styleTab, make.Paragraph("Кнопки управления")
+      ).content(
+        make.it.flexColumn, make.style.gap(6),
+        make.Paragraph("• Кнопки управления позволяют взаимодействовать с ближайшим элементом"),
+        make.Paragraph("• Если на одной строке содержатся кнопки и поле ввода, то все кнопки относятся к этому полю ввода"),
+        make.Paragraph("• Например:"),
+        enumElem({id: 0, value: 'Демонстрационное поле', visible: true}),
+        make.Separator(0),
+        make.Paragraph('• Кнопки имеют смысл в контексте того, где они находятся, наведитесь на них чтобы увидеть описание их действий'),
+        make.Separator(0),
+        make.Paragraph("• Разберём что из себя представляют кнопки на данной странице:"),
+        make.Div(
+          make.it.flexColumn, make.style.gap(6),
+          enumsManualFunctionalButtonElement(
+            'save', [`"Дискета"`, "Сохранить"], make.it.act.positive,
+            "Кнопки с изображением дискеты обычно сохраняют изменения в базу данных",
+            'На данной странице такие кнопки фиксируют в базе новое значение из поля ввода',
+          ),
+          enumsManualFunctionalButtonElement(
+            'hide', [`"Глаз"`, "Скрыть/показать"], make.it.act.alternative,
+            "Кнопки с изображением глаза обычно скрывают или раскрывают данные",
+            'На данной странице такие кнопки фиксируют в базе видимость элемента для других страниц',
+          ),
+          enumsManualFunctionalButtonElement(
+            'share', [`"Граф"`, "Поделиться"], make.it.act.neutral,
+            "Кнопки с изображением графа обычно означают что этим элементом можно поделиться",
+            'На данной странице такие кнопки дают разрешение другим ' +
+            'отделам просматривать и использовать перечисление, которым вы делитесь',
+          ),
+          enumsManualFunctionalButtonElement(
+            'trash', [`"Корзина"`, "Удалить"], make.it.act.negative,
+            "Кнопки с изображением корзины обычно удаляют запись из базы данных",
+            'На данной странице такие кнопки делают запись невидимой для любого пользователя, ' +
+            'кроме администратора, но она всё ещё будет видна в тех заявках и формах, где уже была применена ранее',
+          ),
+        )
+      )
+    ]
+  }
+
+  function enumsManualFunctionalButtonElement(pic, popup, styles, t1, t2) {
+    return make.Div(
+      make.style.rounded(12),
+      make.style.padding(6),
+      make.it.marginOnHover,
+      make.it.leftAlign,
+      make.Div(make.it.flexRow, make.style.gap(6),
+        make.with.style({alignItems: 'flex-end'}),
+        makePicButton(pic, popup, styles),
+        make.Paragraph(t1)
+      ),
+      make.Paragraph(t2)
+    )
+  }
+
+  function enumsManualCloseText() {
+    return make.Paragraph(
+      "Нажмите на этот текст, чтобы скрыть руководство",
+      make.it.subtitleText,
+      make.on.click(() => make.other.closeCurrentNotice()),
+      make.with.style({alignSelf: "flex-end", fontSize: "16px"})
+    )
+  }
+
+  function enumsManual() {
+    make.UniqueNotice("manual", 1000, Infinity, 1000,
+      make.Div(
+        make.it.content,
+        make.color.lblue,
+        make.Div(
+        make.it.content,
+          make.style.minWidth('50vw'),
+          make.style.maxWidth('60vw'),
+          make.style.height('80vh'),
+          ...enumsManualContent()
+        )
+      )
+    )
+  }
+
+  function enumsManualButton() {
+    return make.Div(
+      make.Separator(6),
+      make.Button(
+        make.color.lblue,
+        make.it.action,
+        make.it.act.neutral,
+        make.with.text("Руководство"),
+        make.on.click(() => {
+          enumsManual()
+        })
+      )
+    )
+  }
+
+  function backButton() {
+    return make.Button(
+      make.with.css("content", "back", "flex"),
+      make.with.text("Вернуться в аккаунт"),
+      make.on.click(() =>
+        make.Notice(500, Infinity, 500,
+          make.Div(
+            make.it.flexColumn,
+            make.style.gap(6),
+            exitButtonInvariant("Выйти без сохранения", "exit2"),
+            exitButtonInvariant("Сохранить и выйти", "back"),
+            exitButtonInvariant("Отмена", "forward"),
+          )
+        )
+      )
+    )
+  }
+
+  function enumTagAddButton(id, acc) {
+    return make.Button(
+      make.it.action,
+      make.it.act.neutral,
+      make.with.text("Создать группу"),
+      make.on.click(() => {
+        paragraphNotice("НЕ Создано!", make.color.lblue)
+      })
+    )
+  }
+
+  async function leftContent(qCurrentUser, qEnumTag, qEnum, me) {
+    let acc;
+
+    return make.Div(
       make.it.flexColumn,
       make.style.gap(10),
       make.h1((await qCurrentUser.get()).department.label),
-      make.Scrollbox(
-        enumTagCollector = make.Collector(
-          make.it.flexColumn,
-          make.style.gap(6),
-          ...(await qEnumTag.get()).map((tag) =>
-            make.Div(
-              make.it.flexRow,
-              make.style.gap(6),
-              make.it.marginOnHover,
-              make.Input(
-                ...make.if(
-                  tag.department !== me.department.id,
-                  make.with.attrs("readonly"),
-                  make.Annotation(1500, 
-                    make.Div(
-                      make.it.popup,
-                      make.Paragraph("Другой отдел поделился этим перечислением"),
-                      make.Paragraph("Вы не можете его редактировать. Кликните для просмотра"),
-                    )
-                  ),
-                ),
-                ...make.if(
-                  tag.department === me.department.id,
-                  make.Annotation(1500, 
-                    make.Div(
-                      make.it.popup,
-                      make.Paragraph("Это перечисление вашего отдела"),
-                      make.Paragraph("Кликните по полю ввода для управления элементами"),
-                    ),
-                  ),
-                ),
-                make.with.attr({ value: tag.name }),
-                make.style.padding(6),
-                make.on.click(async () => {
-                  let center = document.getElementById("center-content")
-                  center.innerHTML = ''
-                  let items = await qEnumTag.at(tag.id).at("items").get()
-                  center.appendChild(
-                    make.Div(
-                      make.it.flexColumn,
-                      make.style.gap(6),
-                      enumCollector = createCollector(items, tag.department === me.department.id),
-                      ...make.if(
-                        tag.department === me.department.id,
-                        make.Div(
-                        make.it.flexRow,
-                        make.style.gap(6),
-                        make.Button(
-                            make.it.action,
-                            make.it.act.neutral,
-                            make.with.text('Добавить элемент'),
-                            make.on.click(
-                              async () => {
-                                let res = await qEnum.with({
-                                  value: `Новый элемент ${++counter}`,
-                                  enum_tag: tag.id
-                                }).post()
-                                let enEl = enumElem({
-                                  container: enumCollector,
-                                  makeQuery: qEnum,
-                                  ...res,
-                                })
-                                enumCollector.addChild(enEl)
-                                paragraphNotice("Создано!", make.color.lblue)
-                                enEl.element.querySelector('input').focus()
-                              }
-                            )
-                          ),
-                          make.Button(
-                            make.it.action,
-                            make.it.act.positive,
-                            make.with.text("Сохранить"),
-                          )
-                        )
-                      )
-                    ).build()
-                  )
-                })
-              ),
+      acc = make.Scrollbox(
+        make.it.flexColumn,
+        make.style.gap(6),
+        ...(await qEnumTag.get()).map((tag) =>
+          enumTagElem(qEnum, qEnumTag, tag, me)
+        )
+      ),
+      enumTagAddButton(me.department.id, acc)
+    )
+  }
 
-              ...make.if(!tag.shared,
-                ...[
-                  {pic: 'save', popupText: 'Сохранить имя группы', style: make.it.act.positive},
-                  {pic: 'hide', popupText: 'Скрыть из вариантов при создании форм', style: make.it.act.alternative},
-                  {pic: 'share', popupText: 'Поделиться перечислением с другим отделом', style: make.it.act.neutral},
-                  {pic: 'delete', popupText: 'Удалить группу', style: make.it.act.negative},
-                ].map((btn) => 
-                  make.Button(
-                    make.Annotation(1500, 
-                      make.Div(
-                        make.it.popup,
-                        make.Paragraph(btn.popupText),
-                      )
-                    ),
-                    make.it.action,
-                    btn.style,
-                    make.style.padding(5),
-                    make.Div(
-                      make.with.style({overflow: "hidden"}),
-                      make.Image(
-                        `{{ MEDIA_URL }}${btn.pic}.png`,
-                        make.it.flex,
-                        make.with.style({width: "20px", height: "20px"}),
-                      )
-                    )
-                  ),
-                )
-              )
-            )
-          )
-        ),
-      ),
-      make.Button(
-        make.it.action,
-        make.it.act.neutral,
-        make.with.text("Создать группу"),
-        make.on.click(() => {
-          paragraphNotice("НЕ Создано!", make.color.lblue)
-        })
-      ),
-      make.Button(
-        make.it.action,
-        make.it.act.positive,
-        make.with.text("Сохранить"),
-        make.on.click(() => {
-          
-        })
-      ),
-    ).build()
-  )
+  const csrf = make.other.getCookie("csrftoken")
+  const qBase = make.Query("/api").via({"X-CSRFToken": csrf}).view();
+  const qCurrentUser = qBase.at("me").view();
+  const qCurrentUserValues = qBase.at("my-role").view();
+  const qEnum = qBase.at("enums").view()
+  const qEnumTag = qBase.at("enum-tags").view()
+  
+  let enumCollector = make.Scrollbox();
+
+  const me = await qCurrentUser.get()
+  console.log(me)
+
+  document.getElementById("left-exit-button").appendChild(backButton().build())
+  document.getElementById("left-exit-button").appendChild(enumsManualButton().build())
+  document.getElementById("left-content").appendChild(
+    (await leftContent(qCurrentUser, qEnumTag, qEnum, me)).build())
+
+
 </script>

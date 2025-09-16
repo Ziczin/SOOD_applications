@@ -13,6 +13,10 @@ window.make.meta.<...>
 }
 
 let changelog = {
+    '0.2.1': `
+v0.2.1-dev
+- Fixed some broken styles. Now make.style can accept either a string or a number; a number is interpreted as a pixel value (px)
+`,
     '0.2.0': `
 v0.2.0-dev
 - Added Annotation(time ...components) component, which appears in time milliseconds after hovering over the component to which it is attached

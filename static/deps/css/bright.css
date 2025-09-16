@@ -94,7 +94,9 @@ label {
 input, select, textarea {
     font-size: 20px;
     width: 100%;
-    padding: 1%;
+    padding: 4px;
+    padding-bottom: 0;
+    padding-left: 6px;
     border: 1px solid #ccc;
     border-radius: 12px;
     box-sizing: border-box;}
@@ -106,7 +108,7 @@ button {
     font-size: 20px;
     border: 0;
     width: 100%;
-    padding: 10px;
+    padding: 6px;
     color: white;
     border-radius: 12px;
     cursor: pointer;}
@@ -179,85 +181,6 @@ form.flex {
     flex-direction: column;
 }
 
-.tabs {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 10px;}
-.tabs-menu{
-    padding: 1%;
-    border-radius: 12px;
-    background-color: #e6e6e6;}
-.tab-button {
-    padding: 10px;
-    border: none;
-    background-color: #dadada;
-    border: 2px #fff6;
-    color:#444;
-    cursor: pointer;
-    transition: background-color 0.3s ease;}
-.tab-button.active:hover,
-.tab-button.active {
-    background-color: #ccc;
-    color: #222;}
-.tab-button:hover {
-    background-color: #cccfff;}
-.tab-content {
-    opacity: 0;
-    transform: translateY(-10px);
-    transition: opacity 0.5s ease, transform 0.5s ease;
-    height: 0;
-    overflow: hidden;}
-.tab-content.active {
-    opacity: 1;
-    transform: translateY(0);
-    height: auto;}
-
-.accordion {
-    display: flex;
-    flex-direction: column;
-    gap: 2%;
-    transition: margin-bottom 0.3s;}
-.accordion.inner {
-    padding: 12px;
-    gap: 10px;
-}
-.accordion-back {
-    border-radius: 12px;
-    margin-bottom: 2%;
-    overflow: hidden;}
-.accordion-back.bg-red {
-    background-color: #fdd;}
-.accordion-back.bg-blue {
-    background-color: #ddf;}
-.accordion-back.bg-blue2 {
-    background-color: #ccf;}
-.accordion-back.bg-green {
-    background-color: #dfd;}
-.accordion-header {
-    background-color: #e7e7e7;
-    color: #000;
-    cursor: pointer;
-    width: 100%;
-    outline: none;
-    transition: 0.3s;}
-.accordion-header.active{
-    box-shadow: 0 5px 5px #0002;;
-    background-color: #ddd;
-    margin-bottom: 2%;}
-.accordion-header:hover {
-    background-color: #ddd;}
-.accordion-content {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.2s ease-out;}
-.accordion-content.margin {
-    margin-left: 2%;}
-.accordion-content p {
-    margin-block-start: 0px;
-    margin-block-end: 0px;}
-.accordion-content .acc-select {
-    width: 95%;}
-
 .shady {
     background-color: #0001;
     padding: 2%;
@@ -298,99 +221,6 @@ form.flex {
     inset 0vw -10px 10px #fff;
   z-index: 1;
 }
-
-.scrollbox {
-    display: flex;
-    flex-direction: column;
-    max-height: 94vh;
-    overflow-y: scroll;
-    margin-left: 10px;
-    padding-top: 20px;
-    padding-bottom: 20px;
-    scrollbar-width: thin;
-    scrollbar-color: #ccc transparent;}
-.scrollbox::-webkit-scrollbar {
-    width: 12px;
-    height: 12px;}
-.scrollbox::-webkit-scrollbar-thumb {
-    background-color: #ccc;
-    border-radius: 10px;
-    border: 2px solid transparent;}
-.scrollbox::-webkit-scrollbar-track {
-    background: transparent;}
-
-.wave-text {
-    display: inline-block;
-    font-size: 24px; }
-.wave-text:hover span {
-    display: inline-block;
-    animation: wave 120s infinite;}
-
-@keyframes wave {
-    0%, 100% { font-weight: lighter; }
-    12% { font-weight: bold; color: #000; }
-    14% { color: #0000; }
-    16% { color: #000; }
-    30% { transform: translateX(0); color: #000; }
-    31% { transform: translateX(-2px); }
-    32% { transform: translateX(0); }
-    33% { transform: translateX(-4px); }
-    34% { transform: translateX(0); }
-    35% { transform: translateX(-6px); }
-    36% { transform: translateX(0); }
-    37% { transform: translateX(-4px); }
-    38% { transform: translateX(0); }
-    39% { transform: translateX(-2px); }
-    40% { transform: translateX(0); }
-    60% { transform: scale(1); }
-    63% { transform: scale(2); }
-    65% { transform: scale(-1.2); }
-    67% { transform: scale(1); }
-    75% { transform: translateY(0); }
-    80% { transform: translateY(500px); }
-    80.00001% { transform: translateY(-500px); }
-    85% { transform: translateY(0px); }
-    90% { font-weight: bold; }
-}
-
-.enabler .toggle-button {
-    background-color: #ccc; 
-    color: #000;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    padding: 0;
-    transition: background-color 0.3s ease; }
-.enabler .toggle-button.enabled {
-    background-color: #4caf50; }
-.enabler .toggle-button:hover {
-    background-color: #a5d6a7; }
-.enabler .toggle-button:hover.enabled {
-    background-color: #81c784; }
-.enabler .toggle-button.disabled:hover {
-    background-color: #b0bec5; }
-
-.tooltip-container {
-    position: relative;
-    display: inline-block;}
-.tooltip {
-    visibility: hidden;
-    background-color: #000d;
-    color: #fff;
-    text-align: left;
-    font-size: 16px;
-    border-radius: 12px;
-    padding: 5px;
-    position: absolute;
-    z-index: 1;
-    bottom: 125%;
-    left: 50%;
-    margin-left: -50%;
-    opacity: 0;
-    transition: opacity 0.5s 0.5s;}
-.tooltip-container:hover .tooltip {
-    visibility: visible;
-    opacity: 1;}
 
 .w-10p   { width:  10%; }  
 .w-20p   { width:  20%; }  
