@@ -21,6 +21,7 @@ class EnumTag(models.Model):
     name = models.CharField(max_length=50, default='')
     shared = models.BooleanField(default=False)
     available = models.BooleanField(default=True)
+    visible = models.BooleanField(default=True)
     department = models.ForeignKey(
         Department, on_delete=models.SET_NULL, null=True, blank=True, related_name='enum_tags')
 

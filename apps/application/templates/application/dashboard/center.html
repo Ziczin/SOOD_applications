@@ -16,20 +16,18 @@
   const qUsers = qBase.view().at('users').view();
   const qRoles = qBase.view().at('roles').view()
   const qCurrentUser = qBase.view().at('me').view();
-  const qCurrentUserRole = qBase.view().at('my-role').view();
 
-  const status = await qCurrentUserRole.get()
+  const me = await qCurrentUser.get()
   const roles = await qRoles.get()
   const currentUser = await qCurrentUser.get()
 
   document.getElementById('center-content').appendChild(
     make.Div(
       ...(() => {
-        if (!status.verified) return [make.h1(
+        if (me.permissions.length === 0) return [make.h1(
           "Перед началом работы верифицируйте аккаунт у администратора отдела или в отделе программирования.")];
         
-          console.log(status.permissions, status.permissions.length)
-        if (status.permissions.length === 1) return buildUserTab(make)
+        if (me.permissions.length === 1) return buildUserTab(make)
         const tabs = make.Tabs()
           .menu(
             make.it.flexRow,
@@ -39,7 +37,7 @@
             make.style.padding(8),
           );
 
-        const has = (p) => Array.isArray(status.permissions) ? status.permissions.includes(p) : (p in status.permissions);
+        const has = (p) => Array.isArray(me.permissions) ? me.permissions.includes(p) : (p in me.permissions);
 
         if (has('user'))
           tabs.tab()

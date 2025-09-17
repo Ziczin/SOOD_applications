@@ -16,28 +16,32 @@
   const qUsers = qBase.view().at('users');
   const qRoles = qBase.view().at('roles')
   const qCurrentUser = qBase.view().at('me');
-  const qCurrentUserValues = qBase.view().at('my-role');
 
-  const currentUser = await qCurrentUser.get();
-  const valuesUser = await qCurrentUserValues.get()
+  const me = await qCurrentUser.get();
+
+  function findLabelByValue(arr, value) {
+    const item = arr.find(obj => obj.value === value);
+    return item ? item.label : null;
+  }
 
   document.getElementById('left-content').appendChild(
     make.Div(
       make.it.flexColumn,
       make.it.gap6px,
-      make.h1(`${currentUser.fullname}`),
-      make.Paragraph(`@${currentUser.username}`, make.it.subtitleText),
-      make.Paragraph(valuesUser.role),
-      make.Paragraph(
-        currentUser.department?.label ? currentUser.department.label : 'Без отдела',
-        ...valuesUser.proxy
-        ? [make.with.style({
+      make.h1(`${me.fullname}`),
+      make.Paragraph(`@${me.username}`, make.it.subtitleText),
+      make.Paragraph(me.role.label),
+      make.Paragraph(me.department?.label ? me.department.label : 'Без отдела',
+        ...make.if(me.permissions.includes('proxy'),
+          make.with.style({
             textDecorationLine: 'line-through',
             textDecorationColor: 'rgba(0,0,0,0.35)',
-            fontStyle: "italic" })]
-        : []),
-      ...valuesUser.proxy
-      ? [
+            fontStyle: "italic"
+          })
+        )
+      ),
+          
+      ...make.if(me.permissions.includes('proxy'),
         make.Paragraph(
           "Вы - ",
           make.with.style({
@@ -48,14 +52,13 @@
               createNoiseCycler(1000, 1000, [
                 "суперюзер", "агент", "знание", "нулевой",
                 "прокси", "мимик", "???", "призрак", "ордо",
-                "кто?", "образ", currentUser.username, "наблюдатель",
-                valuesUser.role, "тень", "...", "42", "герой"
+                "кто?", "образ", me.username, "наблюдатель",
+                me.role.label, "тень", "...", "42", "герой"
               ])
             )
           )
         )
-      ]
-      : []
+      )
     ).build()
   );
 

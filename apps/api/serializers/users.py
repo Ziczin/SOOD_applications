@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from apps.users.models import CustomUser, UserRole, Department
+from apps.users.models import CustomUser, Department, UserRole
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password1 = serializers.CharField(write_only=True)
@@ -8,7 +8,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'password1', 'password2', 'fullname', 'department']
+        fields = ['username','password1','password2','fullname','department']
 
     def validate(self, data):
         if CustomUser.objects.filter(username=data['username']).exists():
@@ -18,62 +18,16 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        print(validated_data)
-        user = CustomUser.objects.create_user(
+        return CustomUser.objects.create_user(
             username=validated_data['username'],
             password=validated_data['password1'],
-            fullname=validated_data['fullname'],
-            department=Department.objects.get(name=validated_data['department']),
-            role=UserRole.USER
-        )
-        return user
-
-class UserLoginSerializer(serializers.Serializer):
-    username = serializers.CharField()
-    password = serializers.CharField()
-
-class UserListSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CustomUser
-        fields = ('id', 'username', 'fullname', 'email', 'department', 'role')
-
-class UserDetailSerializer(serializers.ModelSerializer):
-    department = serializers.StringRelatedField()
-    class Meta:
-        model = CustomUser
-        fields = ('id', 'username', 'fullname', 'first_name', 'last_name', 'email', 'department', 'role', 'date_joined')
-
-class CurrentUserSerializer(serializers.ModelSerializer):
-    department = serializers.StringRelatedField()
-    class Meta:
-        model = CustomUser
-        fields = ('id', 'username', 'fullname', 'email', 'department', 'role')
-
-class DepartmentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Department
-        fields = ('id', 'name', 'label')
-
-class UserListSerializer(serializers.ModelSerializer):
-    department = DepartmentSerializer(read_only=True)
-
-    class Meta:
-        model = CustomUser
-        fields = ('id', 'username', 'fullname', 'first_name', 'last_name', 'email', 'department', 'role')
-
-class UserDetailSerializer(serializers.ModelSerializer):
-    department = DepartmentSerializer(read_only=True)
-
-    class Meta:
-        model = CustomUser
-        fields = (
-            'id', 'username', 'fullname', 'first_name', 'last_name',
-            'email', 'department', 'role', 'date_joined', 'is_active'
+            fullname=validated_data.get('fullname',''),
+            department=Department.objects.get(name=validated_data['department'])
         )
 
-class CurrentUserSerializer(serializers.ModelSerializer):
-    department = DepartmentSerializer(read_only=True)
-
+class UserListSerializer(serializers.ModelSerializer):
+    department = serializers.SlugRelatedField(read_only=True, slug_field='name')
+    
     class Meta:
         model = CustomUser
         fields = ('id', 'username', 'fullname', 'department', 'role')
@@ -83,18 +37,46 @@ class DepartmentSerializer(serializers.ModelSerializer):
         model = Department
         fields = ('id', 'name', 'label')
         read_only_fields = ('id',)
-        
+
+    def validate_name(self, value):
+        qs = Department.objects.filter(name=value)
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError("Отдел с таким именем уже существует.")
+        return value
+
+class UserDetailSerializer(serializers.ModelSerializer):
+    department = DepartmentSerializer(read_only=True)
+    role = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CustomUser
+        fields = ('id', 'username', 'fullname', 'department', 'role', 'verified')
+
+    def get_role(self, obj):
+        return {
+            'name': obj.role,
+            'label': dict(UserRole.choices).get(obj.role, '')
+        }
+    
+class RoleChoiceSerializer(serializers.Serializer):
+    value = serializers.CharField()
+    label = serializers.CharField()
+
 class ChangeRoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ['role']
 
-class ChangeDepartmentSerializer(serializers.ModelSerializer):
-    department = serializers.SlugRelatedField(
-        slug_field='name',
-        queryset=Department.objects.all(),
-    )
+    def validate_role(self, value):
+        valid = [c.value for c in UserRole]
+        if value not in valid:
+            raise serializers.ValidationError("Недопустимая роль.")
+        return value
 
+class ChangeDepartmentSerializer(serializers.ModelSerializer):
+    department = serializers.PrimaryKeyRelatedField(queryset=Department.objects.all())
     class Meta:
         model = CustomUser
         fields = ['department']

@@ -25,7 +25,7 @@ class EnumSerializer(serializers.ModelSerializer):
 class EnumTagSerializer(serializers.ModelSerializer):
     class Meta:
         model = EnumTag
-        fields = ('id', 'name', 'shared', 'available', 'department')
+        fields = ('id', 'name', 'shared', 'available', 'department', 'visible')
         read_only_fields = ('id',)
 
     def validate_name(self, name):
@@ -35,10 +35,12 @@ class EnumTagSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data.setdefault('shared', False)
+        validated_data.setdefault('visible', True)
         validated_data.setdefault('available', True)
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
         validated_data.setdefault('shared', instance.shared)
+        validated_data.setdefault('visible', instance.available)
         validated_data.setdefault('available', instance.available)
         return super().update(instance, validated_data)

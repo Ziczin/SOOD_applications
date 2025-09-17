@@ -11,7 +11,7 @@ Make.js – библиотека-обёртка для работы с DOM в д
 ```  
 Например, в Django:  
 ```html
-<link rel="stylesheet" href="{{% static 'make/make.css' %}}">
+<link rel="stylesheet" href="{% static 'make/make.css' %}">
 ```
 4. Вставьте на страницу тег для модульных скриптов:  
 ```html
@@ -23,7 +23,7 @@ await import("ПУТЬ_К_JS");
 ```  
 Например, в Django:  
 ```javascript
-await import("{{% static 'make/make.js' %}}");
+await import("{% static 'make/make.js' %}");
 ```
 6. После импорта все функции и объекты библиотеки будут доступны через глобальный объект `make`.
 

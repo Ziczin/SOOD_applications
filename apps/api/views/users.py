@@ -1,200 +1,123 @@
-from rest_framework import status
+from rest_framework import status, viewsets, mixins
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import get_object_or_404, redirect
-
 from apps.users.models import CustomUser, UserRole, Department
-
-from apps.api.core.conditions.query_check import is_from_form
-from apps.api.core.errors.ErrorStorage import ErrorStorage
-from apps.api.core.decorators.protected_view import reqall, reqany, protected_api_view
-from apps.api.core.decorators.checks import is_authenticated, role_admin, role_moderator, status_proxy
-
 from apps.api.serializers.users import (
-    ChangeRoleSerializer, CurrentUserSerializer, UserDetailSerializer,
-    UserListSerializer, UserRegistrationSerializer, UserLoginSerializer,
-    ChangeDepartmentSerializer
+    UserRegistrationSerializer, UserListSerializer, UserDetailSerializer,
+    ChangeRoleSerializer, ChangeDepartmentSerializer,
+    DepartmentSerializer, RoleChoiceSerializer
 )
+from apps.api.core.decorators.protected_view import protected_api_view, reqall, reqany
+from apps.api.core.decorators.checks import is_authenticated, status_proxy, role_admin
+
+def get_permissions(user):
+    permissions = []
+    if user.verified:
+        permissions.append('user')
+        if user.role == UserRole.ADMIN:
+            permissions.append('admin')
+            permissions.append('moderator')
+        if user.role == UserRole.MODERATOR:
+            permissions.append('moderator')
+    if user.proxy:
+        permissions.append('proxy')
+    return permissions
 
 class RegisterView(APIView):
     def post(self, request):
-        serializer = UserRegistrationSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            login(request, user)
-            if is_from_form(request):
-                return redirect('dashboard')
-            else:
-                redirect_url = request.build_absolute_uri(reverse('dashboard'))
-                data = {
-                    "message": "Пользователь успешно зарегистрирован.",
-                    "redirect_url": redirect_url,
-                    "user": {
-                        "id": user.pk,
-                        "username": user.username,
-                        "fullname": getattr(user, "fullname", "")
-                    }
-                }
-                headers = {'Location': request.build_absolute_uri(reverse('user-detail', args=[user.pk]))}
-                return Response(data, status=status.HTTP_201_CREATED, headers=headers)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        s = UserRegistrationSerializer(data=request.data)
+        if s.is_valid():
+            u = s.save(); login(request,u)
+            if request.POST.get('_from_form'): return redirect('dashboard')
+            return Response({"user":{"id":u.pk,"username":u.username}}, status=201, headers={'Location': ''})
+        return Response(s.errors, status=400)
 
 class LoginView(APIView):
     def post(self, request):
-        err = ErrorStorage()
-        code = None
-        serializer = UserLoginSerializer(data=request.data)
-        if serializer.is_valid():
-            user = authenticate(
-                username=serializer.validated_data['username'],
-                password=serializer.validated_data['password'],
-            )
-            if user is not None:
-                login(request, user)
-                return redirect('dashboard')
-            else:
-                code = err.authenticate.login.unauthorized.include()
-        else:
-            code = err.authenticate.login.invalid_data.include()
-
-        return Response(
-            {"errorStorage": err.as_list()},
-            status=code
-        )
+        data = request.data
+        user = authenticate(username=data.get('username'), password=data.get('password'))
+        if user: login(request,user); return redirect('dashboard')
+        return Response({"error":"invalid"}, status=400)
 
 class LogoutView(APIView):
     def post(self, request):
-        logout(request)
-        return redirect('/')
+        logout(request); return redirect('/')
 
 @protected_api_view
-class UsersAPIView(APIView):
-    @reqall(is_authenticated)
-    def get(self, request, *args, **kwargs):
-        err = ErrorStorage()
+class UsersViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.RetrieveModelMixin):
+    queryset = CustomUser.objects.all()
+    lookup_field = 'username'
 
-        q_username = request.GET.get('username')
-        department_q = request.GET.get('department')
+    def get_serializer_class(self):
+        if self.action == 'list':
+            # Для списка используем упрощенный сериализатор
+            return UserListSerializer
+        return UserDetailSerializer
 
-        if q_username:
-            try:
-                user = CustomUser.objects.get(username=q_username)
-                serializer = UserDetailSerializer(user)
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            except CustomUser.DoesNotExist:
-                qs = CustomUser.objects.none()
-        else:
-            qs = CustomUser.objects.all()
+    def list(self, request, *a, **k):
+        q = request.GET.get('department')
+        qs = self.queryset
+        
+        if q:
+            qs = qs.filter(department=q)
+        
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)
 
-        if department_q:
-            qs = qs.filter(department=department_q)
-
-        serializer = UserListSerializer(qs, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def retrieve(self, request, username=None):
+        user = get_object_or_404(CustomUser, username=username)
+        serializer = UserDetailSerializer(user)
+        data = serializer.data
+        data['permissions'] = get_permissions(user)
+        return Response(data, status=200)
 
 @protected_api_view
 class CurrentUserAPIView(APIView):
     @reqall(is_authenticated)
     def get(self, request, *args, **kwargs):
-        serializer = CurrentUserSerializer(request.user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = UserDetailSerializer(request.user)
+        to_ret = serializer.data
+        to_ret['permissions'] = get_permissions(request.user)
+        return Response(to_ret, status=status.HTTP_200_OK)
 
 @protected_api_view
-class CurrentUserRoleAPIView(APIView):
-    @reqall(is_authenticated)
-    def get(self, request, *args, **kwargs):
-        role = request.user.role
-        permissions = []
-        if request.user.verified:
-            permissions.append('user')
-            if role == UserRole.ADMIN:
-                permissions.append('admin')
-                permissions.append('moderator')
-            if role == UserRole.MODERATOR:
-                permissions.append('moderator')
-        if request.user.proxy:
-            permissions.append('proxy')
+class DepartmentViewSet(viewsets.ModelViewSet):
+    queryset = Department.objects.all()
+    serializer_class = DepartmentSerializer
+    lookup_field = 'pk'
 
-        return Response({
-            'role': role,
-            'permissions': permissions,
-            'verified': request.user.verified,
-            'proxy': request.user.proxy,
-            }, status=status.HTTP_200_OK)
+    def list(self, request, *args, **kwargs):
+        qs = self.queryset
+        return Response(self.get_serializer(qs, many=True).data)
 
-@protected_api_view
-class RolesAPIView(APIView):
-    @reqall(is_authenticated)
-    def get(self, request, *args, **kwargs):
-        err = ErrorStorage()
+    def retrieve(self, request, pk=None, *args, **kwargs):
+        obj = get_object_or_404(self.queryset, pk=pk)
+        return Response(self.get_serializer(obj).data)
 
-        q_username = request.GET.get('username')
-        q_role = request.GET.get('role')
-        
-        if not q_username and not q_role:
-            roles = [{'value': v, 'label': l} for v, l in UserRole.choices]
-            return Response(roles, status=status.HTTP_200_OK)
-
-        if q_username:
-            try:
-                user = CustomUser.objects.get(username=q_username)
-            except CustomUser.DoesNotExist:
-                code = err.users.user_not_found.include()
-                return Response({"errorStorage": err.as_list()}, status=code)
-
-            if q_role:
-                matches = (user.role == q_role)
-                return Response({'matches': matches}, status=status.HTTP_200_OK)
-
-            return Response({'role': user.role}, status=status.HTTP_200_OK)
-
-        code = err.general.invalid_request.include() if hasattr(err, 'general') else status.HTTP_400_BAD_REQUEST
-        return Response({"errorStorage": err.as_list()}, status=code)
-
-    @reqany(status_proxy, role_admin)
-    def patch(self, request, username, *args, **kwargs):
-        try:
-            user = CustomUser.objects.get(username=username)
-        except CustomUser.DoesNotExist:
-            return Response({"detail": "Not found"}, status=405)
-        serializer = ChangeRoleSerializer(instance=user, data=request.data, partial=True)
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response({"success": True}, status=204)
-    
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def partial_update(self, request, pk=None, *args, **kwargs):
+        return super().partial_update(request, *args, **kwargs)
+
+    def update(self, request, pk=None, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, pk=None, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
+
 @protected_api_view
-class DepartmentAPIView(APIView):
-    @reqall(is_authenticated)
-    def get(self, request, *args, **kwargs):
-        err = ErrorStorage()
-        q_username = request.GET.get('username')
-        q_department = request.GET.get('department')
-        if q_username:
-            try:
-                user = CustomUser.objects.get(username=q_username)
-            except CustomUser.DoesNotExist:
-                code = err.users.user_not_found.include()
-                return Response({"errorStorage": err.as_list()}, status=code)
+class RoleListView(mixins.ListModelMixin, viewsets.GenericViewSet):
+    queryset = Department.objects.none()
+    serializer_class = RoleChoiceSerializer
 
-            return Response(user.department, status=status.HTTP_200_OK)
-        else:
-            deps = [
-                {'value': v, 'label': l} for v, l in
-                Department.objects.all().values_list('name', 'label').order_by('label')
-            ]
-            return Response(deps, status=status.HTTP_200_OK)
-
-    @reqall(status_proxy, is_authenticated)
-    def patch(self, request, username, *args, **kwargs):
-        try:
-            user = CustomUser.objects.get(username=username)
-        except CustomUser.DoesNotExist:
-            return Response({"detail": "Not found"}, status=405)
-        serializer = ChangeDepartmentSerializer(instance=user, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response({"success": True}, status=204)
+    def list(self, request, *args, **kwargs):
+        data = [{'value': r.value, 'label': r.label} for r in UserRole]
+        return Response(data, status=status.HTTP_200_OK)

@@ -1,5 +1,5 @@
 let meta = {
-    version: `v0.2.0-dev`,
+    version: `v0.2.1-dev`,
     greetings: `Powered by make.js`,
     subgreetings: 'Call window.make.meta.help() for more info',
     help: () => console.log(`

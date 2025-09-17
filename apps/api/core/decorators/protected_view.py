@@ -2,6 +2,7 @@
 from functools import wraps
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.exceptions import PermissionDenied
 from typing import Callable
 
 def protected_api_view(cls):
@@ -21,15 +22,16 @@ def protected_api_view(cls):
             all_checks = getattr(handler, "_required_checks_all", [])
             for chk in all_checks:
                 if not callable(chk):
-                    return Response({"detail": f"Invalid check: {repr(chk)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                    raise PermissionDenied(detail=f"Invalid check: {repr(chk)}")
                 result = chk(request, self, *args, **kwargs)
                 if isinstance(result, tuple):
                     allowed, resp = result
                     if not allowed:
-                        return resp
+                        detail = getattr(resp, "data", None) or "Forbidden"
+                        raise PermissionDenied(detail=detail)
                 else:
                     if not result:
-                        return Response({"detail": "Forbidden"}, status=status.HTTP_403_FORBIDDEN)
+                        raise PermissionDenied()
 
             any_checks = getattr(handler, "_required_checks_any", [])
             if any_checks:
@@ -37,7 +39,7 @@ def protected_api_view(cls):
                 any_resp = None
                 for chk in any_checks:
                     if not callable(chk):
-                        return Response({"detail": f"Invalid check: {repr(chk)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                        raise PermissionDenied(detail=f"Invalid check: {repr(chk)}")
                     result = chk(request, self, *args, **kwargs)
                     if isinstance(result, tuple):
                         allowed, resp = result
@@ -51,7 +53,8 @@ def protected_api_view(cls):
                             any_ok = True
                             break
                 if not any_ok:
-                    return any_resp or Response({"detail": "Forbidden"}, status=status.HTTP_403_FORBIDDEN)
+                    detail = getattr(any_resp, "data", None) or "Forbidden"
+                    raise PermissionDenied(detail=detail)
 
         return original_dispatch(self, request, *args, **kwargs)
 
