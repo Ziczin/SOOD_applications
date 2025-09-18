@@ -53,7 +53,6 @@ class UsersViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.Retrie
 
     def get_serializer_class(self):
         if self.action == 'list':
-            # Для списка используем упрощенный сериализатор
             return UserListSerializer
         return UserDetailSerializer
 
@@ -73,6 +72,22 @@ class UsersViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.Retrie
         data = serializer.data
         data['permissions'] = get_permissions(user)
         return Response(data, status=200)
+    
+    @action(detail=True, methods=['patch'], url_path='change_role')
+    def change_role(self, request, username=None):
+        user = get_object_or_404(CustomUser, username=username)
+        serializer = ChangeRoleSerializer(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(UserDetailSerializer(user).data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['patch'], url_path='change_department')
+    def change_department(self, request, username=None):
+        user = get_object_or_404(CustomUser, username=username)
+        serializer = ChangeDepartmentSerializer(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(UserDetailSerializer(user).data, status=status.HTTP_200_OK)
 
 @protected_api_view
 class CurrentUserAPIView(APIView):
@@ -83,7 +98,6 @@ class CurrentUserAPIView(APIView):
         to_ret['permissions'] = get_permissions(request.user)
         return Response(to_ret, status=status.HTTP_200_OK)
 
-@protected_api_view
 class DepartmentViewSet(viewsets.ModelViewSet):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer

@@ -5,62 +5,58 @@
 <script type="module">
   await import("{% static 'deps/make/make.js' %}");
 
-  const csrf = make.other.getCookie('csrftoken')
+  const csrfObj = await make.Query('/api/csrf-token').get()
 
   const buildProxyTab = (await import("{% static 'deps/js/dashboard/proxy.js' %}")).default;
   const buildAdminTab = (await import("{% static 'deps/js/dashboard/admin.js' %}")).default;
   const buildModerTab = (await import("{% static 'deps/js/dashboard/moder.js' %}")).default;
   const buildUserTab = (await import("{% static 'deps/js/dashboard/user.js' %}")).default;
   
-  const qBase = make.Query('/api').via({'X-CSRFToken': csrf});
-  const qUsers = qBase.view().at('users').view();
-  const qRoles = qBase.view().at('roles').view()
-  const qCurrentUser = qBase.view().at('me').view();
+  const qBase = make.Query('/api').via({"X-CSRFToken": csrfObj.csrfToken}).view();
+  const roles = qBase.at('roles').view().get()
+  const me = await qBase.at('me').view().get()
 
-  const me = await qCurrentUser.get()
-  const roles = await qRoles.get()
-  const currentUser = await qCurrentUser.get()
+  const tabs = make.Tabs()
+  .menu(
+    make.it.flexRow,
+    make.it.gap10px,
+    make.it.littleDarker,
+    make.style.rounded(12),
+    make.style.padding(8),
+  );
+  const permissions = me.permissions.filter(s => s !== 'proxy');
 
   document.getElementById('center-content').appendChild(
     make.Div(
-      ...(() => {
-        if (me.permissions.length === 0) return [make.h1(
-          "Перед началом работы верифицируйте аккаунт у администратора отдела или в отделе программирования.")];
-        
-        if (me.permissions.length === 1) return buildUserTab(make)
-        const tabs = make.Tabs()
-          .menu(
-            make.it.flexRow,
-            make.it.gap10px,
-            make.it.littleDarker,
-            make.style.rounded(12),
-            make.style.padding(8),
+      ...make.if(permissions.length === 0,
+        make.h1("Перед началом работы верифицируйте аккаунт у администратора отдела или в отделе программирования.")
+      ),
+      ...make.if(permissions.length === 1,
+        ...buildUserTab(make)
+      ),
+      ...make.if(permissions.length > 1,
+        (() => {
+          if (me.permissions.includes('user'))
+          tabs.tab()
+          .header(...getHeaderComponent("Создать заявку"))
+          .content(
+            ...buildUserTab(make)
           );
-
-        const has = (p) => Array.isArray(me.permissions) ? me.permissions.includes(p) : (p in me.permissions);
-
-        if (has('user'))
+          if (me.permissions.includes('moderator'))
           tabs.tab()
-            .header(...getHeaderComponent("Создать заявку"))
-            .content(
-              ...buildUserTab(make)
-            );
-
-        if (has('moderator'))
+          .header(...getHeaderComponent("Входящие заявки"))
+          .content(
+            ...buildModerTab(make)
+          );
+          if (me.permissions.includes('admin'))
           tabs.tab()
-            .header(...getHeaderComponent("Входящие заявки"))
-            .content(
-              ...buildModerTab(make)
-            );
-
-        if (has('admin'))
-          tabs.tab()
-            .header(...getHeaderComponent("Управление отделом"))
-            .content(
-              ...buildAdminTab(make)
-            );
-        return [tabs];
-      })()
+          .header(...getHeaderComponent("Управление отделом"))
+          .content(
+            ...buildAdminTab(make)
+          );
+          return tabs
+        })()
+      )
     ).build()
   );
 

@@ -6,9 +6,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  {% csrf_token %}
   <meta charset="UTF-8">
-  <meta name="csrf-token" content="{{ csrf_token }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="stylesheet" href="{% static 'deps/make/make.css' %}">
@@ -74,7 +72,6 @@
           make.with.text("Collect"),
           make.on.click(() =>{
             let collected = collector.collect()
-            console.log(collected)
             area.element.textContent = JSON.stringify(collected, null, 2);
           })
         ),
@@ -121,7 +118,6 @@
           make.with.text("Collect"),
           make.on.click(() =>{
             let collected = collector2.collect()
-            console.log(collected)
             area2.element.textContent = JSON.stringify(collected, null, 2);
           })
         ),

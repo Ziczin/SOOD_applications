@@ -7,13 +7,6 @@
 <script type="module">
   await import("{% static 'deps/make/make.js' %}");
 
-  function exitButtonInvariant(text, style) {
-    return make.Button(
-      make.with.text(text),
-      make.with.css("content", style, "flex"),
-      make.on.click(() => window.location.href="/applications/dashboard/"),
-    )
-  }
 
   function paragraphNotice(text, addit) {
     make.Notice(500, 500, 500,
@@ -118,7 +111,7 @@
       make.Button(
         popup(800, txt),
         make.it.action,
-        ...[style],
+        ...style,
         make.style.padding(6),
         make.Image(
           `{{ MEDIA_URL }}${pic}.png`,
@@ -293,10 +286,10 @@
     let out
     let inp
     let shareBtn
-    console.log('check', tag)
     inp = make.Input(
       ...make.if(tag.department !== me.department.id,
-        make.with.attrs('readonly')
+        make.with.attrs('readonly'),
+        make.with.css('fake-disabled')
       ),
       make.on.change((e) =>
         out.element.classList.add("make-mark-changed")
@@ -304,7 +297,7 @@
       enumTagPopup(tag.department === me.department.id),
       make.with.attr({ value: tag.name }),
       make.style.padding(6),
-      make.on.click(async () => await fillCenter(qEnum, qEnumTag, tag, me))
+      make.on.click(async () => await fillCenter(qEnum, qEnumTag, tag, me)),
     )
     out = make.Div(
       ...make.if(!tag.visible,
@@ -344,7 +337,6 @@
         ),
         picButton("trash", "Удалить группу", make.it.act.negative,
         () => {
-          console.log('test', acc)
           if (!test) {
             deletionNotice(
               acc, out, inp.element.value,
@@ -533,35 +525,39 @@
       make.on.click(() =>
         make.Notice(500, Infinity, 500,
           make.Div(
+            make.it.content,
             make.it.flexColumn,
             make.style.gap(6),
-            exitButtonInvariant("Выйти без сохранения", "exit2"),
-            exitButtonInvariant("Сохранить и выйти", "back"),
-            exitButtonInvariant("Отмена", "forward"),
+            make.Paragraph('Все несохранённые изменения будут утеряны'),
+            make.Div(
+              make.it.flexRow,
+              make.style.gap(6),
+              make.Button(
+                make.it.action,
+                make.it.act.negative,
+                make.with.text("Выйти"),
+                make.on.click(() => window.location.href="/applications/dashboard/"),
+              ),
+              make.Button(
+                make.it.action,
+                make.it.act.alternative,
+                make.with.text("Отмена"),
+                make.on.click(() => make.other.closeCurrentNotice()),
+              )
+            )
           )
         )
       )
     )
   }
 
-  function enumTagAddButton(id, acc) {
-    return make.Button(
-      make.it.action,
-      make.it.act.neutral,
-      make.with.text("Создать группу"),
-      make.on.click(() => {
-        paragraphNotice("НЕ Создано!", make.color.lblue)
-      })
-    )
-  }
-
-  async function leftContent(qCurrentUser, qEnumTag, qEnum, me) {
+  async function leftContent(me, qEnumTag, qEnum) {
     let acc;
 
     let res = make.Div(
       make.it.flexColumn,
       make.style.gap(10),
-      make.h1((await qCurrentUser.get()).department.label),
+      make.h1(me.department.label),
       acc = make.Scrollbox(
         make.it.flexColumn,
         make.style.gap(6),
@@ -597,8 +593,8 @@
     )
   }
 
-  const csrf = make.other.getCookie("csrftoken")
-  const qBase = make.Query("/api").via({"X-CSRFToken": csrf}).view();
+  const csrfObj = await make.Query('/api/csrf-token').get()
+  const qBase = make.Query("/api").via({"X-CSRFToken": csrfObj.csrfToken}).view();
   const qCurrentUser = qBase.at("me").view();
   const qEnum = qBase.at("enums").view()
   const qEnumTag = qBase.at("enum-tags").view()
@@ -606,11 +602,12 @@
   let enumCollector = make.Scrollbox();
 
   const me = await qCurrentUser.get()
+  console.log(me)
 
   document.getElementById("left-exit-button").appendChild(backButton().build())
   document.getElementById("left-exit-button").appendChild(manualButton().build())
   document.getElementById("left-content").appendChild(
-    (await leftContent(qCurrentUser, qEnumTag, qEnum, me)).build())
+    (await leftContent(me, qEnumTag, qEnum)).build())
 
 
 </script>

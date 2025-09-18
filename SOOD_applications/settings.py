@@ -85,9 +85,13 @@ REST_FRAMEWORK = {
     ],
 }
 
-CSRF_COOKIE_HTTPONLY = False
-CSRF_COOKIE_SECURE = True
-CSRF_USE_SESSIONS = False
+CSRF_USE_SESSIONS = True
+# Параметры сессий (пример, можно оставить дефолтные или настроить по нуждам)
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_SECURE = False        # True на проде с HTTPS
+SESSION_COOKIE_SAMESITE = 'Lax'     # или 'Strict' / None при необходимости
+SESSION_COOKIE_DOMAIN = None
+
 
 AUTH_USER_MODEL = 'users.CustomUser'
 AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend',]

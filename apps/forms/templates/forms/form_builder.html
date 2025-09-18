@@ -5,9 +5,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  {% csrf_token %}
   <meta charset="UTF-8">
-  <meta name="csrf-token" content="{{ csrf_token }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="stylesheet" href="{% static 'deps/make/make.css' %}">
@@ -25,7 +23,7 @@
 <script type="module">
   await import("{% static 'deps/make/make.js' %}");
 
-  const csrftoken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+  const csrfObj = await make.Query('/api/csrf-token').get()
   const data = JSON.parse(document.getElementById("form-data").textContent);
   const errors = JSON.parse(document.getElementById("errors-data").textContent);
   
@@ -57,7 +55,7 @@
       method: 'post',
       action: data.action,
     }),
-    make.with.csrf(csrftoken),
+    make.with.csrf(csrfObj.csrfToken),
     ...data.fields.map(el =>
       make.Div(
         make.it.formGroup,

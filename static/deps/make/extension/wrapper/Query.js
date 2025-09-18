@@ -202,12 +202,21 @@ export default class Query {
 
         const response = await fetch(url, options);
         
-        var data;
+        // заменяем парсинг JSON на безопасный вариант
+        let data;
         try {
-            data = await response.json();
+            // сначала читаем текст
+            const text = await response.text();
+            // пытаемся распарсить JSON, если не получается — возвращаем текст (например HTML)
+            try {
+                data = text ? JSON.parse(text) : {};
+            } catch (err) {
+                data = text;
+            }
         }
         catch (error) {
-            console.error('Make-Query error:', error)
+            console.error('Make-Query error:', error);
+            data = null;
         }
 
         if (this._redirect_request_key && this._redirect_request_key in data) {
@@ -217,6 +226,7 @@ export default class Query {
         this.clear()
         return data;
     }
+
 
     _buildRoute() {
         let result = this._baseRoute;

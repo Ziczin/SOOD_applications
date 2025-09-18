@@ -116,6 +116,14 @@ form.flex {
     display: flex;
     flex: 1;}
 
+.fake-disabled {
+  background: #f5f5f5;        /* светло-серый фон */
+  color: #6b6b6b;             /* серый текст */
+  border: 1px solid #d1d1d1;  /* блеклая рамка */
+  opacity: 0.9;               /* лёгкая прозрачность */
+  box-shadow: none;           /* убрать активную тень */
+}
+
 .confirm {
     background-color: #026670;
     transition: background-color 0.3s ease;}

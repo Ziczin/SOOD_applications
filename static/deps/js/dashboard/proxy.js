@@ -1,4 +1,11 @@
-export default function dashboardProxy(make, roles, departments, currentUser, qRoles, qDepartment) {
+export default async function dashboardProxy(make, me) {
+  const csrfObj = await make.Query('/api/csrf-token').get()
+  const qBase = make.Query('/api').via({"X-CSRFToken": csrfObj.csrfToken}).view();
+  const roles = await qBase.at('roles').get()
+  const departments = await qBase.at('departments').get()
+  const qChangeRole = qBase.at('users').at(me.username).at("change_role").view()
+  const qChangeDepartment = qBase.at('users').at(me.username).at("change_department").view()
+
   return [
     make.it.flexColumn,
     make.it.gap10px,
@@ -20,17 +27,13 @@ export default function dashboardProxy(make, roles, departments, currentUser, qR
         ...roles.map(role => 
           make.Option(
             role.label, role.value,
-            ...role.value == currentUser.role
-            ? [make.with.attrs('selected')] : []
+            ...make.if(role.value === me.role.name,
+              make.with.attrs('selected')
+            )
           )
         ),
         make.on.change((e) => {
-          qRoles.view()
-          .at(currentUser.username)
-          .with({
-            role: e.target.value,
-          })
-          .patch()
+          qChangeRole.with({role: e.target.value}).patch()
           .then(()=>{
             location.reload()
           });
@@ -50,20 +53,16 @@ export default function dashboardProxy(make, roles, departments, currentUser, qR
       make.Select(
         ...departments.map(dep => 
           make.Option(
-            dep.label, dep.value,
-            ...dep.value == currentUser.department.name
-            ? [make.with.attrs('selected')] : []
+            dep.label, dep.id,
+            ...make.if(dep.id == me.department.id,
+              make.with.attrs('selected')
+            )
           )
         ),
         make.on.change((e) => {
-          qDepartment.view()
-          .at(currentUser.username)
-          .with({
-            department: e.target.value,
-          })
-          .patch()
+          qChangeDepartment.with({department: e.target.value}).patch()
           .then(()=>{
-            //location.reload()
+            location.reload()
           });
         })
       )

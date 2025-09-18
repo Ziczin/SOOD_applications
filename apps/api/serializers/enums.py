@@ -28,11 +28,6 @@ class EnumTagSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'shared', 'available', 'department', 'visible')
         read_only_fields = ('id',)
 
-    def validate_name(self, name):
-        if not name or not name.strip():
-            raise serializers.ValidationError("name cannot be empty")
-        return name.strip()
-
     def create(self, validated_data):
         validated_data.setdefault('shared', False)
         validated_data.setdefault('visible', True)

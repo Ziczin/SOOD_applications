@@ -1,7 +1,6 @@
 {% load static %}
 
-<form method="POST" action="{% url 'logout' %}">
-    {% csrf_token %}
+<form action="{% url 'logout' %}">
     <button type="submit" class="content exit flex">Сменить аккаунт</button>
 </form>
 
@@ -10,19 +9,14 @@
 <script type="module">
   await import("{% static 'deps/make/make.js' %}");
   
-  const csrf = make.other.getCookie('csrftoken')
+  const csrfObj = await make.Query('/api/csrf-token').get()
 
-  const qBase = make.Query('/api').via({'X-CSRFToken': csrf});
+  const qBase = make.Query('/api').via({"X-CSRFToken": csrfObj.csrfToken});
   const qUsers = qBase.view().at('users');
   const qRoles = qBase.view().at('roles')
   const qCurrentUser = qBase.view().at('me');
 
   const me = await qCurrentUser.get();
-
-  function findLabelByValue(arr, value) {
-    const item = arr.find(obj => obj.value === value);
-    return item ? item.label : null;
-  }
 
   document.getElementById('left-content').appendChild(
     make.Div(
@@ -40,7 +34,6 @@
           })
         )
       ),
-          
       ...make.if(me.permissions.includes('proxy'),
         make.Paragraph(
           "Вы - ",
@@ -50,10 +43,14 @@
           make.Span('прокси',
             make.on.click(
               createNoiseCycler(1000, 1000, [
-                "суперюзер", "агент", "знание", "нулевой",
+                "суперюзер", "агент", "знание",
+                "a͢b̨a͢͟͠d̶o̕͝͞n͢͏n̨͝҉e̢d", "a͢b̨a͢͟͠d̶o̕͝͞n͢͏n̨͝҉e̢d", "a͢b̨a͢͟͠d̶o̕͝͞n͢͏n̨͝҉e̢d",
                 "прокси", "мимик", "???", "призрак", "ордо",
                 "кто?", "образ", me.username, "наблюдатель",
-                me.role.label, "тень", "...", "42", "герой"
+                me.role.label, "тень", "...", "42", "герой",
+                "(()=>{})()", "лямбда", "виртуальный",
+                "π", "α", "ξ", "Ω", "null", "undefined",
+                "</>", "dev", "ℵ", "p̴̡͞r͟o̵x̨̡͠y̨͢͡", "p̴̡͞r͟o̵x̨̡͠y̨͢͡"
               ])
             )
           )
