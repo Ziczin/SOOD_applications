@@ -40,6 +40,7 @@
   transition: filter var(--transition-slow) ease;
 }
 
+
 .make-mark-deactivated {
   filter: opacity(0.9) blur(1px) brightness(1.2);
 }
@@ -216,6 +217,7 @@ p, form, h1, h2, h3, h4, h5, h6 {
     flex: 1;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 .make-tabs-menu {
     display: flex;
@@ -249,6 +251,7 @@ p, form, h1, h2, h3, h4, h5, h6 {
 }
 .make-tabs-content {
     padding: 15px;
+    height: auto;
 }
 
 .make-tab-content {
@@ -261,9 +264,10 @@ p, form, h1, h2, h3, h4, h5, h6 {
 }
 
 .make-tab-content[hidden] {
-  opacity: 0;
-  transform: translateY(-10px);
-  height: 0;
+    transition-duration: 0ms;
+    opacity: 0;
+    transform: translateY(-10px);
+    height: 0;
 }
 
 /* flexibility */
@@ -423,22 +427,31 @@ p, form, h1, h2, h3, h4, h5, h6 {
 /* scrollbox */
 .make-scrollbox {
     display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
     flex-direction: column;
-    max-height: 90vh;
-    overflow-y: scroll;
+    height: 100%;
+    overflow-y: auto;
     scrollbar-width: thin;
-    scrollbar-color: #ccc transparent;}
+    scrollbar-color: #ccc transparent;
+}
 .make-scrollbox::-webkit-scrollbar {
     width: 12px;
-    height: 12px;}
+    height: 12px;
+}
 .make-scrollbox::-webkit-scrollbar-thumb {
     background-color: #ccc;
     border-radius: 10px;
-    border: 2px solid transparent;}
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+.make-scrollbox::-webkit-scrollbar-thumb:hover {
+    background-color: #aaa;
+}
 .make-scrollbox::-webkit-scrollbar-track {
-    margin-left: 100px;
-    background: transparent;}
-
+    margin: 4px 0;
+    background: transparent;
+}
 
 /* toggle button */
 .make-toggle-button-container {

@@ -1,0 +1,14 @@
+{% load static %}
+
+<form action="{% url 'logout' %}">
+    <button type="submit" class="content exit flex">Сменить аккаунт</button>
+</form>
+
+<div class="content" id="left-content"></div>
+
+<script type="module">
+  await import("{% static 'deps/make/make.js' %}");
+
+  document.getElementById("left-exit-button").appendChild(backButton().build())
+  document.getElementById("left-exit-button").appendChild(manualButton().build())
+</script>

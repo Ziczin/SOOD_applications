@@ -22,6 +22,16 @@ body {
 .center-container {
   display: flex;
   width: 50%;}
+
+.make-mark-selected-enum-tag {
+    border-left-width: 6px;
+    border-color: black;
+}
+
+#center-content{
+    width: 100%;
+    height: 100%;
+}
 .content {
     color: #444;
     padding: 12px;

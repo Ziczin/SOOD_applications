@@ -2,7 +2,13 @@ export default function(createComponent, makeWith) {
     return {
         Separator: (size = 8, ...decorators) => {
             return createComponent('div', 
-                makeWith.style({ 'margin-top': `${size}px` }),
+                makeWith.style({ 'padding-top': `${size}px` }),
+                ...decorators
+            );
+        },
+        SideSeparator: (size = 8, ...decorators) => {
+            return createComponent('div', 
+                makeWith.style({ 'padding-left': `${size}px` }),
                 ...decorators
             );
         },
