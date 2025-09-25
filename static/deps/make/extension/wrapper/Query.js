@@ -48,46 +48,46 @@ export default class Query {
 
         if (this._method && String(this._method).toUpperCase() === 'GET') {
             const source = { ...this._baseBody, ...this._body };
-            const pairs = [];
-
-            const encode = (k, v) => encodeURIComponent(k) + '=' + encodeURIComponent(String(v));
-
-            const processValue = (key, val) => {
-                if (val === undefined || val === null) return;
-                if (Array.isArray(val)) {
-                    for (let i = 0; i < val.length; i++) {
-                        const item = val[i];
-                        if (item === undefined || item === null) continue;
-                        if (typeof item === 'object' && !Array.isArray(item)) {
-                            for (const subKey of Object.keys(item)) {
-                                const subVal = item[subKey];
-                                if (subVal === undefined || subVal === null) continue;
-                                pairs.push(encode(`${key}[${i}].${subKey}`, subVal));
-                            }
-                        } else {
-                            pairs.push(encode(`${key}[${i}]`, item));
-                        }
-                    }
-                } else if (typeof val === 'object') {
-                    for (const subKey of Object.keys(val)) {
-                        const subVal = val[subKey];
-                        if (subVal === undefined || subVal === null) continue;
-                        pairs.push(encode(`${key}.${subKey}`, subVal));
-                    }
-                } else {
-                    pairs.push(encode(key, val));
-                }
-            };
-
-            for (const key of Object.keys(source)) {
-                processValue(key, source[key]);
-            }
-
-            this._queryString = pairs.join('&');
+            this._queryString = this._buildQueryStringFrom(source);
         }
 
         return this;
     }
+
+    where(params) {
+        this._queryParams = { ...this._queryParams, ...params };
+        this._queryString = this._buildQueryStringFrom(this._queryParams || {});
+        return this;
+    }
+
+    _buildQueryStringFrom(source = {}) {
+        const pairs = [];
+        const encode = (k, v) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`;
+
+        const walk = (key, val) => {
+            if (val === undefined || val === null) return;
+            if (Array.isArray(val)) {
+                val.forEach((item, i) => {
+                    const newKey = `${key}[${i}]`;
+                    if (typeof item === 'object' && item !== null) {
+                        walk(newKey, item);
+                    } else {
+                        pairs.push(encode(newKey, item));
+                    }
+                });
+            } else if (typeof val === 'object') {
+                Object.keys(val).forEach(sub => {
+                    walk(`${key}[${encodeURIComponent(sub)}]`, val[sub]);
+                });
+            } else {
+                pairs.push(encode(key, val));
+            }
+        };
+
+        Object.keys(source).forEach(k => walk(k, source[k]));
+        return pairs.join('&');
+    }
+
 
     mergeBodies() {
         this._mergedBody = { ...this._baseBody, ...this._body };
@@ -119,6 +119,7 @@ export default class Query {
         this._headers = {};
         this._body = {};
         this._mergedBody = null;
+        this._queryParams = null;
         this._queryString = '';
         return this;
     }
@@ -182,7 +183,10 @@ export default class Query {
     }
 
     async fetch(method=null) {
-        const url = this._buildRoute() + '/';
+        let url = this._buildRoute();
+        if (!url.includes('?')) {
+            url += '/'
+        }
         const headers = this._buildHeaders();
         const body = this._mergedBody !== null 
             ? this._mergedBody 
@@ -202,12 +206,9 @@ export default class Query {
 
         const response = await fetch(url, options);
         
-        // заменяем парсинг JSON на безопасный вариант
         let data;
         try {
-            // сначала читаем текст
             const text = await response.text();
-            // пытаемся распарсить JSON, если не получается — возвращаем текст (например HTML)
             try {
                 data = text ? JSON.parse(text) : {};
             } catch (err) {
@@ -234,7 +235,7 @@ export default class Query {
             result += '/' + encodeURIComponent(param);
         }
         if (this._queryString && this._queryString.length > 0) {
-            result += (result.includes('?') ? '&' : '?') + this._queryString;
+            result += (result.includes('?') ? '&' : '/?') + this._queryString;
         }
         return result;
     }

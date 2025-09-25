@@ -30,7 +30,7 @@ registration_form_data = {
         },
         {
             'id': 'department', 'type': 'enum',
-            'enum': {'model': Department, 'config': {'value': 'name', 'text': 'label'}},
+            'enum': {'model': Department, 'config': {'value': 'id', 'text': 'name'}},
             'label': 'Выберите ваш отдел',
             'placeholder': 'Без отдела',
         },

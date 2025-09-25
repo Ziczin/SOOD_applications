@@ -23,9 +23,8 @@ body {
   display: flex;
   width: 50%;}
 
-.make-mark-selected-enum-tag {
-    border-left-width: 6px;
-    border-color: black;
+.make-mark-selected-group {
+    background-color: #3334 !important;
 }
 
 #center-content{

@@ -13,6 +13,15 @@ window.make.meta.<...>
 }
 
 let changelog = {
+    '0.2.2': `
+v0.2.2-dev
+- Rewrote Event factory: you can now pass a factory that returns multiple handlers and their types, enabling more complex interactions
+- Added SideSeparator — an analogue of Separator
+- Restored Tabs component functionality: you can now correctly use components as tab buttons and as tab content
+- Added splitLastN function, which allows signatures like (...args, afterArgs)
+- Rewrote Query component: query string construction now happens in the where method, similar to with
+- Minor style tweaks
+`,
     '0.2.1': `
 v0.2.1-dev
 - Fixed some broken styles. Now make.style can accept either a string or a number; a number is interpreted as a pixel value (px)

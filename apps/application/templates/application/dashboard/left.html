@@ -1,31 +1,38 @@
 {% load static %}
 
-<form action="{% url 'logout' %}">
-    <button type="submit" class="content exit flex">Сменить аккаунт</button>
-</form>
+<div id="logout-btn"></div>
 
 <div class="content" id="left-content"></div>
-
 <script type="module">
   await import("{% static 'deps/make/make.js' %}");
   
   const csrfObj = await make.Query('/api/csrf-token').get()
 
-  const qBase = make.Query('/api').via({"X-CSRFToken": csrfObj.csrfToken});
-  const qUsers = qBase.view().at('users');
-  const qRoles = qBase.view().at('roles')
-  const qCurrentUser = qBase.view().at('me');
+  const qBase = make.Query('/api').via({"X-CSRFToken": csrfObj.csrfToken}).view();
+  const qLogout = qBase.at('auth/logout').view()
+  const qUsers = qBase.at('users').view();
+  const qRoles = qBase.at('roles').view()
+  const qCurrentUser = qBase.at('me').view();
 
   const me = await qCurrentUser.get();
-
+  document.getElementById('logout-btn').appendChild(
+    make.Button(
+      make.with.css('content', 'exit', 'flex'),
+      make.with.text('Сменить аккаунт'),
+      make.on.click(async () => {
+        await qLogout.post()
+        window.location.href = ''
+      })
+    ).build()
+  )
   document.getElementById('left-content').appendChild(
     make.Div(
       make.it.flexColumn,
       make.it.gap6px,
       make.h1(`${me.fullname}`),
       make.Paragraph(`@${me.username}`, make.it.subtitleText),
-      make.Paragraph(me.role.label),
-      make.Paragraph(me.department?.label ? me.department.label : 'Без отдела',
+      make.Paragraph(me.role.name),
+      make.Paragraph(me.department?.name ? me.department.name : 'Без отдела',
         ...make.if(me.permissions.includes('proxy'),
           make.with.style({
             textDecorationLine: 'line-through',
@@ -42,15 +49,14 @@
           }),
           make.Span('прокси',
             make.on.click(
-              createNoiseCycler(1000, 1000, [
+              createNoiseCycler(2000, 1000, [
                 "суперюзер", "агент", "знание",
-                "a͢b̨a͢͟͠d̶o̕͝͞n͢͏n̨͝҉e̢d", "a͢b̨a͢͟͠d̶o̕͝͞n͢͏n̨͝҉e̢d", "a͢b̨a͢͟͠d̶o̕͝͞n͢͏n̨͝҉e̢d",
+                "a͢b̨a͢͟͠d̶o̕͝͞n͢͏n̨͝҉e̢d", "p̴̡͞r͟o̵x̨̡͠y̨͢͡", "</>", "dev", "ℵ",
                 "прокси", "мимик", "???", "призрак", "ордо",
                 "кто?", "образ", me.username, "наблюдатель",
-                me.role.label, "тень", "...", "42", "герой",
+                me.role.name, "тень", "...", "42", "герой",
                 "(()=>{})()", "лямбда", "виртуальный",
                 "π", "α", "ξ", "Ω", "null", "undefined",
-                "</>", "dev", "ℵ", "p̴̡͞r͟o̵x̨̡͠y̨͢͡", "p̴̡͞r͟o̵x̨̡͠y̨͢͡"
               ])
             )
           )

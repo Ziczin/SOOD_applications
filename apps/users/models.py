@@ -2,16 +2,15 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 class UserRole(models.TextChoices):
-    USER = 'USER', 'Пользователь'
-    MODERATOR = 'MODERATOR', 'Модератор'
-    ADMIN = 'ADMIN', 'Администратор'
+    USER = 'Пользователь'
+    MODERATOR = 'Модератор'
+    ADMIN = 'Администратор'
 
 class Department(models.Model):
-    name = models.CharField(max_length=63, unique=True)
-    label = models.CharField(max_length=127)
+    name = models.CharField(max_length=127)
 
     def __str__(self):
-        return self.label
+        return self.name
 
 class CustomUser(AbstractUser):
     fullname = models.CharField(max_length=100, blank=True)

@@ -4,10 +4,10 @@ from rest_framework.routers import DefaultRouter
 from apps.api.views.users import (
     RegisterView, LoginView, LogoutView,
     UsersViewSet, CurrentUserAPIView,
-    DepartmentViewSet, RoleListView
+    DepartmentViewSet, RoleListView,
 )
 from apps.api.views.enums import EnumTagViewSet, EnumViewSet
-
+from apps.api.views.fields import FieldViewSet, FieldTypeViewSet
 from apps.api.views.auth import csrf_token_view
 
 enumtag_list = EnumTagViewSet.as_view({'get': 'list', 'post': 'create'})
@@ -32,7 +32,8 @@ router = DefaultRouter()
 router.register(r'users', UsersViewSet, basename='user')
 router.register(r'departments', DepartmentViewSet, basename='department')
 router.register(r'roles', RoleListView, basename='roles')
-
+router.register(r'field-types', FieldTypeViewSet, basename='fieldtype')
+router.register(r'fields', FieldViewSet, basename='field')
 urlpatterns = [
     path('enum-tags/', enumtag_list, name='enumtag-list'),
     path('enum-tags/<int:pk>/', enumtag_detail, name='enumtag-detail'),

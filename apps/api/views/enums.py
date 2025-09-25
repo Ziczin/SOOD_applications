@@ -1,14 +1,17 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
 from django.db import transaction
 from django.db.models import Q
 
 from apps.forms.models import EnumTag, Enum
 from apps.api.serializers.enums import EnumTagSerializer, EnumSerializer
+from apps.api.core.permissions import permissions
 
-
+@permissions(
+    'ppp : admin, proxy',
+    'get : user'
+)
 class EnumTagViewSet(viewsets.ModelViewSet):
     queryset = EnumTag.objects.all()
     serializer_class = EnumTagSerializer
@@ -37,6 +40,11 @@ class EnumTagViewSet(viewsets.ModelViewSet):
         serializer = EnumSerializer(qs, many=True)
         return Response(serializer.data)
 
+@permissions(
+"""
+ppp : admin, proxy;
+get : user;
+""")
 class EnumViewSet(viewsets.ModelViewSet):
     queryset = Enum.objects.all()
     serializer_class = EnumSerializer

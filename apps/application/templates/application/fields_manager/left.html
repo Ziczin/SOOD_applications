@@ -1,0 +1,105 @@
+{% load static %}
+
+<div id="left-exit-button"></div>
+
+<div class="content", id="left-content"></div>
+
+<script type="module">
+  await import("{% static 'deps/make/make.js' %}");
+  const imp = (await import("{% static 'deps/js/tools/import.js' %}")).default(make)
+  const paragraphNotice = await imp("{% static 'deps/js/prefabs/paragraph_notice.js' %}")
+  const backButton = await imp("{% static 'deps/js/prefabs/exit_button.js' %}")
+  const actionNotice = await imp("{% static 'deps/js/prefabs/action_notice.js' %}")
+  const popup = await imp("{% static 'deps/js/prefabs/popup.js' %}")
+  const picButton = await imp("{% static 'deps/js/prefabs/pic_button.js' %}", popup, "{{ MEDIA_URL }}");
+
+  const basicManual = await imp("{% static 'deps/js/manual/basic_manual.js' %}", popup, picButton);
+
+  document.getElementById("left-exit-button").appendChild(backButton().build());
+  const curr = make.h1('test')
+  document.getElementById("left-exit-button").appendChild(basicManual(curr).build())
+
+  const csrfObj = await make.Query('/api/csrf-token').get()
+  const qBase = make.Query('/api').via({"X-CSRFToken": csrfObj.csrfToken}).view();
+  const qFieldTypes = qBase.at('field-types').view();
+  const fieldTypes = await qFieldTypes.get()
+  const qFields = qBase.at('fields').view()
+
+  function fieldComponent(field) {
+    let inp
+    let out
+    return out = make.Div(
+      make.it.marginOnHover,
+      inp = make.Input(
+        make.with.attr({
+          value: field.label || "",
+          placeholder: field.label || "Пустое поле"
+        }),
+        make.on.input((e) =>
+          out.element.classList.add("make-mark-changed")
+        ),
+        make.on.inputTimeOut(3000, () => {
+          out.element.classList.remove("make-mark-changed")
+          qFields.at(field.id).with({label: inp.element.value || ''}).patch()
+          paragraphNotice("Сохранено!", make.color.lgreen)
+        }),
+        make.Annotation(1500, 
+          make.Div(
+            make.it.popup,
+            make.Paragraph("Нажмите на поле ввода для редактирования имени шаблона"),
+            make.Paragraph("Если элемент подсвечен, то он сохранится через некоторое время"),
+            make.Paragraph("Если вы перейдёте на другой элемент, то этот так же сохранится автоматически"),
+          )
+        )
+      )
+    )
+  }
+  function setUniqueClass(element, className = 'make-mark-selected-group') {
+    document.querySelectorAll(`.${className}`).forEach(el => {
+        el.classList.remove(className);
+    });
+    element.classList.add(className);
+  }
+
+  let currentFieldType
+  document.getElementById("left-content").appendChild(
+    make.Div(
+      make.h1("Типы полей"),
+      make.Separator(6),
+      make.Scrollbox(
+        make.it.flexColumn,
+        make.style.gap(6),
+        ...fieldTypes.map((fType) => {
+          let fTypeComp
+          return fTypeComp = make.Div(
+            make.it.marginOnHover,
+            make.style.rounded(12),
+            make.style.padding(6),
+            make.with.css('make-tab-button'),
+            make.Paragraph(fType.label),
+            make.on.click(async () => {
+              if (currentFieldType === fType) { return }
+              currentFieldType = fType
+              setUniqueClass(fTypeComp.element)
+              let center = document.getElementById('center-container')
+              let fields = await qFields.where({ type: fType.id}).get()
+              center.innerHTML = ''
+              center.appendChild(
+                make.Div(
+                  make.it.flexColumn,
+                  make.h1(fType.label),
+                  make.Separator(6),
+                  make.Scrollbox(
+                    make.it.flexColumn,
+                    make.style.gap(6),
+                    ...fields.map((f) => fieldComponent(f))
+                  )
+                ).build()
+              )
+            })
+          )      
+        })
+      )
+    ).build()
+  )
+</script>

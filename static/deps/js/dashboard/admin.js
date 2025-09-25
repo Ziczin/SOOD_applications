@@ -5,7 +5,7 @@ export default function dashboardAdmin(make) {
       loc: '/applications/forms-manager/',
     },
     {
-      text: 'Управление отделом',
+      text: 'Управление сотрудниками',
       loc: '/applications/users-manager/',
     },
     {
@@ -15,6 +15,10 @@ export default function dashboardAdmin(make) {
     {
       text: 'Управление услугами',
       loc: '/applications/services-manager/',
+    },
+    {
+      text: 'Управление шаблонами полей',
+      loc: '/applications/fields-manager/',
     },
   ]
   return [

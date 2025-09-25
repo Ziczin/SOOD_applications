@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <title>Idle + Blur — многоразовый обработчик</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    input, textarea { width: 100%; padding: 8px; margin: 8px 0; box-sizing: border-box; }
+    .log { white-space: pre-wrap; background:#f7f7f7; padding:10px; border:1px solid #ddd; height:160px; overflow:auto; }
+    .row { margin-bottom:12px; }
+  </style>
+</head>
+<body>
+  <h1>Срабатывание через паузу (2s) или при потере фокуса — многоразово</h1>
+
+  <div class="row">
+    <label for="input">Input</label>
+    <input id="input" autocomplete="off" />
+  </div>
+
+  <div class="row">
+    <label for="textarea">Textarea</label>
+    <textarea id="textarea" rows="4"></textarea>
+  </div>
+
+  <div class="row">
+    <strong>Лог:</strong>
+    <div id="log" class="log"></div>
+  </div>
+
+  <script>
+    function createIdleHandlers(time, foo) {
+      let timer = null;
+
+      function clearTimer() {
+        if (timer !== null) {
+          clearTimeout(timer);
+          timer = null;
+        }
+      }
+
+      function startOrRefresh() {
+        clearTimer();
+        timer = setTimeout(() => {
+          timer = null;
+          foo();
+        }, time);
+      }
+
+      function onBlur() {
+        if (timer !== null) {
+          clearTimer();
+          foo();
+        }
+      }
+
+      return { startOrRefresh, onBlur };
+    }
+
+    const logEl = document.getElementById('log');
+    function log(s) {
+      const time = new Date().toLocaleTimeString();
+      logEl.textContent += `[${time}] ${s}\n`;
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function fooFactory(name) {
+      return () => log('foo вызван для ' + name);
+    }
+
+    const input = document.getElementById('input');
+    const textarea = document.getElementById('textarea');
+
+    const hInput = createIdleHandlers(2000, fooFactory('input'));
+    const hTextarea = createIdleHandlers(2000, fooFactory('textarea'));
+
+    input.addEventListener('input', hInput.startOrRefresh);
+    input.addEventListener('blur', hInput.onBlur);
+
+    textarea.addEventListener('input', hTextarea.startOrRefresh);
+    textarea.addEventListener('blur', hTextarea.onBlur);
+  </script>
+</body>
+</html>

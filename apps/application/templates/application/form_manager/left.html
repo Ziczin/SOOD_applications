@@ -1,19 +1,17 @@
-<form action="{% url 'dashboard' %}">
-    <button type="submit" class="content back flex">Вернуться в аккаунт</button>
-</form>
+{% load static %}
 
-<div class="content">
-    <h2>Формы:</h2>
-    {% for form in data.forms %}
-    <div class="margin-on-hover">
-        <button class='redir' onclick="initAccordion()">
-            {{ form.form_label }}
-        </button>
-        <button class='redir' onclick="renderMakeAccordion()">
-            аккордеон make.js
-        </button>
-    </div>
-    {% endfor %}
-</div>
+<div id="left-exit-button"></div>
 
-{% include "forms/accordion.html" %}
+<div class="content", id="left-content"></div>
+
+<script type="module">
+  await import("{% static 'deps/make/make.js' %}");
+  const imp = (await import("{% static 'deps/js/tools/import.js' %}")).default(make)
+  const paragraphNotice = await imp("{% static 'deps/js/prefabs/paragraph_notice.js' %}")
+  const backButton = await imp("{% static 'deps/js/prefabs/exit_button.js' %}")
+  const actionNotice = await imp("{% static 'deps/js/prefabs/action_notice.js' %}")
+  const popup = await imp("{% static 'deps/js/prefabs/popup.js' %}")
+  const picButton = await imp("{% static 'deps/js/prefabs/pic_button.js' %}", popup, "{{ MEDIA_URL }}");
+
+  const basicManual = await imp("{% static 'deps/js/manual/basic_manual.js' %}", popup, picButton, enumElem);
+</script>

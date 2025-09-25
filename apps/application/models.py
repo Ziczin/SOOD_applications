@@ -2,10 +2,26 @@ from django.db import models
 from apps.users.models import CustomUser
 from apps.forms.models import Form, Field, Service
 
+class ApplicationStatus(models.Choices):
+    NOT_READED = "Не просмотрена"
+    READED = "Просмотрена"
+    IN_PROGRESS = "В работе"
+    COMPLETED = "Выполнена"
+    CLOSED = "Завершена"
+    CANCELLED = "Отменена"
+    REJECTED = "Отклонена"
+
 class Application(models.Model):
     def __str__(self): return str(self.form) + ' | ' + str(self.user)
     form = models.ForeignKey(Form, on_delete=models.SET_NULL, null=True)
     user = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
+    date = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(
+        max_length=32,
+        choices=ApplicationStatus.choices,
+        default=ApplicationStatus.NOT_READED,
+    )
+    msg = models.CharField(max_length=600, blank=True, default='')
 
 class ApplicationField(models.Model):
     def __str__(self): return str(self.application) + ' | ' + str(self.field) + ' | ' + str(self.value)

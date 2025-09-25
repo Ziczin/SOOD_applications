@@ -8,17 +8,18 @@
   await import("{% static 'deps/make/make.js' %}");
   const imp = (await import("{% static 'deps/js/tools/import.js' %}")).default(make)
   const paragraphNotice = await imp("{% static 'deps/js/prefabs/paragraph_notice.js' %}")
-  const backButton = await imp("{% static 'deps/js/prefabs/exit_with_notice.js' %}")
+  const backButton = await imp("{% static 'deps/js/prefabs/exit_button.js' %}")
   const actionNotice = await imp("{% static 'deps/js/prefabs/action_notice.js' %}")
   const popup = await imp("{% static 'deps/js/prefabs/popup.js' %}")
   const picButton = await imp("{% static 'deps/js/prefabs/pic_button.js' %}", popup, "{{ MEDIA_URL }}");
 
-  const enumManagerManual = await imp("{% static 'deps/js/manual/enum_manager.js' %}", popup, picButton, enumElem);
+  const basicManual = await imp("{% static 'deps/js/manual/basic_manual.js' %}", popup, picButton, enumElem);
 
-  document.getElementById("left-exit-button").appendChild(backButton({}).build());
-  document.getElementById("left-exit-button").appendChild(enumManagerManual().build())
+  document.getElementById("left-exit-button").appendChild(backButton().build());
+  const curr = make.h1('test')
+  document.getElementById("left-exit-button").appendChild(basicManual(curr).build())
 
-  function enumElem({id, value, ph, enabled=true, container, visible, makeQuery, test=false}) {
+  function enumElem({id, value, ph, enabled=true, container, visible, makeQuery}) {
     let acc;
     let out = make.Div(make.it.marginOnHover)
     out.id = id
@@ -28,9 +29,14 @@
         value: value,
         placeholder: ph ? ph : value ? value : "Пустой элемент"
       }),
-      make.on.change((e) =>
+      make.on.input((e) =>
         out.element.classList.add("make-mark-changed")
       ),
+      make.on.inputTimeOut(3000, () => {
+        out.element.classList.remove("make-mark-changed")
+        makeQuery.at(out.id).with({value: inp.element.value || ''}).patch()
+        paragraphNotice("Сохранено!", make.color.lgreen)
+      }),
       ...make.if(!enabled,
         make.style.padding(6),
         make.with.attrs("disabled"),
@@ -46,12 +52,12 @@
           make.Div(
             make.it.popup,
             make.Paragraph("Нажмите на поле ввода для редактирования"),
-            make.Paragraph("Если элемент подсвечен, то его необходимо сохранить!"),
+            make.Paragraph("Если элемент подсвечен, то он сохранится через некоторое время"),
+            make.Paragraph("Если вы перейдёте на другой элемент, то этот так же сохранится автоматически"),
           )
         )
       )
     )
-    inp.build()
     acc = make.Div(
       make.with.css("make-mark-filtered"),
       ...make.if(!visible,
@@ -61,36 +67,23 @@
       make.style.gap(6),
       inp,
       ...make.if(enabled,
-        picButton("save", "Сохранить текст элемента", make.it.act.positive,
-        () => {
-          out.element.classList.remove("make-mark-changed")
-          if (!test) {
-            makeQuery.at(out.id).with({value: inp.element.value}).patch()
-            paragraphNotice("Сохранено!", make.color.lgreen)
-          }
-        }),
         picButton("hide", "Скрыть элемент от пользователя", make.it.act.alternative,
         () => {
           acc.element.classList.toggle("make-mark-deactivated")
-          if (!test) {
-            makeQuery.at(out.id).with({visible: !visible}).patch()
-            paragraphNotice("Видимость изменена!", make.color.yellow)
-          }
+          makeQuery.at(out.id).with({visible: !visible}).patch()
+          paragraphNotice("Видимость изменена!", make.color.yellow)
         }),
         picButton("trash", "Удалить элемент", make.it.act.negative,
-        () => {
-          if (!test) {
-            actionNotice({
-              confirmText: "Удалить", cancelText: "Отмена",
-              question: `Удалить ${inp.element.value ? inp.element.value : "*пустой элемент*"}?`,
-              action: ()=>{
-                container.removeChild(out)
-                makeQuery.at(out.id).with({available: false}).patch()
-                paragraphNotice("Удалено!", make.color.red)
-              }
-            })
-          }
-        }),
+          () => actionNotice({
+            confirmText: "Удалить", cancelText: "Отмена",
+            question: `Удалить ${inp.element.value || "*пустой элемент*"}?`,
+            action: () => {
+              container.removeChild(out)
+              makeQuery.at(out.id).with({available: false}).patch()
+              paragraphNotice("Удалено!", make.color.red)
+            }
+          })
+        ),
       )
     )
     out.addChild(acc)
@@ -162,7 +155,7 @@
     if (owner_dep) {
       return popup([
         "Это перечисление вашего отдела",
-        "Кликните по полю ввода для управления элементами"])
+        "Кликните по полю ввода чтобы загрузить элементы этого перечисления"])
     } else {
       return popup([
         "Другой отдел поделился этим перечислением",
@@ -177,10 +170,12 @@
     )
   }
 
-    function clearCenter() {
-      let center = document.getElementById("center-content")
-      center.innerHTML = ""
-      return center
+    function clearCenter(doClear=true) {
+      if (doClear) {
+        let center = document.getElementById("center-content")
+        center.innerHTML = ""
+        return center
+      }
     }
 
   function setUniqueClass(element, className = 'active') {
@@ -191,7 +186,7 @@
     element.classList.add(className);
   }
 
-
+  let selectedEnumTagId
   function enumTagElem(qEnum, qEnumTag, acc, me, tag, test=false) {
     let out
     let inp
@@ -201,15 +196,23 @@
         make.with.attrs('readonly'),
         make.with.css('fake-disabled')
       ),
-      make.on.change((e) =>
+      make.on.input((e) =>
         out.element.classList.add("make-mark-changed")
       ),
+      make.on.inputTimeOut(3000, () => {
+        out.element.classList.remove("make-mark-changed")
+        if (!test) {
+          qEnumTag.at(tag.id).with({name: inp.element.value || ''}).patch()
+          paragraphNotice("Сохранено!", make.color.lgreen)
+        }
+      }),
       enumTagPopup(tag.department === me.department.id),
-      make.with.attr({ value: tag.name }),
+      make.with.attr({ value: tag.name, placeholder: tag.name ? tag.name : 'Пустая группа'}),
       make.style.padding(6),
       make.on.click(async () => {
-        if (!inp?.element?.classList?.contains('make-mark-selected-enum-tag')){
-          setUniqueClass(inp.element, 'make-mark-selected-enum-tag')
+        if (!inp?.element?.classList?.contains('make-mark-selected-group')){
+          selectedEnumTagId = tag.id
+          setUniqueClass(inp.element, 'make-mark-selected-group')
           await fillCenter(qEnum, qEnumTag, tag, me)
         }
       })
@@ -220,14 +223,6 @@
       ),
       make.it.flexRow, make.style.gap(6), make.it.marginOnHover, inp,
       ...make.if(!tag.shared || tag.department === me.department.id,
-        picButton("save", "Сохранить имя группы", make.it.act.positive,
-        () => {
-          out.element.classList.remove("make-mark-changed")
-          if (!test) {
-            qEnumTag.at(tag.id).with({name: inp.element.value}).patch()
-            paragraphNotice("Сохранено!", make.color.lgreen)
-          }
-        }),
         picButton("hide", "Скрыть из вариантов при создании форм", make.it.act.alternative,
         () => {
           if (!test) {
@@ -243,7 +238,7 @@
               actionNotice({
                 confirmText: "Поделиться", cancelText: "Отмена",
                 question: [
-                  make.Paragraph(`Поделиться ${inp.element.value ? inp.element.value : "*пустая группа*"} с другими отделами?`),
+                  make.Paragraph(`Поделиться ${inp.element.value || "*пустая группа*"} с другими отделами?`),
                   make.Paragraph(`Это действие невозможно будет отменить`, make.it.textBold),
                 ],
                 action: ()=>{
@@ -261,7 +256,7 @@
             actionNotice({
               confirmText: "Удалить", cancelText: "Отмена",
               question: [
-                make.Paragraph(`Удалить ${inp.element.value ? inp.element.value : "*пустая группа*"}?`),
+                make.Paragraph(`Удалить ${inp.element.value || "*пустая группа*"}?`),
                 make.Paragraph(`Элементы перечисления так же будут удалены`, make.it.textBold),
 
               ],
@@ -269,7 +264,7 @@
                 acc.removeChild(out)
                 qEnumTag.at(tag.id).with({available: false}).patch()
                 paragraphNotice("Удалено!", make.color.red),
-                clearCenter()
+                clearCenter(tag.id === selectedEnumTagId)
               }
           })
           }

@@ -222,6 +222,7 @@ p, form, h1, h2, h3, h4, h5, h6 {
 .make-tabs-menu {
     display: flex;
     flex-direction: row;
+    background-color: #0001;
 }
 .make-tabs-menu-scroll {
     overflow-x: scroll;
@@ -238,12 +239,20 @@ p, form, h1, h2, h3, h4, h5, h6 {
 .make-tab-button {
     cursor: pointer;
     flex: 1;
-    transition: filter var(--transition-very-slow) ease;
+    transition: filter var(--transition-very-slow) ease,
+                background-color var(--transition-very-slow) ease;
+    background-color: #00000020;
+}
+
+.make-tab-button.make-mark-active-tab {
+    outline: 2px solid #0006;
 }
 
 .make-tab-button:hover {
-    filter: brightness(0.95);
-    transition: filter var(--transition-avg) ease;
+    filter: brightness(0.2);
+    background-color: #00000027;
+    transition: filter var(--transition-avg) ease,
+                background-color var(--transition-avg) ease;
 }
 
 .make-tab-button.active {
@@ -366,18 +375,23 @@ p, form, h1, h2, h3, h4, h5, h6 {
 }
 
 .make-little-darker {
-    position: relative;
+  position: relative;
 }
 
-.make-little-darker::before{
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-color: #0001;
-    pointer-events: none;
-    z-index: 1;
+.make-little-darker::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #0001; 
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 1;
 }
 
+.make-little-darker > * {
+  position: relative;
+  z-index: 2;
+}
 .make-little-lighter {
     position: relative;
 }

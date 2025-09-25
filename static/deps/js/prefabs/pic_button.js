@@ -1,9 +1,13 @@
 export default (make, popup, media_url) =>
-function picButton(pic, txt, style=[], onClick=()=>{}) {
+function picButton(pic, txt, style=[], onClick=()=>{}, outerStyle=[]) {
   if (!Array.isArray(style)) {
     style = [style, ]
   }
+  if (!Array.isArray(outerStyle)) {
+    outerStyle = [outerStyle, ]
+  }
   return make.Div(
+    ...outerStyle,
     make.Button(
       popup(800, txt),
       make.it.action,

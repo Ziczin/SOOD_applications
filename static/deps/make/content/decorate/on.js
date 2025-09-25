@@ -1,11 +1,48 @@
-export default (Event) => 
+export default (event, delay) => 
 {
+    const basic = event.basic
+    const custom = event.custom
     return {
-        hover: Event('mouseenter', { passive: true }),
-        dehover: Event('mouseleave', { passive: true }),
-        click: Event('click', { passive: true }),
-        focus: Event('focus', { passive: true }),
-        defocus: Event('blur', { passive: true }),
-        change: Event('change', { passive: true }),
+        hover: basic('mouseenter'),
+        dehover: basic('mouseleave'),
+        focus: basic('focus'),
+        defocus: basic('blur'),
+        click: basic('click'),
+        change: basic('change'),
+        input: basic('input'),
+        inputTimeOut: custom(
+        (time, foo) => {
+            let timer = null;
+
+            function clearTimer() {
+                if (timer !== null) {
+                    clearTimeout(timer);
+                timer = null;
+                }
+            }
+
+            function startOrRefresh() {
+                clearTimer();
+                timer = setTimeout(() => {
+                    timer = null;
+                    foo();
+                }, time);
+            }
+
+            function onBlur() {
+                if (timer !== null) {
+                    clearTimer();
+                    foo();
+                }
+            }
+
+            return [{
+                eventType: 'input',
+                handler: startOrRefresh,
+            }, {
+                eventType: 'blur',
+                handler: onBlur,
+            }]
+        })
     }
 }

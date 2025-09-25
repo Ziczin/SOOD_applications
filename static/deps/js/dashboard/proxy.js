@@ -3,8 +3,8 @@ export default async function dashboardProxy(make, me) {
   const qBase = make.Query('/api').via({"X-CSRFToken": csrfObj.csrfToken}).view();
   const roles = await qBase.at('roles').get()
   const departments = await qBase.at('departments').get()
-  const qChangeRole = qBase.at('users').at(me.username).at("change_role").view()
-  const qChangeDepartment = qBase.at('users').at(me.username).at("change_department").view()
+  const qChangeRole = qBase.at('users').at(me.id).at("change_role").view()
+  const qChangeDepartment = qBase.at('users').at(me.id).at("change_department").view()
 
   return [
     make.it.flexColumn,
@@ -26,8 +26,8 @@ export default async function dashboardProxy(make, me) {
       make.Select(
         ...roles.map(role => 
           make.Option(
-            role.label, role.value,
-            ...make.if(role.value === me.role.name,
+            role.name, role.id,
+            ...make.if(role.id === me.role.id,
               make.with.attrs('selected')
             )
           )
@@ -53,7 +53,7 @@ export default async function dashboardProxy(make, me) {
       make.Select(
         ...departments.map(dep => 
           make.Option(
-            dep.label, dep.id,
+            dep.name, dep.id,
             ...make.if(dep.id == me.department.id,
               make.with.attrs('selected')
             )
@@ -61,7 +61,7 @@ export default async function dashboardProxy(make, me) {
         ),
         make.on.change((e) => {
           qChangeDepartment.with({department: e.target.value}).patch()
-          .then(()=>{
+          .then(() => {
             location.reload()
           });
         })

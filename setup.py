@@ -8,7 +8,9 @@ from django.contrib.auth import get_user_model
 
 from apps.users.models import Department, UserRole
 from apps.forms.models import Enum, EnumTag, FieldType
-from apps.application.models import Field, Form
+from apps.application.models import Field, Form, Application, ApplicationField
+
+from itertools import product
 
 def create_superuser():
     User = get_user_model()
@@ -23,23 +25,29 @@ def create_superuser():
     super_user.proxy = True
     super_user.save()
 
+    if not User.objects.filter(username='000').exists():
+        print("Создание 2 суперюзера...")
+        User.objects.create_superuser(username='000', password='000', email='000@example.com')
+
+    super_user = User.objects.get(username='000')
+    super_user.fullname = 'SUPERUSER'
+    super_user.role = UserRole.ADMIN
+    super_user.verified = True
+    super_user.proxy = True
+    super_user.save()
+
 def on_test_setup():
-    prog_dep, c = Department.objects.get_or_create(name='prog', label='Отдел программирования')
-    rem_dep, c = Department.objects.get_or_create(name='net', label='Отдел сетевой поддержки')
+    prog_dep, c = Department.objects.get_or_create(name='Отдел программирования')
+    rem_dep, c = Department.objects.get_or_create(name='Отдел сетевой поддержки')
 
     User = get_user_model()
-    usrs = [
-        [prog_dep, UserRole.USER],
-        [prog_dep, UserRole.USER],
-        [prog_dep, UserRole.MODERATOR],
-        [prog_dep, UserRole.ADMIN],
-        [rem_dep, UserRole.USER],
-        [prog_dep, UserRole.ADMIN],
-    ]
+    users = [UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN]
+    deps = [prog_dep, rem_dep]
+    usrs = [p for p in product(deps, users) for _ in range(3)]
     for i, us in enumerate(usrs):
         User.objects.create_user(
             username=str(i), password=str(i), fullname=str(i),
-            department=us[0], role=us[1], verified=bool(i), proxy=i>3,
+            department=us[0], role=us[1], verified=bool(i%2), proxy=i>3,
         ).save()
     
     print("-- Создание тэгов перечислений")
@@ -58,10 +66,18 @@ def on_test_setup():
     Enum.objects.get_or_create(value='kpo-866', enum_tag=obj3)
 
     print("-- Создание типов полей")
-    t1, c = FieldType.objects.get_or_create(name='Int')
-    t2, c = FieldType.objects.get_or_create(name='Float')
-    t3, c = FieldType.objects.get_or_create(name='Str')
-    t4, c = FieldType.objects.get_or_create(name='Enum')
+    type_names = [
+        ('numeric', "Число"),
+        ('int', "Целое число"),
+        ('float', "Дробное число"),
+        ('text', "Строка"),
+        ('bigtext', "Текст"),
+        ('date', "Дата"),
+        ('time', "Время"),
+        ('enum', "Перечисление"),
+        ('phone', "Телефон"),
+    ]
+    types = {tn[0]: FieldType.objects.get_or_create(name=tn[0], label=tn[1])[0] for tn in type_names}
 
     print("-- Создание форм")
     form1, c = Form.objects.get_or_create(
@@ -75,14 +91,37 @@ def on_test_setup():
         )
     
     print("-- Создание примеров полей")
-    f1, c = Field.objects.get_or_create(label='Количество', type=t1, form=form1)
-    f2, c = Field.objects.get_or_create(label='Новое количество', type=t1)
-    f3, c = Field.objects.get_or_create(label='Цена', type=t2, form=form1)
-    f4, c = Field.objects.get_or_create(label='Стоимость', type=t2)
-    f5, c = Field.objects.get_or_create(label='Наименование', type=t3, form=form1)
-    f6, c = Field.objects.get_or_create(label='Описание', type=t3, form=form1)
-    f7, c = Field.objects.get_or_create(label='Отдел', type=t4, enum_tag=obj1)
-    f8, c = Field.objects.get_or_create(label='Имя принтера', type=t4, enum_tag=obj2)
+    fields = [
+        {"label": "Количество", "type": types['int']},
+        {"label": "Новое количество", "type": types['int']},
+        {"label": "Цена", "type": types['float']},
+        {"label": "Стоимость", "type": types['float']},
+        {"label": "Наименование", "type": types['text']},
+        {"label": "Описание", "type": types['bigtext']},
+        {"label": "Отдел", "type": types['enum'], "tag": obj1},
+        {"label": "Имя принтера", "type": types['enum'], "tag": obj2},
+    ]
+
+    for f in fields:
+        Field.objects.get_or_create(**f)
+
+    print("-- Создание тестовой заявки")
+    app, c = Application.objects.get_or_create(
+        user=User.objects.get(username='toster'),
+        form=form1,
+    )
+
+    ApplicationField.objects.get_or_create(
+        application=app,
+        field=Field.objects.get(label='Цена'),
+        value='14.5',
+    )
+
+    ApplicationField.objects.get_or_create(
+        application=app,
+        field=Field.objects.get(label='Наименование'),
+        value='Тестовое наименование',
+    )
 
     print("База данных заполнена начальными данными!")
 

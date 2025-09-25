@@ -70,20 +70,4 @@ def get_form_data(request):
 
     return JsonResponse(data)
 
-@login_required
-def field_type_creation(request):
-    pass
-
-@login_required
-def enum_tag_creation(request):
-    pass
-
-@login_required
-def enum_elem_creation(request):
-    pass
-
-@login_required
-def field_creation(request):
-    pass
-
 
