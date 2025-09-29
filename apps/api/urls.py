@@ -27,6 +27,7 @@ enums_detail = EnumViewSet.as_view({
     'patch': 'partial_update',
     'delete': 'destroy'
 })
+enumtag_all = EnumTagViewSet.as_view({'get': 'all'})
 
 router = DefaultRouter()
 router.register(r'users', UsersViewSet, basename='user')
@@ -38,6 +39,8 @@ urlpatterns = [
     path('enum-tags/', enumtag_list, name='enumtag-list'),
     path('enum-tags/<int:pk>/', enumtag_detail, name='enumtag-detail'),
     path('enum-tags/<int:pk>/items/', enumtag_items, name='enumtag-items-list'),
+    path('enum-tags/history/', EnumTagViewSet.as_view({'get': 'history_list'}), name='enumtag-history-list'),
+    path('enum-tags/history/<int:pk>/', EnumTagViewSet.as_view({'get': 'history_detail'}), name='enumtag-history-detail'),
     path('enums/', enums_list, name='enum-list'),
     path('enums/<int:pk>/', enums_detail, name='enum-detail'),
     path('auth/register/', RegisterView.as_view(), name='register'),

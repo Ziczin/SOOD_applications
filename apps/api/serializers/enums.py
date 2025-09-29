@@ -59,3 +59,24 @@ class EnumTagSerializer(serializers.ModelSerializer):
         validated_data.setdefault('visible', instance.visible)
         validated_data.setdefault('available', instance.available)
         return super().update(instance, validated_data)
+
+from rest_framework import serializers
+from apps.forms.models import EnumTag
+from apps.api.serializers.enums import EnumTagSerializer as BaseEnumTagSerializer
+
+class EnumTagHistorySerializer(BaseEnumTagSerializer):
+    match_departments = serializers.SerializerMethodField()
+
+    class Meta(BaseEnumTagSerializer.Meta):
+        fields = BaseEnumTagSerializer.Meta.fields + ('match_departments',)
+
+    def get_match_departments(self, obj):
+        request = self.context.get('request', None)
+        if request is None or not hasattr(request, 'user'):
+            return False
+        user = request.user
+        user_dept = getattr(user, 'department', None)
+        tag_dept = getattr(obj, 'department', None)
+        if user_dept is None or tag_dept is None:
+            return False
+        return user_dept.id == tag_dept.id

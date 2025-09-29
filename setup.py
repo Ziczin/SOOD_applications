@@ -55,6 +55,7 @@ def on_test_setup():
     obj2, c = EnumTag.objects.get_or_create(name='Блюда')
     obj3, c = EnumTag.objects.get_or_create(name='Компьютеры', department=prog_dep)
 
+
     print("-- Создание элементов перечислений")
     Enum.objects.get_or_create(value='Принтер п-1', enum_tag=obj1)
     Enum.objects.get_or_create(value='Принтер Lenovo', enum_tag=obj1)
@@ -67,17 +68,17 @@ def on_test_setup():
 
     print("-- Создание типов полей")
     type_names = [
-        ('numeric', "Число"),
-        ('int', "Целое число"),
-        ('float', "Дробное число"),
-        ('text', "Строка"),
-        ('bigtext', "Текст"),
-        ('date', "Дата"),
-        ('time', "Время"),
-        ('enum', "Перечисление"),
-        ('phone', "Телефон"),
+        ('numeric', "Число", False),
+        ('int', "Целое число", False),
+        ('float', "Дробное число", False),
+        ('text', "Строка", False),
+        ('bigtext', "Текст", False),
+        ('date', "Дата", False),
+        ('time', "Время", False),
+        ('enum', "Перечисление", True),
+        ('phone', "Телефон", False),
     ]
-    types = {tn[0]: FieldType.objects.get_or_create(name=tn[0], label=tn[1])[0] for tn in type_names}
+    types = {tn[0]: FieldType.objects.get_or_create(name=tn[0], label=tn[1], allow_tags=tn[2])[0] for tn in type_names}
 
     print("-- Создание форм")
     form1, c = Form.objects.get_or_create(
@@ -94,16 +95,17 @@ def on_test_setup():
     fields = [
         {"label": "Количество", "type": types['int']},
         {"label": "Новое количество", "type": types['int']},
-        {"label": "Цена", "type": types['float']},
-        {"label": "Стоимость", "type": types['float']},
+        {"label": "Цена", "type": types['numeric']},
+        {"label": "Стоимость", "type": types['numeric']},
         {"label": "Наименование", "type": types['text']},
         {"label": "Описание", "type": types['bigtext']},
-        {"label": "Отдел", "type": types['enum'], "tag": obj1},
-        {"label": "Имя принтера", "type": types['enum'], "tag": obj2},
+        {"label": "Компьютер", "type": types['enum'], "tag": obj3},
+        {"label": "Принтер", "type": types['enum'], "tag": obj1},
+        {"label": "Технологические пирожки", "type": types['enum'], "tag": obj2},
     ]
 
-    for f in fields:
-        Field.objects.get_or_create(**f)
+    for i, f in enumerate(fields):
+        Field.objects.get_or_create(**f, department=deps[i%2])
 
     print("-- Создание тестовой заявки")
     app, c = Application.objects.get_or_create(

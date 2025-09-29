@@ -21,12 +21,14 @@ class FieldType(models.Model):
     def __str__(self): return self.name
     name = models.CharField(max_length=50)
     label = models.CharField(max_length=100)
+    allow_tags = models.BooleanField(default=False)
 
 class Field(models.Model):
     def __str__(self): return str(self.type) + ' | ' + str(self.label)
     type = models.ForeignKey(FieldType, on_delete=models.SET_NULL, null=True)
     label = models.CharField(max_length=50)
     tag = models.ForeignKey(EnumTag, on_delete=models.SET_NULL, null=True, default=None)
+    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, default=None)
 
 class Form(models.Model):
     def __str__(self): return self.form_name

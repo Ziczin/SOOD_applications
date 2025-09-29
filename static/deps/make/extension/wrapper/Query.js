@@ -204,6 +204,7 @@ export default class Query {
             options.body = JSON.stringify(body);
         }
 
+        this.clear()
         const response = await fetch(url, options);
         
         let data;
@@ -223,8 +224,6 @@ export default class Query {
         if (this._redirect_request_key && this._redirect_request_key in data) {
             window.location.href = data[this._redirect_request_key];
         }
-        
-        this.clear()
         return data;
     }
 

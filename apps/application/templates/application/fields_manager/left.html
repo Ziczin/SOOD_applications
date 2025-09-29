@@ -24,13 +24,58 @@
   const qFieldTypes = qBase.at('field-types').view();
   const fieldTypes = await qFieldTypes.get()
   const qFields = qBase.at('fields').view()
+  const me = await qBase.at('me').get()
+  const qEnumTags = qBase.at('enum-tags').view()
+  const qEnumTagsHistory = qEnumTags.at('history').view()
+  const enumTags = await qEnumTags.get()
 
-  function fieldComponent(field) {
+  async function fieldComponent(field, isEnum) {
+    let enabledPopup = make.Annotation(1500, 
+      make.Div(
+        make.it.popup,
+        make.Paragraph("Нажмите на поле ввода для редактирования имени шаблона"),
+        make.Paragraph("Если элемент подсвечен, то он сохранится через некоторое время"),
+        make.Paragraph("Если вы перейдёте на другой элемент, то этот так же сохранится автоматически"),
+      )
+    )
+
+    let enabledPopupSelect = make.Annotation(1500, 
+      make.Div(
+        make.it.popup,
+        make.Paragraph("Нажмите для выбора группы перечислений"),
+        make.Paragraph("После выбора элемент сохранится автоматически"),
+      )
+    )
+
+    let disabledPopup = make.Annotation(1500, 
+      make.Div(
+        make.it.popup,
+        make.Paragraph("Это шаблон другого отдела"),
+        make.Paragraph("Вы можете его использовать, но не можете редактировать"),
+      )
+    )
+
+    let tag
+    if (field && field.tag !== null) {
+      tag = await qEnumTagsHistory.at(field.tag).get()
+    }
+
+    let depMatch = (field.department === me.department.id)
+
     let inp
     let out
-    return out = make.Div(
+    out = make.Div(
       make.it.marginOnHover,
+      ...make.if(isEnum,
+        make.it.flexRow,
+        make.style.gap(6),
+      ),
       inp = make.Input(
+        ...make.if(depMatch, enabledPopup),
+        ...make.if(!depMatch,
+          make.with.attrs("disabled"),
+          disabledPopup
+        ),
         make.with.attr({
           value: field.label || "",
           placeholder: field.label || "Пустое поле"
@@ -43,17 +88,37 @@
           qFields.at(field.id).with({label: inp.element.value || ''}).patch()
           paragraphNotice("Сохранено!", make.color.lgreen)
         }),
-        make.Annotation(1500, 
-          make.Div(
-            make.it.popup,
-            make.Paragraph("Нажмите на поле ввода для редактирования имени шаблона"),
-            make.Paragraph("Если элемент подсвечен, то он сохранится через некоторое время"),
-            make.Paragraph("Если вы перейдёте на другой элемент, то этот так же сохранится автоматически"),
-          )
+        
+      ),
+      ...make.if(isEnum,
+        make.Select(
+          ...make.if(!depMatch,
+            make.with.attrs("disabled"),
+            disabledPopup
+          ),
+          ...make.if(depMatch, enabledPopupSelect),
+          ...make.if(tag,
+            make.Option(tag?.name, tag?.id),
+            ...enumTags.map((enumTag) =>
+              tag?.id !== enumTag.id && make.Option(enumTag.name, enumTag.id)
+            ),
+          ),
+          ...make.if(!tag,
+            ...enumTags.map((enumTag) =>
+              make.Option(enumTag.name, enumTag.id)
+            )
+          ),
+          make.on.change(async (e) => {
+            paragraphNotice("Изменено!", make.color.lgreen)
+            qFields.at(field.id).with({tag: e.target.value}).patch()
+          })
         )
       )
     )
+    if (isEnum) {return make.Div(out)}
+    else {return out}
   }
+
   function setUniqueClass(element, className = 'make-mark-selected-group') {
     document.querySelectorAll(`.${className}`).forEach(el => {
         el.classList.remove(className);
@@ -62,6 +127,7 @@
   }
 
   let currentFieldType
+  let fieldTemplateContainer
   document.getElementById("left-content").appendChild(
     make.Div(
       make.h1("Типы полей"),
@@ -89,13 +155,35 @@
                   make.it.flexColumn,
                   make.h1(fType.label),
                   make.Separator(6),
-                  make.Scrollbox(
+                  fieldTemplateContainer = make.Scrollbox(
                     make.it.flexColumn,
-                    make.style.gap(6),
-                    ...fields.map((f) => fieldComponent(f))
+                    make.style.gap(6)
+                  ),
+                  make.Button(
+                    make.with.text("Добавить новый шаблон"),
+                    make.it.action,
+                    make.it.act.positive,
+                    make.on.click(() =>
+                      actionNotice({
+                        confirmText: "Создать", cancelText: "Отмена",
+                        question: [
+                          make.Paragraph(`Вы уверены что хотите создать новый шаблон?`),
+                          make.Paragraph(`Это действие невозможно будет отменить`, make.it.textBold),
+                        ],
+                        action: async () => {
+                          let resp = await qFields.with({type: fType.id, department: me.department.id}).post()
+                          const comp = await fieldComponent(resp, fType.allow_tags)
+                          fieldTemplateContainer.addChild(comp)
+                        }
+                      })
+                    )
                   )
                 ).build()
               )
+              for (const f of fields) {
+                const comp = await fieldComponent(f, fType.allow_tags)
+                fieldTemplateContainer.addChild(comp)
+              }
             })
           )      
         })
