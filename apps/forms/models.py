@@ -1,5 +1,8 @@
 from django.db import models
 from apps.users.models import Department
+from django.core.validators import MinValueValidator
+from django.db.models import Max
+from django.db import transaction
 
 class EnumTag(models.Model):
     def __str__(self): return self.name
@@ -39,12 +42,14 @@ class Form(models.Model):
     confirm_button_text = models.CharField(max_length=100)
     sub_button_link_text = models.CharField(max_length=100)
     sub_button_link_route = models.CharField(max_length=100)
-    available = models.BooleanField(default=False)
-    fields = models.ManyToManyField(Field, related_name='forms', blank=True)
+    available = models.BooleanField(default=True)
+    visible = models.BooleanField(default=False)
 
-
-
-
+class FormField(models.Model):
+    def __str__(self): return self.form + ' | ' + self.field + ' (' + str(self.order) + ')'
+    form = models.ForeignKey('Form', on_delete=models.CASCADE, related_name='form_fields')
+    field = models.ForeignKey('Field', on_delete=models.CASCADE, related_name='field_forms')
+    order = models.PositiveIntegerField(validators=[MinValueValidator(1)])
 
 class ServiceGroup(models.Model):
     def __str__(self): return str(self.form) + ' | ' + str(self.name)

@@ -91,6 +91,16 @@ def on_test_setup():
         sub_button_link_route='#',
         )
     
+    form2, c = Form.objects.get_or_create(
+        form_name='Testovaya forma2',
+        department=rem_dep,
+        page_label='TestTestTest',
+        form_label='ttt',
+        confirm_button_text='Confirm Button Text',
+        sub_button_link_text='#',
+        sub_button_link_route='#',
+        )
+    
     print("-- Создание примеров полей")
     fields = [
         {"label": "Количество", "type": types['int']},
