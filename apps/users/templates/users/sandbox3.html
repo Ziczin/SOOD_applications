@@ -23,30 +23,41 @@
 
 <script type="module">
   await import("{% static 'deps/make/make.js' %}");
-  var collector;
-  var area;
-  var collector2;
-  var area2;
+  let inp1
+  let inp2
+  let inp3
+  let TO = make.on.inputTimeOut(
+    3000, () => {
+      inp1.swap(inp2)
+      make.Notice(500, 2500, 500,
+        make.Div(
+          make.it.content,
+          make.Paragraph('Отработано!!!')
+        ),
+        inp3 = make.Button(
+          make.with.text("TEST"),
+          make.it.redir,
+          make.on.click(() => {
+            inp1.swap(inp3)
+          })
+        )
+      )
+    }
+  )
   document.getElementById('form-template').appendChild(
     make.Div(
       make.it.content,
       make.it.flexRow,
       make.style.width('80%'),
       make.style.gap(12),
-      make.Input(
+      inp1 = make.Input(
         make.with.attr({placeholder: 'Сюда писать буквы'}),
-        make.on.inputTimeOut(
-          3000, () => {
-            make.Notice(500, 500, 500,
-              make.Div(
-                make.it.content,
-                make.Paragraph('Отработано!!!')
-              )
-            )
-            console.log('Отработано!!!')
-          }
-        )
-      )
+        TO
+      ),
+      inp2 = make.Input(
+        make.with.attr({placeholder: 'Сюда писать буквы'}),
+        TO
+      ),
     ).build()
   )
 </script>

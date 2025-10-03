@@ -1,7 +1,13 @@
-import wrapper from './wrapper/_.js';
-import mixin from './mixin/_.js';
+import Component from './Component.js';
+import Decorator from './Decorator.js';
+import Preferences from './Preferences.js';
+import Query from './Query.js';
+import Event from './Event.js';
 
 export default {
-    wrapper,
-    mixin
-};
+    Component,
+    Decorator,
+    Preferences,
+    Query,
+    Event,
+}

@@ -1,12 +1,14 @@
-export default function createTabs(Component, createComponent, makeWith, makeOn) {
+export default function createTabs(Component, createComponent, makeWith, makeOn, Event) {
     class Tab {
         constructor(handler, first) {
             this._isFirst = first;
             this._handler = handler;
             this._header = null;
             this._content = null;
+            this.onOpen = new Event({ret: this})
+            this.onClose = new Event({ret: this})
         }
-        
+
         header(...modifiers) {
             let addit = this._isFirst ? [makeWith.css('make-mark-active-tab')] : []
             this._header = createComponent(
@@ -58,6 +60,8 @@ export default function createTabs(Component, createComponent, makeWith, makeOn)
             this.addChild(this.menuContainer);
             this.addChild(this.contentContainer);
             this.currentTab = null;
+
+            this.onTabChange = new Event()
         }
         
         menu(...modifiers) {
@@ -71,6 +75,7 @@ export default function createTabs(Component, createComponent, makeWith, makeOn)
         }
 
         tab(placeholder) {
+            console.log(placeholder)
             let isFirst = this.tabs.length === 0
             const tab = new Tab(this, isFirst);
             this.tabs.push(tab);
@@ -80,6 +85,7 @@ export default function createTabs(Component, createComponent, makeWith, makeOn)
         
         activateTab(tab) {
             if (this.currentTab === tab) return;
+            this.currentTab?.onClose.emit(tab)
             
             if (this.currentTab && this.currentTab._content && this.currentTab._content.element) {
                 this.currentTab._content.element.setAttribute('hidden', '');
@@ -97,6 +103,10 @@ export default function createTabs(Component, createComponent, makeWith, makeOn)
                 detail: { tab },
                 bubbles: false
             }));
+            this.onTabChange.emit(tab)
+
+            console.log(this.currentTab.onOpen)
+            this.currentTab.onOpen.emit(tab)
         }
     }
 }

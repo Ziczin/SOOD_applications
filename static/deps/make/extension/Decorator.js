@@ -1,8 +1,5 @@
-import Applicable from '../mixin/Applicable.js';
-
-export default class Decorator extends Applicable {
+export default class Decorator {
     constructor(func, needReApply = true) {
-        super();
         this.func = func;
         this.needReApply = needReApply;
         this.applied = false;

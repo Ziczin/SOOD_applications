@@ -11,6 +11,6 @@ export default class Preferences {
         if (!this.options.hasOwnProperty(name) || force) {
             this.options[name] = value;
         }
-        return this; // Для цепочки вызовов
+        return this;
     }
 }

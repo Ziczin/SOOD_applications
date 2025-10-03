@@ -1,10 +1,9 @@
-// factory/_.js
 import createComponent from './Component.js';
 import createDecorator from './Decorator.js';
-import createEvent from './Event.js';
+import createHandler from './Handler.js';
 
 export default {
     Component: createComponent,
     Decorator: createDecorator,
-    Event: createEvent,
+    Handler: createHandler,
 };

@@ -148,7 +148,6 @@ export default class Query {
         this._queryString = '';
     }
 
-
     copy() {
         const q = new Query(
             this._baseRoute,

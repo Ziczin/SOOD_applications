@@ -21,7 +21,7 @@
 </html>
 
 <script type="module">
-  await import("{% static 'collected/static.js' %}");
+  await import("{% static 'deps/make/make.js' %}");
   const maindiv = document.getElementById('form-template');
   let content;
   let accordion;
@@ -52,6 +52,8 @@
         make.style.gap(8)
       )
       .tab('Тестовая вкладка 1')
+      .onOpen.sub(() => console.log(13))
+      .onOpen.sub(() => {make.Notice(500, 500, 500, make.Div(make.h1('TEST')))})
         .header(
           make.it.contented,
           make.Paragraph('Вкладка 1'),

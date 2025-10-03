@@ -1,9 +1,6 @@
-import Applicable from '../mixin/Applicable.js';
-import Decorator from './Decorator.js';
-
-export default class Component extends Applicable {
+export default (Decorator, Event) => 
+class Component {
     constructor(elementType, autoRebuild = true) {
-        super();
         this.name = 'component'
         this.elementType = elementType;
         this.element = null;
@@ -13,7 +10,18 @@ export default class Component extends Applicable {
         this.autoRebuild = autoRebuild;
         this.buildLock = true
         this.destroyed = false;
-        this.args = {}
+        this.doEvents = false
+    }
+    allowEvents() {
+        if (!this.doEvents) {
+            this.doEvents = true
+            this.onBuild = new Event({ret: this})
+            this.onDestroy = new Event({ret: this})
+            this.onChildAdd = new Event({ret: this})
+            this.onChildRemove = new Event({ret: this})
+            this.onSwap = new Event({ret: this})
+        }
+        return this
     }
 
     view() {
@@ -38,6 +46,7 @@ export default class Component extends Applicable {
         child.parent = this;
         this.children.push(child);
         this.autoRebuild && this.build(true);
+        this.onChildAdd?.emit(child)
     }
 
     build(force = false) {
@@ -56,6 +65,7 @@ export default class Component extends Applicable {
                 this.element.appendChild(child.build());
             }
         }
+        this.onBuild?.emit(this)
         return this.element;
     }
 
@@ -76,30 +86,38 @@ export default class Component extends Applicable {
             this.element.parentNode.removeChild(this.element);
         }
         this.element = null;
+        this.onDestroy?.emit(this)
     }
 
-    getChild(index) {
-        return this.children[index] || null;
-    }
-
-    getFirstChild() {
-        return this.children[0] || null;
-    }
-
-    getLastChild() {
-        return this.children[this.children.length - 1] || null;
-    }
-
-    removeChild(child) {
+    removeChild(child, destroy=false) {
         const index = this.children.indexOf(child);
         if (index === -1) return false;
-        
         this.children.splice(index, 1);
-        
+        child.destroy()
         if (this.autoRebuild && this.element) {
             this.build(true);
         }
-        
+        this.onChildRemove?.emit(child)
         return true;
+    }
+
+    swap(other) {
+        const a = this;
+        const b = other;
+
+        const aParent = a.parent;
+        const bParent = b.parent;
+        const aIndex = aParent.children.indexOf(a);
+        const bIndex = bParent.children.indexOf(b);
+        aParent.children[aIndex] = b;
+        bParent.children[bIndex] = a;
+
+        a.parent = bParent;
+        b.parent = aParent;
+
+        if (aParent.element && aParent.autoRebuild) aParent.build(true);
+        if (bParent.element && bParent.autoRebuild) bParent.build(true);
+
+        this.onSwap?.emit({ a, b });
     }
 }
