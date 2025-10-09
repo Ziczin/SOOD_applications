@@ -13,10 +13,6 @@ export default function dashboardAdmin(make) {
       loc: '/applications/enums-manager/',
     },
     {
-      text: 'Управление услугами',
-      loc: '/applications/services-manager/',
-    },
-    {
       text: 'Управление шаблонами полей',
       loc: '/applications/fields-manager/',
     },

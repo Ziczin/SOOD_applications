@@ -444,7 +444,6 @@ p, form, h1, h2, h3, h4, h5, h6 {
     flex: 1 1 auto;
     min-height: 0;
     flex-direction: column;
-    height: 100%;
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: #ccc transparent;

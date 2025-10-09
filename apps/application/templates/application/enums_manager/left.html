@@ -2,7 +2,7 @@
 
 <div id="left-exit-button"></div>
 
-<div class="content", id="left-content"></div>
+<div class="content-strange", id="left-content"></div>
 
 <script type="module">
   await import("{% static 'deps/make/make.js' %}");
@@ -13,7 +13,7 @@
   const popup = await imp("{% static 'deps/js/prefabs/popup.js' %}")
   const picButton = await imp("{% static 'deps/js/prefabs/pic_button.js' %}", popup, "{{ MEDIA_URL }}");
 
-  const basicManual = await imp("{% static 'deps/js/manual/basic_manual.js' %}", popup, picButton, enumElem);
+  const basicManual = await imp("{% static 'deps/js/manual/basic_manual.js' %}", popup, picButton);
 
   document.getElementById("left-exit-button").appendChild(backButton().build());
   const curr = make.h1('test')
@@ -143,6 +143,7 @@
       ...make.if(
         tag.department === me.department.id,
         make.Div(
+          make.with.style({flex: 0}),
           make.it.flexRow,
           make.style.gap(6),
           enumElemButtonAdd(enumCollector, qEnum, tag)
@@ -153,14 +154,14 @@
 
   function enumTagPopup(owner_dep) {
     if (owner_dep) {
-      return popup([
+      return popup(
         "Это перечисление вашего отдела",
-        "Кликните по полю ввода чтобы загрузить элементы этого перечисления"])
+        "Кликните по полю ввода чтобы загрузить элементы этого перечисления")
     } else {
-      return popup([
+      return popup(
         "Другой отдел поделился этим перечислением",
         "Вы не можете его редактировать. Кликните для просмотра"
-      ])
+      )
     }
   }
 
@@ -187,7 +188,7 @@
   }
 
   let selectedEnumTagId
-  function enumTagElem(qEnum, qEnumTag, acc, me, tag, test=false) {
+  function enumTagElem(qEnum, qEnumTag, acc, me, tag) {
     let out
     let inp
     let shareBtn
@@ -201,10 +202,8 @@
       ),
       make.on.inputTimeOut(3000, () => {
         out.element.classList.remove("make-mark-changed")
-        if (!test) {
-          qEnumTag.at(tag.id).with({name: inp.element.value || ''}).patch()
-          paragraphNotice("Сохранено!", make.color.lgreen)
-        }
+        qEnumTag.at(tag.id).with({name: inp.element.value || ''}).patch()
+        paragraphNotice("Сохранено!", make.color.lgreen)
       }),
       enumTagPopup(tag.department === me.department.id),
       make.with.attr({ value: tag.name, placeholder: tag.name ? tag.name : 'Пустая группа'}),
@@ -225,49 +224,43 @@
       ...make.if(!tag.shared || tag.department === me.department.id,
         picButton("hide", "Скрыть из вариантов при создании форм", make.it.act.alternative,
         () => {
-          if (!test) {
-            out.element.classList.toggle("make-mark-deactivated")
-            qEnumTag.at(tag.id).with({visible: !tag.visible}).patch()
-            paragraphNotice("Видимость изменена!", make.color.yellow)
-          }
+          out.element.classList.toggle("make-mark-deactivated")
+          qEnumTag.at(tag.id).with({visible: !tag.visible}).patch()
+          paragraphNotice("Видимость изменена!", make.color.yellow)
         }),
         ...make.if(!tag.shared,
           shareBtn = picButton("share", "Поделиться перечислением с другим отделом", make.it.act.neutral,
           () => {
-            if (!test) {
-              actionNotice({
-                confirmText: "Поделиться", cancelText: "Отмена",
-                question: [
-                  make.Paragraph(`Поделиться ${inp.element.value || "*пустая группа*"} с другими отделами?`),
-                  make.Paragraph(`Это действие невозможно будет отменить`, make.it.textBold),
-                ],
-                action: ()=>{
-                  out.removeChild(shareBtn),
-                  qEnumTag.at(tag.id).with({shared: !tag.shared}).patch()
-                  paragraphNotice("Видимость изменена!", make.color.yellow)
-                }
-              })
-            }
+            actionNotice({
+              confirmText: "Поделиться", cancelText: "Отмена",
+              question: [
+                make.Paragraph(`Поделиться ${inp.element.value || "*пустая группа*"} с другими отделами?`),
+                make.Paragraph(`Это действие невозможно будет отменить`, make.it.textBold),
+              ],
+              action: ()=>{
+                out.removeChild(shareBtn),
+                qEnumTag.at(tag.id).with({shared: !tag.shared}).patch()
+                paragraphNotice("Видимость изменена!", make.color.yellow)
+              }
+            })
           })
         ),
         picButton("trash", "Удалить группу", make.it.act.negative,
         () => {
-          if (!test) {
-            actionNotice({
-              confirmText: "Удалить", cancelText: "Отмена",
-              question: [
-                make.Paragraph(`Удалить ${inp.element.value || "*пустая группа*"}?`),
-                make.Paragraph(`Элементы перечисления так же будут удалены`, make.it.textBold),
+          actionNotice({
+            confirmText: "Удалить", cancelText: "Отмена",
+            question: [
+              make.Paragraph(`Удалить ${inp.element.value || "*пустая группа*"}?`),
+              make.Paragraph(`Элементы перечисления так же будут удалены`, make.it.textBold),
 
-              ],
-              action: ()=>{
-                acc.removeChild(out)
-                qEnumTag.at(tag.id).with({available: false}).patch()
-                paragraphNotice("Удалено!", make.color.red),
-                clearCenter(tag.id === selectedEnumTagId)
-              }
+            ],
+            action: ()=>{
+              acc.removeChild(out)
+              qEnumTag.at(tag.id).with({available: false}).patch()
+              paragraphNotice("Удалено!", make.color.red),
+              clearCenter(tag.id === selectedEnumTagId)
+            }
           })
-          }
         })
       )
     )
@@ -281,6 +274,7 @@
     let res = make.Div(
       make.it.flexColumn,
       make.style.gap(10),
+      make.style.height("100%"),
       make.h1(me.department.label),
       acc = make.Scrollbox(
         make.it.flexColumn,
@@ -329,6 +323,5 @@
 
   document.getElementById("left-content").appendChild(
     (await leftContent(me, qEnumTag, qEnum)).build())
-
 
 </script>

@@ -1,211 +1,124 @@
-export default class Query {
-    constructor(...args) {
-        let route, method, baseHeaders, baseBody, redirect_request_key;
-        
-        if (args.length === 1 && typeof args[0] === 'object' && 'route' in args[0]) {
-            const options = args[0];
-            route = options.route;
-            method = options.method ?? null;
-            baseHeaders = options.baseHeaders || {};
-            baseBody = options.baseBody || {};
-            redirect_request_key = options.redirect_request_key ?? null;
-        } else {
-            [route, method = null, baseHeaders = {}, baseBody = {}, redirect_request_key = null] = args;
+class BaseObjManager {
+    constructor(base = {}) {
+        this.base = base
+        this.container = {}
+    }
+    add(elem) {
+        if (typeof elem === 'object') {
+            this.container = Object.assign(this.container, elem)
         }
-        
-        this._baseRoute = route;
-        this._method = method;
-        this._baseHeaders = baseHeaders;
-        this._baseBody = baseBody;
-        this._redirect_request_key = redirect_request_key;
-
-        this._route = [];
-        this._headers = {};
-        this._body = {};
-        this._mergedBody = null;
-        this._queryParams = null;
-        this._queryString = '';
     }
+    get() { return Object.assign(this.container, this.base) }
+    view() { let res = new BaseObjManager(this.get()); this.flush(); return res }
+    flush() { this.container = {}; return this}
+    clear() { this.base = {}; return this }
+}
 
-    at(param) {
-        this._route.push(param);
-        return this;
+class BaseArrManager {
+    constructor(base = []) {
+        this.base = base
+        this.container = []
     }
-
-    as(method) {
-        this._method = method;
-        return this;
+    add(elem) {
+        this.container = [...this.container, elem]
     }
+    get() { return [...this.base, ...this.container] }
+    view() { let res = new BaseArrManager(this.get()); this.flush(); return res }
+    flush() { this.container = []; return this }
+    clear() { this.base = []; return this }
+}
 
-    via(header) {
-        this._headers = { ...this._headers, ...header };
-        return this;
-    }
+class RouteManager extends BaseArrManager {
+    build() { return this.get().join('/') + '/'; }
+    view() { let res = new RouteManager(this.get()); this.flush(); return res }
+}
 
-    with(body) {
-        this._body = { ...this._body, ...body };
-        this._queryString = '';
+class QueryManager extends BaseObjManager {
+    view() { let res = new QueryManager(this.get()); this.flush(); return res }
+    build() {
+        const parts = [];
+        const enc = encodeURIComponent;
+        const src = this.get();
 
-        if (this._method && String(this._method).toUpperCase() === 'GET') {
-            const source = { ...this._baseBody, ...this._body };
-            this._queryString = this._buildQueryStringFrom(source);
-        }
-
-        return this;
-    }
-
-    where(params) {
-        this._queryParams = { ...this._queryParams, ...params };
-        this._queryString = this._buildQueryStringFrom(this._queryParams || {});
-        return this;
-    }
-
-    _buildQueryStringFrom(source = {}) {
-        const pairs = [];
-        const encode = (k, v) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`;
-
-        const walk = (key, val) => {
-            if (val === undefined || val === null) return;
-            if (Array.isArray(val)) {
-                val.forEach((item, i) => {
-                    const newKey = `${key}[${i}]`;
-                    if (typeof item === 'object' && item !== null) {
-                        walk(newKey, item);
-                    } else {
-                        pairs.push(encode(newKey, item));
-                    }
-                });
-            } else if (typeof val === 'object') {
-                Object.keys(val).forEach(sub => {
-                    walk(`${key}[${encodeURIComponent(sub)}]`, val[sub]);
-                });
-            } else {
-                pairs.push(encode(key, val));
+        Object.entries(src).forEach(([key, value]) => {
+            let str = value
+            if (!(typeof value === 'string')) {
+                str = typeof value === 'object' ? JSON.stringify(value) : String(value);
             }
-        };
-
-        Object.keys(source).forEach(k => walk(k, source[k]));
-        return pairs.join('&');
+            parts.push(`${enc(key)}=${enc(str)}`);
+        });
+        return parts.length ? `?${parts.join('&')}` : '';
     }
+}
 
-
-    mergeBodies() {
-        this._mergedBody = { ...this._baseBody, ...this._body };
-        return this;
+export default class Query {
+    constructor(route, query, header, body) {
+        this.route = route;
+        this.query = query;
+        this.header = header;
+        this.body = body;
     }
-
-    clearBody() {
-        this._body = {};
-        return this;
-    }
-
-    clearHeaders() {
-        this._headers = {};
-        return this;
-    }
-
-    clearRoute() {
-        this._route = [];
-        return this;
-    }
-
-    clearMergedBody() {
-        this._mergedBody = null;
-        return this;
-    }
-
-    clear() {
-        this._route = [];
-        this._headers = {};
-        this._body = {};
-        this._mergedBody = null;
-        this._queryParams = null;
-        this._queryString = '';
-        return this;
+    
+    static new(baseRoute=[], baseQuery={}, baseHeader={}, baseBody={}) {
+        if (!Array.isArray(baseRoute)) {baseRoute = [baseRoute]}
+        return new Query(
+            new RouteManager(baseRoute),
+            new QueryManager(baseQuery),
+            new BaseObjManager(baseHeader),
+            new BaseObjManager(baseBody),
+        );
     }
 
     view() {
-        const currentHeaders = { ...this._baseHeaders, ...this._headers };
-        const currentBody = { ...this._baseBody, ...this._body };
-
-        const snapshot = new Query(
-            this._buildRoute(),
-            this._method,
-            currentHeaders,
-            currentBody,
-            this._redirect_request_key
+        return new Query(
+            this.route.view(),
+            this.query.view(),
+            this.header.view(),
+            this.body.view(),
         );
-
-        this.clear()
-        return snapshot;
-    }
-    clear() {
-        this._route = [],
-        this._headers = {},
-        this._body = {},
-        this._mergedBody = null,
-        this._queryParams = null,
-        this._queryString = '';
     }
 
-    copy() {
-        const q = new Query(
-            this._baseRoute,
-            this._method,
-            { ...this._baseHeaders },
-            { ...this._baseBody },
-            this._redirect_request_key
-        );
-        q._route = [...this._route];
-        q._headers = { ...this._headers };
-        q._body = { ...this._body };
-        q._mergedBody = this._mergedBody === null ? null : { ...this._mergedBody };
-        q._queryParams = this._queryParams === null ? null : { ...this._queryParams };
-        q._queryString = this._queryString;
-        return q;
+    flush() {
+        this.route.flush(),
+        this.query.flush(),
+        this.header.flush(),
+        this.body.flush()
+        return this
     }
 
-    async get() {
-        return await this.fetch('GET')
-    }
-    async post() {
-        return await this.fetch('POST')
-    }
-    async put() {
-        return await this.fetch('PUT')
-    }
-    async delete() {
-        return await this.fetch('DELETE')
-    }
-    async patch() {
-        return await this.fetch('PATCH')
-    }
+    at(elem) { this.route.add(elem); return this; }
+    via(elem) { this.header.add(elem); return this; }
+    with(elem) { this.body.add(elem); return this; }
+    where(elem) { this.query.add(elem); return this; }
+
+    async get() { return await this.fetch('GET') }
+    async post() { return await this.fetch('POST') }
+    async patch() { return await this.fetch('PATCH') }
+    async delete() { return await this.fetch('DELETE') }
+    async put() { return await this.fetch('PUT') }
 
     async fetch(method=null) {
-        let url = this._buildRoute();
-        if (!url.includes('?')) {
-            url += '/'
-        }
-        const headers = this._buildHeaders();
-        const body = this._mergedBody !== null 
-            ? this._mergedBody 
-            : this._buildBody();
+        const route = this.route.build();
+        const query = this.query.build();
+        const url = route + query;
+        const headers = this.header.get();
+        const body = this.body.get();
         
         const options = {
-            method: method ?? this._method,
+            method: method,
             headers: {
                 'Content-Type': 'application/json',
                 ...headers,
             }
         };
 
-        if (Object.keys(body).length > 0) {
+        if (method !== 'GET') {
             options.body = JSON.stringify(body);
         }
 
-        this.clear()
         const response = await fetch(url, options);
-        
+        this.flush()
+
         let data;
         try {
             const text = await response.text();
@@ -220,39 +133,6 @@ export default class Query {
             data = null;
         }
 
-        if (this._redirect_request_key && this._redirect_request_key in data) {
-            window.location.href = data[this._redirect_request_key];
-        }
         return data;
-    }
-
-
-    _buildRoute() {
-        let result = this._baseRoute;
-        for (const param of this._route) {
-            result += '/' + encodeURIComponent(param);
-        }
-        if (this._queryString && this._queryString.length > 0) {
-            result += (result.includes('?') ? '&' : '/?') + this._queryString;
-        }
-        return result;
-    }
-
-    _buildBody() {
-        return { ...this._baseBody, ...this._body };
-    }
-
-    _buildHeaders() {
-        return { ...this._baseHeaders, ...this._headers };
-    }
-
-    getState() {
-        return {
-            route: this._buildRoute(),
-            headers: this._buildHeaders(),
-            body: this._buildBody(),
-            method: this._method,
-            mergedBody: this._mergedBody
-        };
     }
 }

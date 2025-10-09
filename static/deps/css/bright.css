@@ -24,7 +24,8 @@ body {
   width: 50%;}
 
 .make-mark-selected-group {
-    background-color: #3334 !important;
+    background-color: #3332 !important;
+    border-left: #000 6px solid !important;
 }
 
 #center-content{
@@ -32,6 +33,20 @@ body {
     height: 100%;
 }
 .content {
+    color: #444;
+    padding: 12px;
+    font-size: 20px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 0 20px #0002;
+    transition: background-color 0.3s cubic-bezier(0, 0, 0.01, 1),
+                color 0.3s ease,
+                box-shadow 0.1s ease,
+                padding-right 0.5s cubic-bezier(0, 0, 0.01, 1);}
+                
+.content-strange {
+    flex: auto;
+    height: 0;
     color: #444;
     padding: 12px;
     font-size: 20px;
@@ -207,7 +222,7 @@ form.flex {
     transition: ease background-color 0.3s;
 }
 .recolor-on-hover:hover {
-    background-color: #fff4;
+    background-color: #ddf5;
 }
 .margin-on-hover {
     transition: margin-left 0.2s ease }

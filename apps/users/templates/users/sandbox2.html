@@ -69,7 +69,7 @@
             make.with.text('Это кнопка внутри заголовка'),
             make.on.click((e) => {
               e.stopPropagation()
-              toCloseNotice = make.UniqueNotice('alert', 500, Infinity, 500,
+              toCloseNotice = make.Notice([500, Infinity, 500, 'alert'],
                 make.Div(
                   make.with.css('content'),
                   make.Paragraph("Кнопка нажата!"),
@@ -80,7 +80,7 @@
                     make.on.click(() => {
                       make.other.closeCurrentNotice()
 
-                      toCloseContainer = make.UniqueNotice('list', 500, 150000, 500,
+                      toCloseContainer = make.Notice([500, 150000, 500, 'list'],
                         make.Div(
                           make.style.margin(20),
                           make.it.contented,

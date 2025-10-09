@@ -34,38 +34,23 @@ class Field(models.Model):
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, default=None)
 
 class Form(models.Model):
-    def __str__(self): return self.form_name
-    form_name = models.CharField(max_length=100)
+    def __str__(self): return self.label
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True)
-    page_label = models.CharField(max_length=100)
-    form_label = models.CharField(max_length=100)
-    confirm_button_text = models.CharField(max_length=100)
-    sub_button_link_text = models.CharField(max_length=100)
-    sub_button_link_route = models.CharField(max_length=100)
+    label = models.CharField(max_length=100, blank=True, default='')
+    confirm_button_text = models.CharField(max_length=100, blank=True, default='')
     available = models.BooleanField(default=True)
     visible = models.BooleanField(default=False)
 
 class FormField(models.Model):
-    def __str__(self): return self.form + ' | ' + self.field + ' (' + str(self.order) + ')'
+    def __str__(self): return f"{self.form} | {self.field} ({self.order})"
     form = models.ForeignKey('Form', on_delete=models.CASCADE, related_name='form_fields')
     field = models.ForeignKey('Field', on_delete=models.CASCADE, related_name='field_forms')
-    order = models.PositiveIntegerField(validators=[MinValueValidator(1)])
+    order = models.PositiveIntegerField(validators=[MinValueValidator(1)], null=True, blank=True)
 
-class ServiceGroup(models.Model):
-    def __str__(self): return str(self.form) + ' | ' + str(self.name)
-    form = models.ForeignKey(Form, on_delete=models.SET_NULL, null=True)
-    name = models.CharField(max_length=50)
-    available = models.BooleanField(default=False)
-
-class Service(models.Model):
-    def __str__(self): return self.name
-    group = models.ForeignKey(ServiceGroup, on_delete=models.SET_NULL, null=True)
-    name = models.CharField(max_length=50)
-    description = models.CharField(max_length=200)
-    available = models.BooleanField(default=False)
-
-class ServiceValue(models.Model):
-    def __str__(self): return self.label
-    service = models.ForeignKey(Service, on_delete=models.SET_NULL, null=True)
-    label = models.CharField(max_length=50)
-    value = models.FloatField()
+    def save(self, *args, **kwargs):
+        if self.pk is None and (self.order is None):
+            super().save(*args, **kwargs)
+            FormField.objects.filter(pk=self.pk).update(order=self.pk)
+            self.refresh_from_db(fields=['order'])
+            return
+        super().save(*args, **kwargs)

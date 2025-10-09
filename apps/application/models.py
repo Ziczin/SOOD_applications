@@ -1,6 +1,6 @@
 from django.db import models
 from apps.users.models import CustomUser
-from apps.forms.models import Form, Field, Service
+from apps.forms.models import Form, Field
 
 class ApplicationStatus(models.Choices):
     NOT_READED = "Не просмотрена"
@@ -28,8 +28,3 @@ class ApplicationField(models.Model):
     application = models.ForeignKey(Application, on_delete=models.SET_NULL, null=True)
     field = models.ForeignKey(Field, on_delete=models.SET_NULL, null=True)
     value = models.CharField(max_length=100)
-
-class ApplicationService(models.Model):
-    def __str__(self): return str(self.application) + ' | ' + str(self.service)
-    application = models.ForeignKey(Application, on_delete=models.SET_NULL, null=True)
-    service = models.ForeignKey(Service, on_delete=models.SET_NULL, null=True)

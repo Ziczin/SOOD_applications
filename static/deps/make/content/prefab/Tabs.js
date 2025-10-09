@@ -75,7 +75,6 @@ export default function createTabs(Component, createComponent, makeWith, makeOn,
         }
 
         tab(placeholder) {
-            console.log(placeholder)
             let isFirst = this.tabs.length === 0
             const tab = new Tab(this, isFirst);
             this.tabs.push(tab);
@@ -104,8 +103,6 @@ export default function createTabs(Component, createComponent, makeWith, makeOn,
                 bubbles: false
             }));
             this.onTabChange.emit(tab)
-
-            console.log(this.currentTab.onOpen)
             this.currentTab.onOpen.emit(tab)
         }
     }

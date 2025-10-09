@@ -1,4 +1,3 @@
-// Функция для получения CSRF токена из куки
 export default function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {

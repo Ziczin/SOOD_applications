@@ -52,8 +52,7 @@
         make.style.gap(8)
       )
       .tab('Тестовая вкладка 1')
-      .onOpen.sub(() => console.log(13))
-      .onOpen.sub(() => {make.Notice(500, 500, 500, make.Div(make.h1('TEST')))})
+      .onOpen.sub(() => {make.Notice([500, 2500, 500, 'tetst', {weak: true}], make.Div(make.h1('TEST')))})
         .header(
           make.it.contented,
           make.Paragraph('Вкладка 1'),
@@ -62,7 +61,7 @@
             make.with.text('bnt'),
             make.on.click((e) => {
               e.stopPropagation()
-              make.Notice(500, 1000, 500,
+              make.Notice([500, 1000, 500],
                 make.Div(
                   make.style.rounded(12),
                   make.style.padding(12),
@@ -87,7 +86,7 @@
             make.with.text('bnt'),
             make.on.click((e) => {
               e.stopPropagation()
-              make.Notice(500, 1000, 500,
+              make.Notice([500, 1000, 500],
                 make.Div(
                   make.style.rounded(12),
                   make.style.padding(12),

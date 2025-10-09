@@ -155,12 +155,14 @@
                   make.it.flexColumn,
                   make.h1(fType.label),
                   make.Separator(6),
+                  make.style.height("100%"),
                   fieldTemplateContainer = make.Scrollbox(
                     make.it.flexColumn,
                     make.style.gap(6)
                   ),
                   make.Button(
                     make.with.text("Добавить новый шаблон"),
+                    make.with.style({flex: 0}),
                     make.it.action,
                     make.it.act.positive,
                     make.on.click(() =>

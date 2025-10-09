@@ -22,7 +22,6 @@
 
 <script type="module">
   await import("{% static 'deps/make/make.js' %}");
-
   const csrfObj = await make.Query('/api/csrf-token').get()
   const data = JSON.parse(document.getElementById("form-data").textContent);
   const errors = JSON.parse(document.getElementById("errors-data").textContent);
@@ -32,6 +31,11 @@
     make.it.centered,
     make.style.gap(10),
     make.h1(data.title),
+    make.h1('TESTS',
+      make.on.click(() => {
+        window.location.href = '/users/testbox/'
+      })
+    ),
     make.h1('SB-1',
       make.on.click(() => {
         window.location.href = '/users/sandbox/'
@@ -149,7 +153,6 @@
     )
   );
 
-  // Строим компоненты и добавляем в DOM
   const container = document.getElementById("form-template");
   container.appendChild(title.build());
   container.appendChild(fields.build());

@@ -7,8 +7,8 @@ django.setup()
 from django.contrib.auth import get_user_model
 
 from apps.users.models import Department, UserRole
-from apps.forms.models import Enum, EnumTag, FieldType
-from apps.application.models import Field, Form, Application, ApplicationField
+from apps.forms.models import Enum, EnumTag, FieldType, Form, FormField, Field
+from apps.application.models import Application, ApplicationField
 
 from itertools import product
 
@@ -82,23 +82,15 @@ def on_test_setup():
 
     print("-- Создание форм")
     form1, c = Form.objects.get_or_create(
-        form_name='TestForm1',
         department=rem_dep,
-        page_label='Test',
-        form_label='Testovaya Forma',
+        label='Testovaya Forma',
         confirm_button_text='Confirm Button Text',
-        sub_button_link_text='#',
-        sub_button_link_route='#',
         )
     
     form2, c = Form.objects.get_or_create(
-        form_name='Testovaya forma2',
         department=rem_dep,
-        page_label='TestTestTest',
-        form_label='ttt',
+        label='ttt',
         confirm_button_text='Confirm Button Text',
-        sub_button_link_text='#',
-        sub_button_link_route='#',
         )
     
     print("-- Создание примеров полей")
@@ -115,7 +107,8 @@ def on_test_setup():
     ]
 
     for i, f in enumerate(fields):
-        Field.objects.get_or_create(**f, department=deps[i%2])
+        field, c = Field.objects.get_or_create(**f, department=deps[i%2])
+        FormField.objects.get_or_create(form=[form1, form1, form2][i % 3], field=field)
 
     print("-- Создание тестовой заявки")
     app, c = Application.objects.get_or_create(

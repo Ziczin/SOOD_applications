@@ -1,26 +1,41 @@
 from rest_framework import serializers
-from apps.forms.models import FormField, Form, Field
+from apps.forms.models import FormField, Form, Field, FieldType, EnumTag
+
+
+class FieldTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FieldType
+        fields = ("label",)
+
+class EnumTagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EnumTag
+        fields = ("name", )
+
+class FieldSerializer(serializers.ModelSerializer):
+    type = serializers.CharField(source="type.label", read_only=True)
+    tag = serializers.CharField(source="tag.name", read_only=True)
+    class Meta:
+        model = Field
+        fields = ("id", "type", "label", "tag")
 
 class FormFieldSerializer(serializers.ModelSerializer):
     form = serializers.PrimaryKeyRelatedField(queryset=Form.objects.all())
-    field = serializers.PrimaryKeyRelatedField(queryset=Field.objects.all())
+    field = FieldSerializer(read_only=True)
+    field_id = serializers.PrimaryKeyRelatedField(source="field", queryset=Field.objects.all(), write_only=True)
 
     class Meta:
         model = FormField
-        fields = ("id", "form", "field", "order")
+        fields = ("id", "form", "field", "field_id", "order")
 
 class FormSerializer(serializers.ModelSerializer):
     class Meta:
         model = Form
         fields = [
             "id",
-            "form_name",
             "department",
-            "page_label",
-            "form_label",
+            "label",
             "confirm_button_text",
-            "sub_button_link_text",
-            "sub_button_link_route",
             "available",
             "visible",
         ]

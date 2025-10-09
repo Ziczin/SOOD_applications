@@ -16,48 +16,32 @@
 </head>
 
 <body>
-  <div class='container p-1p' id="form-template">
+  <div class="page-container">
+    <div class="side-container gap-10px" id="left-container">
+    </div>
   </div>
 </body>
 </html>
 
 <script type="module">
   await import("{% static 'deps/make/make.js' %}");
-  let inp1
-  let inp2
-  let inp3
-  let TO = make.on.inputTimeOut(
-    3000, () => {
-      inp1.swap(inp2)
-      make.Notice(500, 2500, 500,
-        make.Div(
-          make.it.content,
-          make.Paragraph('Отработано!!!')
-        ),
-        inp3 = make.Button(
-          make.with.text("TEST"),
-          make.it.redir,
-          make.on.click(() => {
-            inp1.swap(inp3)
-          })
+  document.getElementById('left-container').appendChild(
+    make.Div(
+      make.Paragraph("TEST")
+    ).build()
+  )
+  document.getElementById('left-container').appendChild(
+    make.Div(
+      make.style.padding(12),
+      make.it.flexColumn,
+      make.style.height(0),
+      make.color.lblue,
+      make.Scrollbox(
+        make.color.lgreen,
+        ...[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,11,1,1,1,1,1,1,1,1,1,1,1].map(() =>
+          make.Paragraph("ttt")
         )
       )
-    }
-  )
-  document.getElementById('form-template').appendChild(
-    make.Div(
-      make.it.content,
-      make.it.flexRow,
-      make.style.width('80%'),
-      make.style.gap(12),
-      inp1 = make.Input(
-        make.with.attr({placeholder: 'Сюда писать буквы'}),
-        TO
-      ),
-      inp2 = make.Input(
-        make.with.attr({placeholder: 'Сюда писать буквы'}),
-        TO
-      ),
     ).build()
   )
 </script>

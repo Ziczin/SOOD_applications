@@ -92,7 +92,7 @@ function createNoiseCycler(animDuration = 1000, displayDuration = 1000, list = [
         idx = randIdx()
       }
       prev.push(idx)
-      prev = prev.slice(-4)
+      prev = prev.slice(-6)
       const target = String(list[idx]);
       const len = target.length;
       const noiseTicks = Math.max(0, totalTicks - len);

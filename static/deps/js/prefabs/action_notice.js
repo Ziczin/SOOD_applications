@@ -11,7 +11,7 @@ function actionNotice({
       question = question.map((item) => make.Paragraph(item))
     }
   }
-  make.UniqueNotice("actionNotice", 500, Infinity, 500,
+  make.Notice([500, Infinity, 500, "actionNotice"],
     make.Div(
       make.it.flexColumn,
       make.style.gap(6),

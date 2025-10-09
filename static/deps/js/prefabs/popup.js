@@ -1,11 +1,8 @@
 export default (make) =>
-function popup (time = 1500, text = []) {
-  if (typeof time === 'string' || Array.isArray(time)) {
-    text = time;
-    time = 1500;
-  }
-  if (typeof text === 'string') text = [text];
-
+function popup (...text) {
+  let time = 1500
+  if (typeof text[0] === "number") { [time, ...text] = text }
+  if (text[0] instanceof Array) { text = text[0] }
   return make.Annotation(
     time,
     make.Div(

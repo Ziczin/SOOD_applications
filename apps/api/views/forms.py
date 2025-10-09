@@ -20,12 +20,12 @@ class FormFieldViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['patch'])
     def swap(self, request):
-        from_id = request.data.get('from_id')
-        to_id = request.data.get('to_id')
+        a = request.data.get('a')
+        b = request.data.get('b')
 
         qs = self.get_queryset()
-        a = qs.get(id=from_id)
-        b = qs.get(id=to_id)
+        a = qs.get(id=a)
+        b = qs.get(id=b)
 
         with transaction.atomic():
             tmp = a.order

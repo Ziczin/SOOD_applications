@@ -47,7 +47,7 @@ export default (make, popup, picButton) => (additionalContent) => {
       make.Paragraph("• Пишите в отдел программирования если остался вопрос, на который в данном руководстве нет ответа"),
       make.Separator(0),
       make.Paragraph(`Можете перейти на вкладку "Подсказки"`),
-      sideParagraphWithMargin("Если вас не устраивает размер текста, то вы можете изменить его сами " +
+      sideParagraphWithMargin("Если вас не устраивает размер текста, то вы можете изменить его сами, " +
         "используя страндартные инструменты браузера: CTRL + \"+\" для увеличения размера элементов, " +
         "CTRL + \"-\" для уменьшения размера элементов", make.it.subtitleText),
     )
@@ -57,11 +57,11 @@ export default (make, popup, picButton) => (additionalContent) => {
       make.it.flexColumn, make.style.gap(6),
       make.Paragraph("• Большая часть элементов при наведении выведет вам подсказку через 1.5 секунды"),
       make.Paragraph("Наведитесь на эту строку и подождите несколько секунд", make.with.style({textDecoration: "underline"}),
-      popup([
+      popup(
         "Так будет выглядить подсказка",
         "Зачастую, в подсказках будут проянены некоторые моменты",
         "которые могут показаться неочевидными на первый взгляд"
-      ]),
+      ),
       make.on.click((e) => {
         e.target.textContent = "НЕ НУЖНО НАЖИМАТЬ, ПРОСТО НАВЕДИТЕСЬ";
       })),
@@ -75,10 +75,9 @@ export default (make, popup, picButton) => (additionalContent) => {
           popup(800, "Это подсказка на поле ввода"), make.style.maxWidth("20%"),
         ),
         make.Input(make.with.attr({placeholder: "Это поле ввода отключено", disabled: ""}),
-          popup(800, [
-            "Это подсказка на поле ввода",
+          popup(800, "Это подсказка на поле ввода",
             "подсказки могут находиться на элементах, даже если те отключены"
-          ])
+          )
         ),
         make.Button(make.it.redir, make.with.text("это кнопка"),
           popup(800, "Это подсказка на кнопке"), make.with.style({whiteSpace: "nowrap"}),
@@ -209,7 +208,7 @@ export default (make, popup, picButton) => (additionalContent) => {
   }
 
   function manualNotice() {
-    make.UniqueNotice("manual", 1000, Infinity, 1000,
+    make.Notice([1000, Infinity, 1000, "manual"],
       make.Div(
         make.style.width("100%"),
         make.style.height("100%"),
@@ -255,7 +254,7 @@ export default (make, popup, picButton) => (additionalContent) => {
       picButton("verify", "Подтвердить", make.it.act.positive),
       picButton("hide", "Скрыть", make.it.act.alternative,
       () => acc.element.classList.toggle("make-mark-deactivated")),
-      picButton("share", "Поделиться", make.it.act.neurtal),
+      picButton("share", "Поделиться", make.it.act.neutral),
       picButton("trash", "Удалить", make.it.act.negative),
       picButton("close", "Закрыть", make.it.act.negative),
     )

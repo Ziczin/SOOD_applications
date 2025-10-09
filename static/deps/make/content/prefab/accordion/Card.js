@@ -4,7 +4,7 @@ export default function createCard(Component, createComponent, makeWith, makeOn)
       super('div');
       this.cardHeader = null;
       this.cardContent = null;
-      this.state = 'closed'; // 'closed', 'opening', 'open', 'closing'
+      this.state = 'closed';
       this.addModifiers(...modifiers);
       this.accordion = null;
 
@@ -45,7 +45,6 @@ export default function createCard(Component, createComponent, makeWith, makeOn)
       const el = this.cardContent.element;
       el.classList.add('make-card-content');
       
-      // Изначально скрываем контент через установку высоты
       if (this.state === 'closed') {
         el.style.height = '0px';
         el.style.pointerEvents = 'none';

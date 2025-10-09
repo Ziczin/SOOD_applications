@@ -15,6 +15,7 @@ urls = {
     'sandbox/': lambda request: render(request, 'users/sandbox.html'),
     'sandbox2/': lambda request: render(request, 'users/sandbox2.html'),
     'sandbox3/': lambda request: render(request, 'users/sandbox3.html'),
+    'testbox/': lambda request: render(request, 'users/testbox.html'),
     '403/': permission_denied_view,
 }
 

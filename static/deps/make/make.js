@@ -32,9 +32,10 @@ const Accordion = content.prefab.accordion.Accordion(
 
 const Annotation = content.prefab.Annotation(core, extension.Component)
 
-const noticeCollection = content.prefab.Notice(core, extension.Component)
+const noticeCollection = content.prefab.Notice(core, extension.Component, extension.Event, extension.Preferences)
 other.closeCurrentNotice = noticeCollection.noticeHandler.closeActive.bind(noticeCollection.noticeHandler);
-window.make = (function() {
+other.noticeHandler = noticeCollection.noticeHandler;
+window.make = (() => {
     console.log(meta.greetings)
     console.log(meta.version)
     console.log(meta.subgreetings)
@@ -67,7 +68,7 @@ window.make = (function() {
         UniqueNotice: noticeCollection.createUniqueNotice,
         Preferences: (...args) => new extension.Preferences(...args),
         Notice: noticeCollection.createNotice,
-        Query: (...params) => new extension.Query(...params),
+        Query: (...params) => extension.Query.new(...params),
         Collector: (...params) => new Collector(...params),
         Annotation: (t, ...params) => new Annotation(t, ...params),
 

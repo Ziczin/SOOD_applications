@@ -11,7 +11,6 @@ export default class Event {
 
   sub(fn) {
     this.subscribers.push(fn)
-    console.log(this, fn)
     return this.ret
   }
 
