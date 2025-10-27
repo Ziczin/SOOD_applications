@@ -1,4 +1,5 @@
-export default function dashboardAdmin(make) {
+export default (make) =>
+function() {
   const btns = [
     {
       text: 'Управление формами',

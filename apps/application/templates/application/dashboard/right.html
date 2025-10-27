@@ -3,17 +3,17 @@
 <div id="right-content"></div>
 
 <script type="module">
-  await import("{% static 'deps/make/make.js' %}");
-	
-  const buildProxyTab = (await import("{% static 'deps/js/dashboard/proxy.js' %}")).default;
-  const me = await make.Query('/api/me').get();
+	await import("{% static 'deps/make/make.js' %}");
+		
+	const buildProxyTab = (await import("{% static 'deps/js/dashboard/proxy.js' %}")).default(make);
+	const me = await make.Query('/api/me').get();
 
 	if (me.permissions.includes('proxy'))
 		document.getElementById("right-content").appendChild(
 			make.Div(
 				make.it.content,
 				make.style.padding(12),
-				...(await buildProxyTab(make, me))
+				...(await buildProxyTab(me))
 			).build()
 		)
 </script>

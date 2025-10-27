@@ -39,7 +39,22 @@
       make.Scrollbox(
         make.color.lgreen,
         ...[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,11,1,1,1,1,1,1,1,1,1,1,1].map(() =>
-          make.Paragraph("ttt")
+          make.Card(
+                make.it.littleDarker,
+                make.style.padding(6),
+                make.style.rounded(12),
+            ).header(make.Paragraph('ttt')
+            ).content(
+                make.Separator(6),
+                make.style.height('100%'),
+                make.Div(
+                    make.it.littleDarker, 
+                    make.style.padding(6),
+                    make.style.rounded(12),
+                    make.it.flexColumn,
+                    make.style.gap(6),
+                )
+            )
         )
       )
     ).build()

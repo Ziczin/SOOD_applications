@@ -6,17 +6,24 @@
   await import("{% static 'deps/make/make.js' %}");
 
   const csrfObj = await make.Query('/api/csrf-token').get()
+  const imp = (await import("{% static 'deps/js/tools/import.js' %}")).default(make)
+  const popup = await imp("{% static 'deps/js/prefabs/popup.js' %}")
+  const picButton = await imp("{% static 'deps/js/prefabs/pic_button.js' %}", popup, "{{ MEDIA_URL }}")
 
-  const buildProxyTab = (await import("{% static 'deps/js/dashboard/proxy.js' %}")).default;
-  const buildAdminTab = (await import("{% static 'deps/js/dashboard/admin.js' %}")).default;
-  const buildModerTab = (await import("{% static 'deps/js/dashboard/moder.js' %}")).default;
-  const buildUserTab = (await import("{% static 'deps/js/dashboard/user.js' %}")).default;
+  const buildProxyTab = await imp("{% static 'deps/js/dashboard/proxy.js' %}")
+  const buildAdminTab = await imp("{% static 'deps/js/dashboard/admin.js' %}")
+  const buildModerTab = await imp("{% static 'deps/js/dashboard/moder.js' %}")
+  const buildUserTab = await imp("{% static 'deps/js/dashboard/user.js' %}")
   
-  const qBase = make.Query('/api').via({"X-CSRFToken": csrfObj.csrfToken}).view();
-  const roles = qBase.at('roles').view().get()
+  const qBase = make.Query('/api').via({"X-CSRFToken": csrfObj.csrfToken}).view()
+  const departments = await qBase.at('departments').view().get()
+  const deps = buildDepartmentNameMap(departments)
+  const forms = await qBase.at('forms/visible').view().get()
+
+  const roles = await qBase.at('roles').view().get()
   const me = await qBase.at('me').view().get()
 
-  const tabs = make.Tabs()
+  const tabs = make.Tabs(make.style.height('100%'))
   .menu(
     make.it.flexRow,
     make.it.gap10px,
@@ -25,39 +32,48 @@
   );
   const permissions = me.permissions.filter(s => s !== 'proxy');
 
+  const buildUserTabWrapper = () => buildUserTab(deps, forms, picButton, popup)
   document.getElementById('center-content').appendChild(
     make.Div(
-      ...make.if(permissions.length === 0,
-        make.h1("Перед началом работы верифицируйте аккаунт у администратора отдела или в отделе программирования.")
+      make.style.height("100%"),
+      ...make.callif(permissions.length === 0,
+        () => make.h1("Перед началом работы верифицируйте аккаунт у администратора отдела или в отделе программирования.")
       ),
-      ...make.if(permissions.length === 1,
-        ...buildUserTab(make)
-      ),
-      ...make.if(permissions.length > 1,
-        (() => {
+      ...make.callif(permissions.length === 1, buildUserTabWrapper),
+      ...make.callif(permissions.length > 1,
+        () => {
           if (me.permissions.includes('user'))
           tabs.tab()
           .header(...getHeaderComponent("Создать заявку"))
           .content(
-            ...buildUserTab(make)
+            ...buildUserTabWrapper()
           );
           if (me.permissions.includes('moderator'))
           tabs.tab()
           .header(...getHeaderComponent("Входящие заявки"))
           .content(
-            ...buildModerTab(make)
+            ...buildModerTab()
           );
           if (me.permissions.includes('admin'))
           tabs.tab()
           .header(...getHeaderComponent("Управление отделом"))
           .content(
-            ...buildAdminTab(make)
+            ...buildAdminTab()
           );
           return tabs
-        })()
+        }
       )
     ).build()
   );
+
+  function buildDepartmentNameMap(arr) {
+    const map = {};
+    for (let i = 0; i < arr.length; i++) {
+        const item = arr[i];
+        map[item.id] = item.name;
+    }
+    return map;
+  }
 
   function getHeaderComponent(text) {
     return [

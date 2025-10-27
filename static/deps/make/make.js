@@ -37,7 +37,7 @@ other.closeCurrentNotice = noticeCollection.noticeHandler.closeActive.bind(notic
 other.noticeHandler = noticeCollection.noticeHandler;
 window.make = (() => {
     console.log(meta.greetings)
-    console.log(meta.version)
+    console.log("Version: " + meta.version)
     console.log(meta.subgreetings)
 
     return {

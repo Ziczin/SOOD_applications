@@ -10,6 +10,6 @@ export default (withStyle) => {
     maxHeight: (h) => withStyle({ maxHeight: format(h) }),
     minWidth: (w) => withStyle({ minWidth: format(w) }),
     minHeight: (h) => withStyle({ minHeight: format(h) }),
-    gap: (h) => withStyle({ gap: format(h) }),
+    gap: (g) => withStyle({ gap: format(g) }),
   };
 };

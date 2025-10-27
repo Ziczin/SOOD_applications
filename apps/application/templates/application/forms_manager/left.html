@@ -35,8 +35,8 @@
     fields[ft.id] = res
   }
 
-  const forms = await qForm.get()
   const me = await qBase.at('me').get()
+  const forms = await qForm.where({department: me.department.id}).get()
   
   let selectedFormId
   function formElem(acc, form) {
@@ -49,7 +49,7 @@
       ),
       make.on.inputTimeOut(3000, () => {
         out.element.classList.remove("make-mark-changed")
-        qForm.at(form.id).with({name: inp.element.value || ''}).patch()
+        qForm.at(form.id).with({label: inp.element.value || ''}).patch()
         paragraphNotice("Сохранено!", make.color.lgreen)
       }),
       popup("Нажмите на поле ввода, чтобы редактировать имя формы"),
@@ -108,6 +108,7 @@
       make.it.action,
       make.it.act.neutral,
       make.with.text("Добавить форму"),
+      make.style.maxHeight("fit-content"),
       make.on.click(
         async () => {
           let newForm = await qForm.with({

@@ -41,7 +41,13 @@ class FormViewSet(viewsets.ModelViewSet):
     serializer_class = FormSerializer
 
     def get_queryset(self):
-        return Form.objects.filter(available=True)
+        qs = Form.objects.filter(available=True)
+        dept_param = self.request.query_params.get('department')
+        if not dept_param:
+            return qs
+        if dept_param.isdigit():
+            return qs.filter(department_id=int(dept_param))
+        return qs.filter(department_id=None)
 
     def perform_create(self, serializer):
         user = self.request.user
@@ -56,4 +62,28 @@ class FormViewSet(viewsets.ModelViewSet):
         form = get_object_or_404(Form.objects.all(), pk=pk)
         serializer = self.get_serializer(form)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['get'], url_path='visible')
+    def visible(self, request):
+        forms = Form.objects.filter(available=True, visible=True)
+        serializer = self.get_serializer(forms, many=True)
+        return Response(serializer.data)
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

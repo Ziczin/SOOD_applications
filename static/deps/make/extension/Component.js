@@ -12,6 +12,7 @@ class Component {
         this.destroyed = false;
         this.doEvents = false
     }
+
     allowEvents() {
         if (!this.doEvents) {
             this.doEvents = true
@@ -42,7 +43,6 @@ class Component {
     }
 
     addChild(child) {
-        //console.log(`${this.view()} <- ${child.view()}`)
         child.parent = this;
         this.children.push(child);
         this.autoRebuild && this.build(true);
@@ -89,11 +89,11 @@ class Component {
         this.onDestroy?.emit(this)
     }
 
-    removeChild(child, destroy=false) {
+    removeChild(child, destroy=true) {
         const index = this.children.indexOf(child);
         if (index === -1) return false;
         this.children.splice(index, 1);
-        child.destroy()
+        if (destroy) child.destroy()
         if (this.autoRebuild && this.element) {
             this.build(true);
         }
@@ -104,17 +104,16 @@ class Component {
     swap(other) {
         const a = this;
         const b = other;
-
         const aParent = a.parent;
         const bParent = b.parent;
         const aIndex = aParent.children.indexOf(a);
         const bIndex = bParent.children.indexOf(b);
+
         aParent.children[aIndex] = b;
         bParent.children[bIndex] = a;
-
         a.parent = bParent;
         b.parent = aParent;
-
+        
         if (aParent.element && aParent.autoRebuild) aParent.build(true);
         if (bParent.element && bParent.autoRebuild) bParent.build(true);
 

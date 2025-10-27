@@ -1,4 +1,5 @@
-export default async function dashboardProxy(make, me) {
+export default (make) =>
+async function dashboardProxy(me) {
   const csrfObj = await make.Query('/api/csrf-token').get()
   const qBase = make.Query('/api').via({"X-CSRFToken": csrfObj.csrfToken}).view();
   const roles = await qBase.at('roles').get()

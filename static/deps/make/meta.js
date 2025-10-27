@@ -1,11 +1,12 @@
 let meta = {
-    version: `v0.2.1-dev`,
+    version: `0.3.0`,
     greetings: `Powered by make.js`,
     subgreetings: 'Call window.make.meta.help() for more info',
     help: () => console.log(`
 window.make.meta.<...>
-- help - this message
-- version - full version of make.js
+- help() - this message
+- last() - last changelog
+- version - version of make.js
 - versions - list of versions
 - changes('version') - changelog of specified version
 - changelog() - full changelog
@@ -13,6 +14,25 @@ window.make.meta.<...>
 }
 
 let changelog = {
+    '0.3.1': `
+v0.3.1-alpha
+- callif - Условное выполнение функции, фиксит баг при котором обычный if билдил компоненты, которые билдить не нужно
+- callSwitch
+`,
+    '0.3.0': `
+v0.3.0-alpha
+- Renamed Event factory to Handler
+- Added new Event component — a container for subscribed functions that can call them all via emit(), which also accepts parameters. Subscription via sub(fn), unsubscription via unsub(fn)
+- Removed Applicable as it was unnecessary; file structure updated
+- Preferences component can now parse a list produced by the constructor into an object. Method parce() accepts a list of keys
+- Added swap() method to Component class to swap components in the make.js component tree
+- Completely rewritten Query component; functionality preserved but codebase cleaned up. Separate entities now store body, headers, query string and route
+- Reworked Notice component; it now supports "weak" notifications (default weak=false) that hide when a new notice enters the queue. All settings moved to a Preferences instance. New syntax requires passing values as a list, e.g. make.Notice([500, 500, 500, "this-is-unique-id", {weak: true}], ...someStuff)
+- Some components now have their own Event instances
+- Added a testing module for components
+- Cleaned up comments
+- Fixed several minor bugs
+`,
     '0.2.2': `
 v0.2.2-dev
 - Rewrote Event factory: you can now pass a factory that returns multiple handlers and their types, enabling more complex interactions
@@ -62,8 +82,9 @@ v0.0.5-dev
 `
 }
 
-meta.changes = (v) => console.log(changelog[v])
-meta.changelog = (v) => console.log(Object.values(changelog).join('\n'))
+meta.changes = (v) => {console.log(changelog[v]); return `...`}
+meta.changelog = (v) => {console.log(Object.values(changelog).join('\n')); return `...`}
 meta.versions = Object.keys(changelog)
+meta.last = changelog[meta.version]
 
 export default meta
