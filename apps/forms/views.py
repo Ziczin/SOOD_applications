@@ -2,7 +2,6 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 
-from .forms import form_create_form_data
 from .form_checker import form_checker
 
 from .models import Field, FieldType, Form

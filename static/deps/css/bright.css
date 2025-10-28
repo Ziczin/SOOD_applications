@@ -128,7 +128,7 @@ select:disabled {
     background-color: #f0f0f0;
     color: #a0a0a0; }
 button {
-    flex: 1;
+    flex: 0;
     font-size: 20px;
     border: 0;
     width: 100%;

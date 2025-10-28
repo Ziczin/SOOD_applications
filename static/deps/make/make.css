@@ -73,7 +73,6 @@ p, form, h1, h2, h3, h4, h5, h6 {
     font-size: 20px;
     background-color: white;
     border-radius: 12px;
-    box-shadow: 0 0 20px #0002;
     transition: background-color 0.3s cubic-bezier(0, 0, 0.01, 1),
                 color 0.3s ease,
                 box-shadow 0.1s ease,
@@ -263,7 +262,7 @@ p, form, h1, h2, h3, h4, h5, h6 {
     flex: 999999 1 auto;
     padding-top: 16px;
     box-sizing: border-box;
-    overflow-y: auto;
+    overflow-y: hidden;
 }
 
 .make-tab-content {
@@ -272,7 +271,7 @@ p, form, h1, h2, h3, h4, h5, h6 {
   opacity: 1;
   transform: translateY(0);
   height: auto;
-  overflow-y: auto;
+  overflow-y: hidden;
   transition: opacity 0.5s ease, transform 0.5s ease, height 0.5s ease;
 }
 
@@ -519,5 +518,5 @@ p, form, h1, h2, h3, h4, h5, h6 {
 .make-margin-on-hover {
     transition: margin-left 0.2s ease }
 .make-margin-on-hover:hover {
-    margin-left: 0.8%;
+    margin-left: 0.6%;
     transition: margin-left 0.2s ease;}

@@ -52,9 +52,11 @@ export default function createNoticeFactory(core, Component, Event, Preferences)
             this.activeNotice = notice;
 
             try {
-                await notice.open();
-                notice.startAutoCloseTimer();
-                await notice.closed;
+                if (!this.activeNotice.pref.get('weak') || this.noticeQueue.length === 0) {
+                    await notice.open();
+                    notice.startAutoCloseTimer();
+                    await notice.closed;
+                }
             } finally {
                 this.activeNotice = null;
                 if (id) {
@@ -104,8 +106,11 @@ export default function createNoticeFactory(core, Component, Event, Preferences)
                 el.style.transform = 'translateX(100%)';
                 el.style.transition = `transform ${this.pref.get('in')}ms ease-in-out`;
                 el.style.zIndex = '1000';
+                el.style.display = 'flexbox';
                 el.style.minWidth = '25%';
                 el.style.maxWidth = '100%';
+                el.style.minHeight = '0';
+                el.style.maxHeight = '98vh';
             }
             return el;
         }
@@ -145,6 +150,7 @@ export default function createNoticeFactory(core, Component, Event, Preferences)
             this.element.style.transform = 'translateX(100%)';
             await core.delay(this.pref.get('out'));
             this._resolveClosed();
+            this.destroy()
         }
     }
 

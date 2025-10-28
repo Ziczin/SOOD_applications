@@ -32,7 +32,7 @@
   );
   const permissions = me.permissions.filter(s => s !== 'proxy');
 
-  const buildUserTabWrapper = () => buildUserTab(deps, forms, picButton, popup)
+  const buildUserTabWrapper = () => buildUserTab(qBase, deps, forms, picButton, popup)
   document.getElementById('center-content').appendChild(
     make.Div(
       make.style.height("100%"),

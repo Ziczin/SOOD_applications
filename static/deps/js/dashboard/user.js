@@ -1,10 +1,6 @@
-function findDepartmentById(arr, id) {
-    return arr.find(item => item.id === id) || null;
-}
-
 export default (make) =>
-function dashboardUser(deps, forms, picButton, popup) {
-    const scrollbox = make.Div(
+function dashboardUser(qBase, deps, forms, picButton, popup) {
+    const scrollbox = make.Scrollbox(
         make.it.flexColumn,
         make.style.gap(6)
     )
@@ -16,7 +12,7 @@ function dashboardUser(deps, forms, picButton, popup) {
           make.style.padding(6),
           make.style.rounded(12),
         ).header(
-          make.Paragraph(`Список заявок в: ${value}`),
+          make.Paragraph(value),
           popup("Нажмите чтобы развернуть список форм данного отдела"),
           make.color.lgray,
           make.style.margin(-8),
@@ -35,45 +31,94 @@ function dashboardUser(deps, forms, picButton, popup) {
         )]
       )
     );
-    forms.forEach(element => {
-      cards[element.department].cardContent.children[1].addChild(
+    forms.forEach(form => {
+      cards[form.department].cardContent.children[1].addChild(
         make.Div(
           make.it.marginOnHover,
           make.Button(
             make.it.redir,
-            make.with.text(element.label || "Безымянная форма"),
+            make.with.text(form.label || "Безымянная форма"),
             make.with.style({color: "#333"}),
             make.it.leftAlign,
-            make.on.click(
-              () => make.Notice([500, Infinity, 500, {weak: true}],
-                make.Div(
-                  make.style.padding(12),
-                  make.color.mgray,
-                  make.it.flexRow,
-                  make.style.gap(6),
-                  make.Paragraph("Представим, что тут действительно форма, но пока что это просто текст"),
-                  picButton(
-                    "close", "Закрыть",
-                    make.it.act.negative,
-                    () => make.other.closeCurrentNotice()
-                  ),
-                )
-              )
-            )
+            make.on.click(async () => formNotice(form.id))
           )
         )
       )
     });
 
+    async function formNotice(formId) {
+      let data = await qBase.at('forms').at(formId).at('data').view().get()
+      let collector = make.Collector()
+      collector.addModifiers(
+        make.style.maxHeight("96vh"),
+        make.it.flexColumn,
+        make.with.attr({flex: "0"}),
+        make.style.gap(6),
+        make.h1(data.form.label),
+        make.Scrollbox(
+          make.with.attr({flex: "999999"}),
+          make.style.gap(6),
+          make.it.flexColumn,
+          ...data.fields.map(field => {
+            const wrapper = make.Div(
+              make.it.marginOnHover,
+              make.color.lgray,
+              make.style.rounded(12),
+              make.style.padding(12),
+              make.it.flexColumn,
+              make.style.gap(6),
+              make.Paragraph(field.label)
+            );
+            if (field.type === "enum") {
+              wrapper.addChild(
+                make.Select(
+                  make.with.attr({ id: field.id }),
+                  make.OptionPlaceholder(`--- выберите элемент--- `),
+                  ...field.enums.map(enu => make.Option(enu.value, enu.id))
+                )
+              );
+            } else {
+              wrapper.addChild(
+                make.Input(make.with.attr({ id: field.id }))
+              );
+            }
+            return wrapper;
+          }),
+        ),
+        make.Button(
+          make.it.action,
+          make.it.act.positive,
+          make.with.attr({flex: "0"}),
+          make.with.text("Отправить"),
+          make.with.attr({type: 'button'}),
+          make.on.click(() => {
+            const data = collector.collect()
+            const res = data.map(({ tag, ...rest }) => rest);
+            const request = {
+              data: res,
+              form: formId
+            }
+            console.log(request)
+          })
+        )
+      )
+      make.Notice([500, Infinity, 500, {weak: true}],
+        make.Div(
+          make.it.content,
+          make.style.maxHeight("fit-content"),
+          collector,
+        )
+      )
+    }
+
     scrollbox.addModifiers(
       ...Object.values(
         Object.values(cards).filter(elem => {
-          console.log(elem)
           return elem.cardContent.children[1].children.length >= 1
-      })
+        })
       )
     )
     return [
-        scrollbox
+      scrollbox
     ]
 }
