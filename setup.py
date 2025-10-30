@@ -8,7 +8,7 @@ from django.contrib.auth import get_user_model
 
 from apps.users.models import Department, UserRole
 from apps.forms.models import Enum, EnumTag, FieldType, Form, FormField, Field
-from apps.application.models import Application, ApplicationField
+from apps.application.models import Application, ApplicationFormField
 
 from itertools import product
 
@@ -85,48 +85,39 @@ def on_test_setup():
         department=rem_dep,
         label='Testovaya Forma',
         confirm_button_text='Confirm Button Text',
+        visible=True,
         )
     
     form2, c = Form.objects.get_or_create(
         department=rem_dep,
         label='ttt',
         confirm_button_text='Confirm Button Text',
+        visible=True,
+        )
+    
+    form3, c = Form.objects.get_or_create(
+        department=prog_dep,
+        label='Заявка на установку ПО',
+        confirm_button_text='Confirm Button Text',
+        visible=True,
         )
     
     print("-- Создание примеров полей")
     fields = [
         {"label": "Количество", "type": types['int']},
         {"label": "Новое количество", "type": types['int']},
-        {"label": "Цена", "type": types['numeric']},
+        {"label": "Компьютер", "type": types['enum'], "tag": obj3},
         {"label": "Стоимость", "type": types['numeric']},
         {"label": "Наименование", "type": types['text']},
         {"label": "Описание", "type": types['bigtext']},
-        {"label": "Компьютер", "type": types['enum'], "tag": obj3},
+        {"label": "Цена", "type": types['numeric']},
         {"label": "Принтер", "type": types['enum'], "tag": obj1},
         {"label": "Технологические пирожки", "type": types['enum'], "tag": obj2},
     ]
 
     for i, f in enumerate(fields):
         field, c = Field.objects.get_or_create(**f, department=deps[i%2])
-        FormField.objects.get_or_create(form=[form1, form1, form2][i % 3], field=field)
-
-    print("-- Создание тестовой заявки")
-    app, c = Application.objects.get_or_create(
-        user=User.objects.get(username='toster'),
-        form=form1,
-    )
-
-    ApplicationField.objects.get_or_create(
-        application=app,
-        field=Field.objects.get(label='Цена'),
-        value='14.5',
-    )
-
-    ApplicationField.objects.get_or_create(
-        application=app,
-        field=Field.objects.get(label='Наименование'),
-        value='Тестовое наименование',
-    )
+        FormField.objects.get_or_create(form=[form1, form2, form3][i % 3], field=field)
 
     print("База данных заполнена начальными данными!")
 

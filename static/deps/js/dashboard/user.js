@@ -1,5 +1,5 @@
 export default (make) =>
-function dashboardUser(qBase, deps, forms, picButton, popup) {
+function dashboardUser(qBase, deps, forms, picButton, paragraphNotice, popup) {
     const scrollbox = make.Scrollbox(
         make.it.flexColumn,
         make.style.gap(6)
@@ -98,13 +98,15 @@ function dashboardUser(qBase, deps, forms, picButton, popup) {
               data: res,
               form: formId
             }
-            console.log(request)
+            qBase.at('applications').view().with(request).post()
+            paragraphNotice("Заявка отправлена!", make.color.lgreen)
           })
         )
       )
       make.Notice([500, Infinity, 500, {weak: true}],
         make.Div(
           make.it.content,
+          make.with.style({border: "2px solid black"}),
           make.style.maxHeight("fit-content"),
           collector,
         )

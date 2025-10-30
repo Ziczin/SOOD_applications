@@ -1,8 +1,6 @@
 from django.db import models
 from apps.users.models import Department
 from django.core.validators import MinValueValidator
-from django.db.models import Max
-from django.db import transaction
 
 class EnumTag(models.Model):
     def __str__(self): return self.name
@@ -43,6 +41,7 @@ class Form(models.Model):
 
 class FormField(models.Model):
     def __str__(self): return f"{self.form} | {self.field} ({self.order})"
+    def outer_str(self): return f"{self.form} | {self.field}"
     form = models.ForeignKey('Form', on_delete=models.CASCADE, related_name='form_fields')
     field = models.ForeignKey('Field', on_delete=models.CASCADE, related_name='field_forms')
     order = models.PositiveIntegerField(validators=[MinValueValidator(1)], null=True, blank=True)

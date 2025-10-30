@@ -1,9 +1,9 @@
 from django.contrib import admin
-from .models import Field, Form
+from .models import Application, ApplicationFormField
 
 
 models_list = [
-    Field, Form,
+    Application, ApplicationFormField,
 ]
 
 admin.site.register(models_list)

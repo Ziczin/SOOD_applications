@@ -45,7 +45,7 @@ class Component {
     addChild(child) {
         child.parent = this;
         this.children.push(child);
-        this.autoRebuild && this.build(true);
+        if (this.autoRebuild) this.build(true);
         this.onChildAdd?.emit(child)
     }
 

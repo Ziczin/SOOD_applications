@@ -87,7 +87,6 @@ const OUT_DIR = process.env.OUT_DIR || path.resolve(__dirname, 'static', 'collec
     if (cssFinal) manifest['static.css'] = path.relative(process.cwd(), path.join(OUT_DIR, cssFinal)).replace(/\\\\/g, '/');
 
     fs.writeFileSync(path.join(OUT_DIR, 'manifest.json'), JSON.stringify(manifest, null, 2), 'utf8');
-    console.log('Build finished:', manifest);
   } catch (e) {
     console.error('Build failed', e);
     process.exit(1);

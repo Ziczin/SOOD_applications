@@ -10,6 +10,12 @@ from apps.api.views.enums import EnumTagViewSet, EnumViewSet
 from apps.api.views.fields import FieldViewSet, FieldTypeViewSet
 from apps.api.views.forms import FormFieldViewSet, FormViewSet
 from apps.api.views.auth import csrf_token_view
+from apps.api.views.applications import (
+    ApplicationAPIView,
+    ApplicationRetrieveUpdateAPIView,
+    ApplicationStatusListAPIView,
+    ApplicationStatusUpdateAPIView,
+)
 
 CRUD = {'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}
 RU = {'get': 'list', 'post': 'create'}
@@ -50,4 +56,8 @@ urlpatterns = [path(*path_) for path_ in [
     ['me/', CurrentUserAPIView.as_view()],
     ['csrf-token/', csrf_token_view],
     ['', include(router.urls)],
+    ['applications/', ApplicationAPIView.as_view()],
+    ['applications/<int:id>/', ApplicationRetrieveUpdateAPIView.as_view()],
+    ['application-statuses/', ApplicationStatusListAPIView.as_view()],
+    ['applications/<int:id>/status/', ApplicationStatusUpdateAPIView.as_view()],
 ]]

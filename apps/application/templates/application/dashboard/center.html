@@ -9,6 +9,7 @@
   const imp = (await import("{% static 'deps/js/tools/import.js' %}")).default(make)
   const popup = await imp("{% static 'deps/js/prefabs/popup.js' %}")
   const picButton = await imp("{% static 'deps/js/prefabs/pic_button.js' %}", popup, "{{ MEDIA_URL }}")
+  const paragraphNotice = await imp("{% static 'deps/js/prefabs/paragraph_notice.js' %}")
 
   const buildProxyTab = await imp("{% static 'deps/js/dashboard/proxy.js' %}")
   const buildAdminTab = await imp("{% static 'deps/js/dashboard/admin.js' %}")
@@ -19,9 +20,17 @@
   const departments = await qBase.at('departments').view().get()
   const deps = buildDepartmentNameMap(departments)
   const forms = await qBase.at('forms/visible').view().get()
+  const statuses = await qBase.at('application-statuses').view().get()
 
   const roles = await qBase.at('roles').view().get()
   const me = await qBase.at('me').view().get()
+
+  let resultModer = null;
+  
+  let onOpenFooContainer = []
+  if (me.permissions.includes('moderator')) {
+    resultModer = await buildModerTab(qBase, me.department.id, statuses, popup, onOpenFooContainer);
+  }
 
   const tabs = make.Tabs(make.style.height('100%'))
   .menu(
@@ -32,7 +41,7 @@
   );
   const permissions = me.permissions.filter(s => s !== 'proxy');
 
-  const buildUserTabWrapper = () => buildUserTab(qBase, deps, forms, picButton, popup)
+  const buildUserTabWrapper = () => buildUserTab(qBase, deps, forms, picButton, paragraphNotice, popup)
   document.getElementById('center-content').appendChild(
     make.Div(
       make.style.height("100%"),
@@ -43,22 +52,23 @@
       ...make.callif(permissions.length > 1,
         () => {
           if (me.permissions.includes('user'))
-          tabs.tab()
-          .header(...getHeaderComponent("Создать заявку"))
-          .content(
-            ...buildUserTabWrapper()
+            tabs.tab()
+            .header(...getHeaderComponent("Создать заявку"))
+            .content(
+              ...buildUserTabWrapper()
           );
           if (me.permissions.includes('moderator'))
-          tabs.tab()
-          .header(...getHeaderComponent("Входящие заявки"))
-          .content(
-            ...buildModerTab()
-          );
+            tabs.tab()
+            .onOpen.sub(() => onOpenFooContainer[0]())
+            .header(...getHeaderComponent("Входящие заявки"))
+            .content(
+              ...(resultModer || [])
+            );
           if (me.permissions.includes('admin'))
-          tabs.tab()
-          .header(...getHeaderComponent("Управление отделом"))
-          .content(
-            ...buildAdminTab()
+            tabs.tab()
+            .header(...getHeaderComponent("Управление отделом"))
+            .content(
+              ...buildAdminTab()
           );
           return tabs
         }

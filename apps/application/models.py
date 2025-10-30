@@ -1,30 +1,28 @@
 from django.db import models
 from apps.users.models import CustomUser
-from apps.forms.models import Form, Field
+from apps.forms.models import Form, FormField
 
-class ApplicationStatus(models.Choices):
-    NOT_READED = "Не просмотрена"
-    READED = "Просмотрена"
-    IN_PROGRESS = "В работе"
-    COMPLETED = "Выполнена"
-    CLOSED = "Завершена"
-    CANCELLED = "Отменена"
-    REJECTED = "Отклонена"
+class ApplicationStatus(models.TextChoices):
+    SENDED = "SENDED", "Отправлена"
+    IN_PROGRESS = "IN_PROGRESS", "В работе"
+    COMPLETED = "COMPLETED", "Выполнена"
+    CANCELLED = "CANCELLED", "Отменена"
+    REJECTED = "REJECTED", "Отклонена"
 
 class Application(models.Model):
     def __str__(self): return str(self.form) + ' | ' + str(self.user)
     form = models.ForeignKey(Form, on_delete=models.SET_NULL, null=True)
-    user = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
+    user = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True)
     date = models.DateTimeField(auto_now_add=True)
     status = models.CharField(
         max_length=32,
         choices=ApplicationStatus.choices,
-        default=ApplicationStatus.NOT_READED,
+        default=ApplicationStatus.SENDED,
     )
     msg = models.CharField(max_length=600, blank=True, default='')
 
-class ApplicationField(models.Model):
-    def __str__(self): return str(self.application) + ' | ' + str(self.field) + ' | ' + str(self.value)
-    application = models.ForeignKey(Application, on_delete=models.SET_NULL, null=True)
-    field = models.ForeignKey(Field, on_delete=models.SET_NULL, null=True)
+class ApplicationFormField(models.Model):
+    def __str__(self): return str(self.application) + ' | ' + str(self.form_field.outer_str()) + ' | ' + str(self.value)
+    application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='application_fields')
+    form_field = models.ForeignKey(FormField, on_delete=models.SET_NULL, null=True)
     value = models.CharField(max_length=100)

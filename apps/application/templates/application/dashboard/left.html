@@ -1,20 +1,26 @@
 {% load static %}
 
-<div id="logout-btn"></div>
+<div style="max-height: 98vh; display: flex; flex-direction: column; gap: 6px; flex: 0">
+  <div id="logout-btn"></div>
 
-<div class="content" id="left-content"></div>
+  <div class="content" id="left-content" style="height: 100%; overflow-y: hidden"></div>
+</div>
 <script type="module">
   await import("{% static 'deps/make/make.js' %}");
-  
+  const imp = (await import("{% static 'deps/js/tools/import.js' %}")).default(make)
+  const buildUserTab = await imp("{% static 'deps/js/dashboard/userApps.js' %}")
   const csrfObj = await make.Query('/api/csrf-token').get()
+  const popup = await imp("{% static 'deps/js/prefabs/popup.js' %}")
 
   const qBase = make.Query('/api').via({"X-CSRFToken": csrfObj.csrfToken}).view();
   const qLogout = qBase.at('auth/logout').view()
   const qUsers = qBase.at('users').view();
   const qRoles = qBase.at('roles').view()
   const qCurrentUser = qBase.at('me').view();
-
+  const statuses = await qBase.at('application-statuses').view().get()
   const me = await qCurrentUser.get();
+
+  const userApps = await buildUserTab(qBase, me.id, statuses, popup)
   document.getElementById('logout-btn').appendChild(
     make.Button(
       make.with.css('content', 'exit', 'flex'),
@@ -29,6 +35,7 @@
     make.Div(
       make.it.flexColumn,
       make.it.gap6px,
+      make.style.height("100%"),
       make.h1(`${me.fullname}`),
       make.Paragraph(`@${me.username}`, make.it.subtitleText),
       make.Paragraph(me.role.name),
@@ -61,7 +68,8 @@
             )
           )
         )
-      )
+      ),
+      userApps
     ).build()
   );
 
@@ -143,10 +151,4 @@ function createNoiseCycler(animDuration = 1000, displayDuration = 1000, list = [
     }
   };
 }
-
-
-
-
-
-
 </script>

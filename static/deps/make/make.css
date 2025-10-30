@@ -272,6 +272,7 @@ p, form, h1, h2, h3, h4, h5, h6 {
   transform: translateY(0);
   height: auto;
   overflow-y: hidden;
+  height: 100%;
   transition: opacity 0.5s ease, transform 0.5s ease, height 0.5s ease;
 }
 

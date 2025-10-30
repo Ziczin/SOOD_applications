@@ -24,6 +24,7 @@ function actionNotice({
           make.it.action,
           make.it.act.negative,
           make.with.text(confirmText),
+          make.with.style({flex: 1}),
           make.on.click(() => {
             action(),
             make.other.closeCurrentNotice()
@@ -33,6 +34,7 @@ function actionNotice({
           make.it.action,
           make.it.act.alternative,
           make.with.text(cancelText),
+          make.with.style({flex: 1}),
           make.on.click(() => {
             make.other.closeCurrentNotice()
           })

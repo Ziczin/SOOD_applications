@@ -16,7 +16,6 @@ export default function createAnnotationFactory(core, Component) {
     build(force = false) {
       if (this.element && !force) return this.element;
       this.parent.allowEvents()
-      this.parent.onDestroy.sub(() => console.log(`Annotation ${this.id} destroyed`))
       this.element = document.createElement(this.elementType);
       this.element.makeComponent = this;
       this.element.classList.add('make-annotation-placeholder');
@@ -99,6 +98,8 @@ export default function createAnnotationFactory(core, Component) {
       this.positionPopup();
       await core.delay(10);
       if (popup) popup.style.opacity = '1';
+      if (this.parent.element.display === 'none')
+        this.hide()
     }
 
     positionPopup() {
