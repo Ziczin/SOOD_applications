@@ -1,5 +1,5 @@
 export default (make) =>
-async function dashboardModer(qBase, department, statuses, popup, onOpenFooContainer) {
+async function dashboardModer(qBase, department, statuses, popup, onOpenFooContainer, me) {
     onOpenFooContainer.push(getAndDraw)
     const appList = make.Scrollbox(
         make.it.flexColumn,
@@ -116,10 +116,12 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
                     make.it.flexRow,
                     make.style.gap(9),
                     make.with.style({alignSelf: "center"}),
-                    make.Paragraph(timeFormat(app.date)),
+                    make.Paragraph(timeFormat(app.date), make.with.style({flex: 0})),
                     make.Paragraph(app.form.label)
                 ),
-                ...make.if(["SENDED", "IN_PROGRESS"].includes(card.status),
+                ...make.if(
+                    ["SENDED", "IN_PROGRESS"].includes(card.status)
+                    && (app.executor === null || app.executor.id === me.id),
                     btn = make.Button(
                         make.with.text("placeholder"),
                         make.it.action,
@@ -129,7 +131,10 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
                         make.on.click(async (e) => {
                             e.stopPropagation();
                             const newStatus = card.status === "SENDED" ? "IN_PROGRESS" : "COMPLETED"
-                            await qBase.at("applications").at(app.id).with({status: newStatus}).view().patch()
+                            await qBase.at("applications").at(app.id).with({
+                                status: newStatus,
+                                executor: me.id
+                            }).view().patch()
                             card.status = newStatus
                             if (card.status === "COMPLETED")
                                 btn.element.display = "none"
@@ -164,7 +169,8 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
                                                 if (inp.element.value) {
                                                     await qBase.at("applications").at(app.id).with({
                                                         status: "REJECTED",
-                                                        msg: inp.element.value
+                                                        msg: inp.element.value,
+                                                        executor: me.id
                                                     }).view().patch()
                                                     card.status = "REJECTED"
                                                     setVisibilityByStatus()
@@ -211,8 +217,11 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
                     make.it.flexRow,
                     make.style.gap(6),
                     make.it.marginOnHover,
-                    make.Paragraph(`От ${app.user.fullname}`),
+                    make.Paragraph(`От: ${app.user.fullname}`),
                     make.Paragraph(`(${app.user.department.name})`, make.it.subtitleText),
+                ),
+                ...make.callif(app.executor !== null,
+                    () => make.Paragraph(`Исполнитель: ${app.executor.fullname}`)
                 ),
                 make.Separator(0),
                 ...app.application_fields.map(field => 

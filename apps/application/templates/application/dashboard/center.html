@@ -29,7 +29,7 @@
   
   let onOpenFooContainer = []
   if (me.permissions.includes('moderator')) {
-    resultModer = await buildModerTab(qBase, me.department.id, statuses, popup, onOpenFooContainer);
+    resultModer = await buildModerTab(qBase, me.department.id, statuses, popup, onOpenFooContainer, me);
   }
 
   const tabs = make.Tabs(make.style.height('100%'))
@@ -41,10 +41,12 @@
   );
   const permissions = me.permissions.filter(s => s !== 'proxy');
 
-  const buildUserTabWrapper = () => buildUserTab(qBase, deps, forms, picButton, paragraphNotice, popup)
+  const buildUserTabWrapper = () => buildUserTab(
+    qBase, deps, forms, paragraphNotice, popup, window.getAndDrawUserApps, picButton)
   document.getElementById('center-content').appendChild(
     make.Div(
       make.style.height("100%"),
+      make.with.style({overflowY: "hidden"}),
       ...make.callif(permissions.length === 0,
         () => make.h1("Перед началом работы верифицируйте аккаунт у администратора отдела или в отделе программирования.")
       ),
@@ -68,7 +70,7 @@
             tabs.tab()
             .header(...getHeaderComponent("Управление отделом"))
             .content(
-              ...buildAdminTab()
+              ...buildAdminTab(qBase)
           );
           return tabs
         }

@@ -9,9 +9,11 @@ from apps.api.serializers.applications import (
     ApplicationCreateSerializer,
     ApplicationSerializer,
     ApplicationStatusListSerializer,
-    ApplicationStatusUpdateSerializer
+    ApplicationStatusUpdateSerializer,
+    ApplicationUpdateSerializer
 )
 from apps.application.models import Application, ApplicationStatus
+from apps.users.models import CustomUser
 
 class ApplicationAPIView(APIView):
     def get(self, request, *args, **kwargs):
@@ -20,20 +22,16 @@ class ApplicationAPIView(APIView):
         user = request.query_params.get('user')
         created_after = request.query_params.get('created_after')
         created_before = request.query_params.get('created_before')
-
         if dept is not None:
             qs = qs.filter(form__department_id=dept)
         if user is not None:
             qs = qs.filter(user_id=user)
-
         after_date = parse_date(created_after) if created_after else None
         before_date = parse_date(created_before) if created_before else None
-
         if after_date:
             qs = qs.annotate(date_only=Cast('date', DateField())).filter(date_only__gte=after_date)
         if before_date:
             qs = qs.annotate(date_only=Cast('date', DateField())).filter(date_only__lte=before_date)
-
         out = ApplicationSerializer(qs, many=True)
         return Response(out.data)
 
@@ -53,19 +51,13 @@ class ApplicationRetrieveUpdateAPIView(APIView):
 
     def patch(self, request, id, *args, **kwargs):
         app = get_object_or_404(Application, pk=id)
-        data = {}
-        if 'status' in request.data:
-            data['status'] = request.data.get('status')
-        if 'msg' in request.data:
-            data['msg'] = request.data.get('msg')
-        if not data:
-            return Response({'detail': 'No updatable fields provided.'}, status=status.HTTP_400_BAD_REQUEST)
-        serializer = ApplicationSerializer(app, data=data, partial=True)
+        serializer = ApplicationUpdateSerializer(app, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
+            out = ApplicationSerializer(app)
+            return Response(out.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
 class ApplicationStatusListAPIView(APIView):
     def get(self, request, *args, **kwargs):
         items = [{'key': c.name, 'label': c.label} for c in ApplicationStatus]

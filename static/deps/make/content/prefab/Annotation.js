@@ -93,6 +93,9 @@ export default function createAnnotationFactory(core, Component) {
     }
 
     async show(ev) {
+      document.querySelectorAll('.make-annotation-popup').forEach(function(el){
+        el.remove();
+      });
       const popup = this.buildPopup();
       document.body.appendChild(popup);
       this.positionPopup();
@@ -140,8 +143,10 @@ export default function createAnnotationFactory(core, Component) {
     }
   }
 
+  const annotationsArray = []
+
   function AnnotationFactory(delayMs = 800, ...modifiers) {
-    return new Annotation(delayMs, ...modifiers);
+    return new Annotation(delayMs, ...modifiers)
   }
 
   return AnnotationFactory;

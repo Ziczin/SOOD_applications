@@ -1,5 +1,5 @@
 export default (make) =>
-function dashboardUser(qBase, deps, forms, picButton, paragraphNotice, popup) {
+function dashboardUser(qBase, deps, forms, paragraphNotice, popup, rebuildFoo, picButton) {
     const scrollbox = make.Scrollbox(
         make.it.flexColumn,
         make.style.gap(6)
@@ -54,7 +54,12 @@ function dashboardUser(qBase, deps, forms, picButton, paragraphNotice, popup) {
         make.it.flexColumn,
         make.with.attr({flex: "0"}),
         make.style.gap(6),
-        make.h1(data.form.label),
+        make.Div(
+          make.it.flexRow,
+          make.style.gap(6),
+          make.h1(data.form.label, make.with.style({alignSelf: "center", flex: 1})),
+          picButton("close", "Закрыть", make.it.act.negative, () => make.other.closeCurrentNotice())
+        ),
         make.Scrollbox(
           make.with.attr({flex: "999999"}),
           make.style.gap(6),
@@ -91,14 +96,15 @@ function dashboardUser(qBase, deps, forms, picButton, paragraphNotice, popup) {
           make.with.attr({flex: "0"}),
           make.with.text("Отправить"),
           make.with.attr({type: 'button'}),
-          make.on.click(() => {
+          make.on.click(async () => {
             const data = collector.collect()
             const res = data.map(({ tag, ...rest }) => rest);
             const request = {
               data: res,
               form: formId
             }
-            qBase.at('applications').view().with(request).post()
+            await qBase.at('applications').view().with(request).post()
+            await rebuildFoo()
             paragraphNotice("Заявка отправлена!", make.color.lgreen)
           })
         )
@@ -114,6 +120,7 @@ function dashboardUser(qBase, deps, forms, picButton, paragraphNotice, popup) {
     }
 
     scrollbox.addModifiers(
+      make.style.height("100%"),
       ...Object.values(
         Object.values(cards).filter(elem => {
           return elem.cardContent.children[1].children.length >= 1

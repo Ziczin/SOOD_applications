@@ -16,6 +16,7 @@ from apps.api.views.applications import (
     ApplicationStatusListAPIView,
     ApplicationStatusUpdateAPIView,
 )
+from apps.api.views.report import ReportXlsxView
 
 CRUD = {'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}
 RU = {'get': 'list', 'post': 'create'}
@@ -60,4 +61,5 @@ urlpatterns = [path(*path_) for path_ in [
     ['applications/<int:id>/', ApplicationRetrieveUpdateAPIView.as_view()],
     ['application-statuses/', ApplicationStatusListAPIView.as_view()],
     ['applications/<int:id>/status/', ApplicationStatusUpdateAPIView.as_view()],
+    ['report/', ReportXlsxView.as_view()]
 ]]

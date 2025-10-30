@@ -11,6 +11,7 @@ function picButton(pic, txt, style=[], onClick=()=>{}, outerStyle=[]) {
     make.Button(
       popup(800, txt),
       make.it.action,
+      make.with.attr({type: "button"}),
       ...style,
       make.style.padding(6),
       make.Image(

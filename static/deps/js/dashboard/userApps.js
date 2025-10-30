@@ -115,10 +115,11 @@ async function dashboardModer(qBase, userId, statuses, popup) {
               make.it.flexRow,
               make.style.gap(9),
               make.with.style({alignSelf: "center"}),
-              make.Paragraph(timeFormat(app.date)),
+              make.Paragraph(timeFormat(app.date), make.with.style({flex: 0})),
               make.Paragraph(app.form.label)
             ),
-            ...make.if(["SENDED", "IN_PROGRESS"].includes(card.status),
+            ...make.if(
+              ["SENDED", "IN_PROGRESS"].includes(card.status),
               btn2 = make.Button(
                 make.with.text("Отменить"),
                 make.it.action,
@@ -195,18 +196,21 @@ async function dashboardModer(qBase, userId, statuses, popup) {
           make.style.rounded(12),
           make.with.style({border: "3px solid #ddd"}),
         ).content(
-            make.Separator(6),
             make.style.height('100%'),
             cardBody = make.Div(
                 make.it.flexColumn,
                 make.style.gap(6),
                 make.Separator(),
-                make.Div(
+                ...make.callif(app.executor !== null,
+                  () => make.Div(
                     make.it.flexRow,
                     make.style.gap(6),
                     make.it.marginOnHover,
+                    make.Paragraph(`Исполнитель: ${app.executor.fullname}`),
+                    make.Paragraph(`(${app.executor.department.name})`, make.it.subtitleText),
+                  ),
                 ),
-                make.Separator(0),
+                make.Separator(4, make.style.rounded(12), make.color.lgray),
                 ...app.application_fields.map(field => 
                     make.Div(
                         make.it.flexRow,
@@ -238,5 +242,6 @@ async function dashboardModer(qBase, userId, statuses, popup) {
       await getAndDraw()
       handler.onBuild.unsub(getAndDraw)
     })
+    window.getAndDrawUserApps = getAndDraw
     return handler
 }

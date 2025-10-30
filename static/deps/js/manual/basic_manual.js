@@ -70,6 +70,7 @@ export default (make, popup, picButton) => (additionalContent) => {
       make.Paragraph("• Ниже находятся различные элементы. Наведитесь на любой из них и подождите несколько секунд"),
       make.Div(
         make.it.flexRow,
+        make.with.style({flex: 0}),
         make.style.gap(6),
         make.Input(make.with.attr({placeholder: "Это поле ввода"}),
           popup(800, "Это подсказка на поле ввода"), make.style.maxWidth("20%"),
@@ -170,6 +171,7 @@ export default (make, popup, picButton) => (additionalContent) => {
 
   function manualFunctionalButtonElement(pic, popup, styles, t1, t2) {
     return make.Div(
+      make.with.style({flex: 0}),
       make.it.flexRow,
       make.style.gap(6),
       make.style.padding(6),
@@ -182,7 +184,6 @@ export default (make, popup, picButton) => (additionalContent) => {
           picButton(pic, popup, styles),
           make.Paragraph(t1)
         ),
-        make.Separator(4),
         make.Paragraph(t2)
       )
     )
@@ -190,6 +191,7 @@ export default (make, popup, picButton) => (additionalContent) => {
 
   function sideParagraphWithMargin(text, ...mods) {
     return make.Div(...mods,
+      make.with.style({flex: 0}),
       make.it.marginOnHover,
       make.it.flexRow,
       make.style.gap(6),

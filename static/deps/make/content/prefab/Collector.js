@@ -146,9 +146,9 @@ export default (Component) => class Collector extends Component {
     }
 
     destroy() {
-        for (const key of this._listeners.keys()) {
-            this._detachListener(key);
-        }
+        if (this._listeners.keys)
+            for (const key of this._listeners.keys())
+                this._detachListener(key);
         this._listeners = new WeakMap();
         this.records = [];
         super.destroy();

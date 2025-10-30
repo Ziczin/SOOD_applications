@@ -25,12 +25,7 @@
   const csrfObj = await make.Query('/api/csrf-token').get()
   const data = JSON.parse(document.getElementById("form-data").textContent);
   const errors = JSON.parse(document.getElementById("errors-data").textContent);
-  
-  const title = make.Div(
-    make.it.flexRow,
-    make.it.centered,
-    make.style.gap(10),
-    make.h1(data.title),
+  const otherPages = [
     make.h1('TESTS',
       make.on.click(() => {
         window.location.href = '/users/testbox/'
@@ -56,6 +51,14 @@
         window.location.href = '/admin/'
       })
     )
+  ]
+
+  const title = make.Div(
+    make.it.flexRow,
+    make.it.centered,
+    make.style.gap(10),
+    make.h1(data.title),
+    //...otherPages
   );
   const fields = make.Form(
     make.it.flexColumn,

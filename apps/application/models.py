@@ -13,6 +13,9 @@ class Application(models.Model):
     def __str__(self): return str(self.form) + ' | ' + str(self.user)
     form = models.ForeignKey(Form, on_delete=models.SET_NULL, null=True)
     user = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True)
+    executor = models.ForeignKey(
+        CustomUser, on_delete=models.SET_NULL, null=True, blank=True,
+        default=None, related_name='executor')
     date = models.DateTimeField(auto_now_add=True)
     status = models.CharField(
         max_length=32,

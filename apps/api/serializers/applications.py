@@ -18,6 +18,7 @@ class ApplicationCreateSerializer(serializers.Serializer):
     form = serializers.IntegerField()
     data = ApplicationFormFieldCreateSerializer(many=True)
     user = serializers.IntegerField(required=False)
+    executor = serializers.IntegerField(required=False)
 
     def validate_form(self, value):
         return Form.objects.get(pk=value)
@@ -37,7 +38,10 @@ class ApplicationCreateSerializer(serializers.Serializer):
             user = CustomUser.objects.filter(pk=validated_data['user']).first()
         if user is None and request and getattr(request, 'user', None) and request.user.is_authenticated:
             user = request.user
-        app = Application.objects.create(form=validated_data['form'], user=user)
+        executor = None
+        if validated_data.get('executor'):
+            executor = CustomUser.objects.filter(pk=validated_data['executor']).first()
+        app = Application.objects.create(form=validated_data['form'], user=user, executor=executor)
         app_fields = []
         for item in validated_data['data']:
             ff = FormField.objects.filter(pk=item['id']).first()
@@ -59,7 +63,6 @@ class SimpleDepartmentSerializer(serializers.ModelSerializer):
 
 class SimpleUserSerializer(serializers.ModelSerializer):
     department = SimpleDepartmentSerializer(read_only=True)
-
     class Meta:
         model = CustomUser
         fields = ['id', 'fullname', 'department']
@@ -115,7 +118,15 @@ class ApplicationSerializer(serializers.ModelSerializer):
     application_fields = ApplicationFieldOutputSerializer(many=True, read_only=True)
     form = SimpleFormSerializer(read_only=True)
     user = SimpleUserSerializer(read_only=True)
+    executor = SimpleUserSerializer(read_only=True)
 
     class Meta:
         model = Application
-        fields = ['id', 'form', 'user', 'date', 'status', 'msg', 'application_fields']
+        fields = ['id', 'form', 'user', 'executor', 'date', 'status', 'msg', 'application_fields']
+
+class ApplicationUpdateSerializer(serializers.ModelSerializer):
+    executor = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), allow_null=True, required=False)
+
+    class Meta:
+        model = Application
+        fields = ['status', 'msg', 'executor']
