@@ -5,12 +5,8 @@ db.sqlite3
 venv/
 .env
 *.log
-*.txt
-db_config.py
+SOOD_applications/db_config.py
 staticfiles/
-# build outputs
 collected/
-
-# build outputs
 static/collected/
-*.txt
+

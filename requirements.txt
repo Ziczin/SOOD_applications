@@ -1,0 +1,5 @@
+openpyxl
+Django=5.0.14
+djangorestframework=3.16
+bcrypt
+argon2-cffi>=23.0
