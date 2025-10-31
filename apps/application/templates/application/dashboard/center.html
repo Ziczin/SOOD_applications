@@ -3,7 +3,8 @@
 <div id="center-content"></div>
 
 <script type="module">
-  await import("{% static 'deps/make/make.js' %}");
+  await import("{% static 'collected/static.js' %}");
+  //await import("{% static 'deps/make/make.js' %}");
 
   const csrfObj = await make.Query('/api/csrf-token').get()
   const imp = (await import("{% static 'deps/js/tools/import.js' %}")).default(make)
@@ -24,11 +25,11 @@
 
   const roles = await qBase.at('roles').view().get()
   const me = await qBase.at('me').view().get()
-
+  const permissions = me.permissions.filter(s => s !== 'proxy');
   let resultModer = null;
   
   let onOpenFooContainer = []
-  if (me.permissions.includes('moderator')) {
+  if (permissions.includes('moderator')) {
     resultModer = await buildModerTab(qBase, me.department.id, statuses, popup, onOpenFooContainer, me);
   }
 
@@ -39,34 +40,48 @@
     make.style.rounded(12),
     make.style.padding(8),
   );
-  const permissions = me.permissions.filter(s => s !== 'proxy');
 
-  const buildUserTabWrapper = () => buildUserTab(
-    qBase, deps, forms, paragraphNotice, popup, window.getAndDrawUserApps, picButton)
+  const buildUserTabWrapper = () => {
+    return [
+      make.Paragraph("Нажмите на панель с именем отдела, чтобы выбрать тип заявки",
+        make.it.subtitleText
+      ),
+      ...buildUserTab(
+        qBase, deps, forms, paragraphNotice, popup, window.getAndDrawUserApps, picButton)
+    ]
+  }
   document.getElementById('center-content').appendChild(
     make.Div(
       make.style.height("100%"),
+      make.it.flexColumn,
+      make.style.gap(6),
       make.with.style({overflowY: "hidden"}),
       ...make.callif(permissions.length === 0,
         () => make.h1("Перед началом работы верифицируйте аккаунт у администратора отдела или в отделе программирования.")
       ),
-      ...make.callif(permissions.length === 1, buildUserTabWrapper),
+      ...make.callif(permissions.length === 1,
+        () => [
+          make.h1("Создание заявки"),
+          ...buildUserTabWrapper()
+        ]
+      ),
       ...make.callif(permissions.length > 1,
         () => {
-          if (me.permissions.includes('user'))
+          if (permissions.includes('user'))
             tabs.tab()
             .header(...getHeaderComponent("Создать заявку"))
             .content(
+              make.it.flexColumn,
               ...buildUserTabWrapper()
-          );
-          if (me.permissions.includes('moderator'))
+            );
+          if (permissions.includes('moderator'))
             tabs.tab()
             .onOpen.sub(() => onOpenFooContainer[0]())
             .header(...getHeaderComponent("Входящие заявки"))
             .content(
               ...(resultModer || [])
             );
-          if (me.permissions.includes('admin'))
+          if (permissions.includes('admin'))
             tabs.tab()
             .header(...getHeaderComponent("Управление отделом"))
             .content(

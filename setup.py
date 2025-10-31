@@ -8,7 +8,6 @@ from django.contrib.auth import get_user_model
 
 from apps.users.models import Department, UserRole
 from apps.forms.models import Enum, EnumTag, FieldType, Form, FormField, Field
-from apps.application.models import Application, ApplicationFormField
 
 from itertools import product
 
@@ -19,17 +18,6 @@ def create_superuser():
         User.objects.create_superuser(username='toster', password='imposter', email='toster@example.com')
 
     super_user = User.objects.get(username='toster')
-    super_user.fullname = 'SUPERUSER'
-    super_user.role = UserRole.ADMIN
-    super_user.verified = True
-    super_user.proxy = True
-    super_user.save()
-
-    if not User.objects.filter(username='000').exists():
-        print("Создание 2 суперюзера...")
-        User.objects.create_superuser(username='000', password='000', email='000@example.com')
-
-    super_user = User.objects.get(username='000')
     super_user.fullname = 'SUPERUSER'
     super_user.role = UserRole.ADMIN
     super_user.verified = True

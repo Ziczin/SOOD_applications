@@ -2,7 +2,7 @@ export default (make) =>
 function dashboardUser(qBase, deps, forms, paragraphNotice, popup, rebuildFoo, picButton) {
     const scrollbox = make.Scrollbox(
         make.it.flexColumn,
-        make.style.gap(6)
+        make.style.gap(6),
     )
     const cards = Object.fromEntries(
       Object.entries(deps).map(([key, value]) =>
@@ -128,6 +128,6 @@ function dashboardUser(qBase, deps, forms, paragraphNotice, popup, rebuildFoo, p
       )
     )
     return [
-      scrollbox
+      scrollbox,
     ]
 }

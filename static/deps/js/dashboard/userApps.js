@@ -67,17 +67,22 @@ async function dashboardModer(qBase, userId, statuses, popup) {
       make.style.gap(6),
       make.h1("Мои заявки:"),
       make.with.style({flex: 0}),
-      statusSort,
       make.Div(
         make.it.flexRow,
         make.style.gap(6),
-        make.Paragraph("с ", make.with.style({alignSelf: "center"})),
+        make.Paragraph("Статус: ", make.with.style({alignSelf: "center"})),
+        statusSort,
+      ),
+      make.Div(
+        make.it.flexRow,
+        make.style.gap(18),
+        make.Paragraph("с", make.with.style({alignSelf: "center"})),
         inputDateFrom,
       ),
       make.Div(
         make.it.flexRow,
         make.style.gap(6),
-        make.Paragraph("по ", make.with.style({alignSelf: "center"})),
+        make.Paragraph("по", make.with.style({alignSelf: "center"})),
         inputDateTo
       )
     )
@@ -115,8 +120,52 @@ async function dashboardModer(qBase, userId, statuses, popup) {
               make.it.flexRow,
               make.style.gap(9),
               make.with.style({alignSelf: "center"}),
-              make.Paragraph(timeFormat(app.date), make.with.style({flex: 0})),
-              make.Paragraph(app.form.label)
+              make.Paragraph(timeFormat(app.date), make.with.style({flex: "1 1 auto"})),
+              make.Paragraph(app.form.label, make.with.style({flex: "100 1 auto"}))
+            ),
+          ),
+          popup("Нажмите чтобы развернуть заявку"),
+          make.color.lgray,
+          make.style.margin(-8),
+          make.style.padding(6),
+          make.style.rounded(12),
+          make.with.style({border: "3px solid #ddd"}),
+        ).content(
+          make.style.height('100%'),
+          cardBody = make.Div(
+            make.it.flexColumn,
+            make.style.gap(6),
+            make.Separator(),
+            ...make.callif(app.executor !== null,
+              () => make.Div(
+                make.it.flexRow,
+                make.style.gap(6),
+                make.it.marginOnHover,
+                make.Paragraph(`Исполнитель: ${app.executor.fullname}`),
+                make.Paragraph(`(${app.executor.department.name})`, make.it.subtitleText),
+              ),
+            ),
+            make.Separator(4, make.style.rounded(12), make.color.lgray),
+            ...app.application_fields.map(field => 
+              make.Div(
+                make.it.flexRow,
+                make.style.gap(6),
+                make.it.marginOnHover,
+                make.Paragraph(`${field.label}: ${field.value}`),
+                ...make.if(field.tag !== null,
+                  make.Paragraph(`(${field.tag})`, make.it.subtitleText),
+                )
+              )
+            ),
+            ...make.if(app.msg,
+              make.Paragraph(
+                app.status === "REJECTED"
+                ? `Причина отказа: ${app.msg}`
+                : app.status === "CANCELLED"
+                ? `Причина отмены: ${app.msg}`
+                : "Этой надписи тут быть не должно - обратитесь в отдел программирования",
+                make.it.marginOnHover
+              )
             ),
             ...make.if(
               ["SENDED", "IN_PROGRESS"].includes(card.status),
@@ -188,50 +237,7 @@ async function dashboardModer(qBase, userId, statuses, popup) {
                 )
               )
             )
-          ),
-          popup("Нажмите чтобы развернуть заявку"),
-          make.color.lgray,
-          make.style.margin(-8),
-          make.style.padding(6),
-          make.style.rounded(12),
-          make.with.style({border: "3px solid #ddd"}),
-        ).content(
-            make.style.height('100%'),
-            cardBody = make.Div(
-                make.it.flexColumn,
-                make.style.gap(6),
-                make.Separator(),
-                ...make.callif(app.executor !== null,
-                  () => make.Div(
-                    make.it.flexRow,
-                    make.style.gap(6),
-                    make.it.marginOnHover,
-                    make.Paragraph(`Исполнитель: ${app.executor.fullname}`),
-                    make.Paragraph(`(${app.executor.department.name})`, make.it.subtitleText),
-                  ),
-                ),
-                make.Separator(4, make.style.rounded(12), make.color.lgray),
-                ...app.application_fields.map(field => 
-                    make.Div(
-                        make.it.flexRow,
-                        make.style.gap(6),
-                        make.it.marginOnHover,
-                        make.Paragraph(`${field.label}: ${field.value}`),
-                        ...make.if(field.tag !== null,
-                            make.Paragraph(`(${field.tag})`, make.it.subtitleText),
-                        )
-                    )
-                ),
-                ...make.if(app.msg,
-                    make.Paragraph(
-                        app.status === "REJECTED"
-                        ? `Причина отказа: ${app.msg}`
-                        : app.status === "CANCELLED"
-                        ? `Причина отмены: ${app.msg}`
-                        : "Этой надписи тут быть не должно - обратитесь в отдел программирования"
-                    )
-                ),
-            )
+          )
         )
         card.btn2 = btn2
 

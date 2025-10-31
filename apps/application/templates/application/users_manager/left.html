@@ -3,7 +3,8 @@
 <div id="left-exit-button"></div>
 
 <script type="module">
-  await import("{% static 'deps/make/make.js' %}");
+  await import("{% static 'collected/static.js' %}");
+  //await import("{% static 'deps/make/make.js' %}");
   const imp = (await import("{% static 'deps/js/tools/import.js' %}")).default(make)
   const backButton = await imp("{% static 'deps/js/prefabs/exit_button.js' %}")
 

@@ -5,7 +5,8 @@
 <div class="content-strange" id="left-content"></div>
 
 <script type="module">
-  await import("{% static 'deps/make/make.js' %}");
+  await import("{% static 'collected/static.js' %}");
+  //await import("{% static 'deps/make/make.js' %}");
   const imp = (await import("{% static 'deps/js/tools/import.js' %}")).default(make)
   const paragraphNotice = await imp("{% static 'deps/js/prefabs/paragraph_notice.js' %}")
   const backButton = await imp("{% static 'deps/js/prefabs/exit_button.js' %}")
@@ -99,7 +100,6 @@
     document.querySelectorAll(`.${className}`).forEach(el => {
         el.classList.remove(className);
     });
-    
     element.classList.add(className);
   }
 
@@ -118,6 +118,7 @@
           acc.addChild(form)
           paragraphNotice("Создано!", make.color.lblue)
           form.element.querySelector("input").focus()
+          await fillCenter(newForm)
         }
       )
     )

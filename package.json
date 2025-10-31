@@ -21,6 +21,6 @@
   },
   "homepage": "https://github.com/Ziczin/SOOD_applications#readme",
   "devDependencies": {
-    "esbuild": "^0.25.9"
+    "esbuild": "^0.25.11"
   }
 }

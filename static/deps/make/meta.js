@@ -1,5 +1,5 @@
 let meta = {
-    version: `0.3.0`,
+    version: `0.3.1`,
     greetings: `Powered by make.js`,
     subgreetings: 'Call window.make.meta.help() for more info',
     help: () => console.log(`
@@ -16,8 +16,11 @@ window.make.meta.<...>
 let changelog = {
     '0.3.1': `
 v0.3.1-alpha
-- callif - Условное выполнение функции, фиксит баг при котором обычный if билдил компоненты, которые билдить не нужно
-- callSwitch
+- callif - Conditional function execution; fixes a bug where a normal if would build components that shouldn't be built
+- callSwitch - same fix for switch
+- some stylistic adjustments
+- partially fixed a bug where an annotation would remain visible after an element was removed
+- colors fixed
 `,
     '0.3.0': `
 v0.3.0-alpha
