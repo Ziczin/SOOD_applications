@@ -1,13 +1,11 @@
 from django.http import HttpResponse
 from django.utils.dateparse import parse_date
-from django.db.models import Count, F, Q, Max
 from rest_framework.views import APIView
 from openpyxl import Workbook
 from openpyxl.styles import Border, Side, Font, Alignment
 from openpyxl.utils import get_column_letter
 from django.utils.encoding import iri_to_uri
 from apps.application.models import Application, ApplicationStatus, Form
-from datetime import datetime
 
 class ReportXlsxView(APIView):
     def get(self, request):
