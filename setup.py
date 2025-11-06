@@ -8,6 +8,7 @@ from django.contrib.auth import get_user_model
 
 from apps.users.models import Department, UserRole
 from apps.forms.models import Enum, EnumTag, FieldType, Form, FormField, Field
+from apps.application.models import Application, ApplicationFormField
 
 from itertools import product
 
@@ -32,6 +33,7 @@ def on_test_setup():
     users = [UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN]
     deps = [prog_dep, rem_dep]
     usrs = [p for p in product(deps, users) for _ in range(3)]
+
     for i, us in enumerate(usrs):
         User.objects.create_user(
             username=str(i), password=str(i), fullname=str(i),
@@ -93,21 +95,54 @@ def on_test_setup():
     print("-- Создание примеров полей")
     fields = [
         {"label": "Количество", "type": types['int']},
-        {"label": "Новое количество", "type": types['int']},
+        {"label": "Технологические пирожки", "type": types['enum'], "tag": obj2},
         {"label": "Компьютер", "type": types['enum'], "tag": obj3},
         {"label": "Стоимость", "type": types['numeric']},
         {"label": "Наименование", "type": types['text']},
         {"label": "Описание", "type": types['bigtext']},
         {"label": "Цена", "type": types['numeric']},
         {"label": "Принтер", "type": types['enum'], "tag": obj1},
-        {"label": "Технологические пирожки", "type": types['enum'], "tag": obj2},
+        {"label": "Новое количество", "type": types['int']},
     ]
 
+
+    ff1_list = []
+    ff3_list = []
     for i, f in enumerate(fields):
         field, c = Field.objects.get_or_create(**f, department=deps[i%2])
-        FormField.objects.get_or_create(form=[form1, form2, form3][i % 3], field=field)
+        ff, c = FormField.objects.get_or_create(form=[form1, form2, form3][i % 3], field=field)
+        if i % 3 == 0:
+            ff1_list.append(ff)
+        if i % 3 == 2:
+            ff3_list.append(ff)
 
+    from django.utils import timezone
+    from datetime import datetime, timedelta
+    import calendar
+
+    print("-- Создание примеров заявок")
+
+    now = timezone.now()
+    current_days = calendar.monthrange(now.year, now.month)[1]
+
+    prev_month = now.month - 1 if now.month > 1 else 12
+    prev_year = now.year if now.month > 1 else now.year - 1
+    prev_days = calendar.monthrange(prev_year, prev_month)[1]
+
+    total_days = current_days + prev_days
+    user = User.objects.get(username='1')
+    for i in range(1000):
+        if ((i+1) % 100) == 0:
+            print(f"{i+1}/1000")
+        app = Application.objects.create(form=form1, user=user)
+        for ff in ff1_list:
+            ApplicationFormField.objects.create(application=app, form_field=ff, value=str(i))
+
+    for i in range(10):
+        app = Application.objects.create(form=form3, user=user)
+        for ff in ff3_list:
+            ApplicationFormField.objects.create(application=app, form_field=ff, value=str(i))
     print("База данных заполнена начальными данными!")
-
+    
 if __name__ == '__main__':
     on_test_setup()

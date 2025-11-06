@@ -3,8 +3,8 @@
 <div id="center-content"></div>
 
 <script type="module">
-  await import("{% static 'collected/static.js' %}");
-  //await import("{% static 'deps/make/make.js' %}");
+  //await import("{% static 'collected/static.js' %}");
+  await import("{% static 'deps/make/make.js' %}");
   const imp = (await import("{% static 'deps/js/tools/import.js' %}")).default(make)
   const paragraphNotice = await imp("{% static 'deps/js/prefabs/paragraph_notice.js' %}")
   const actionNotice = await imp("{% static 'deps/js/prefabs/action_notice.js' %}")

@@ -24,8 +24,23 @@ class Application(models.Model):
     )
     msg = models.CharField(max_length=600, blank=True, default='')
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['status']),
+            models.Index(fields=['-date']),
+            models.Index(fields=['user', '-date']),
+            models.Index(fields=['executor', 'status']),
+            models.Index(fields=['form', '-date']),
+        ]
+
 class ApplicationFormField(models.Model):
     def __str__(self): return str(self.application) + ' | ' + str(self.form_field.outer_str()) + ' | ' + str(self.value)
     application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='application_fields')
     form_field = models.ForeignKey(FormField, on_delete=models.SET_NULL, null=True)
     value = models.CharField(max_length=100)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['application']),
+            models.Index(fields=['application', 'form_field']),
+        ]

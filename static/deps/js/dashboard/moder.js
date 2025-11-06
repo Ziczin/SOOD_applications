@@ -28,12 +28,7 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
         const completed = card.status === "COMPLETED"
         const rejected = card.status === "REJECTED"
         const bntBuilded = card.element && card.btnProc && card.btnProc.element
-        if (card.state === "open") console.log(card, {
-          sended: sended,
-          in_progress: in_progress,
-          completed: completed,
-          rejected: rejected,
-        })
+        
         if (card.element) {
           if (!matchStatus) card.element.style.display = "none"
           else {

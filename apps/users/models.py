@@ -24,6 +24,11 @@ class CustomUser(AbstractUser):
     verified = models.BooleanField(default=False)
     proxy = models.BooleanField(default=False)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['department']),
+        ]
+
     def __str__(self):
         return self.username
 
