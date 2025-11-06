@@ -14,6 +14,10 @@ function(qBase) {
       loc: '/applications/enums-manager/',
     },
     {
+      text: 'Новое управление перечислениями',
+      loc: '/applications/enums-manager2/',
+    },
+    {
       text: 'Управление шаблонами полей',
       loc: '/applications/fields-manager/',
     },

@@ -7,5 +7,6 @@ class Mixed(LoginRequiredMixin, TemplateView):
 class DashboardView(Mixed): extra_context = {'variant': 'dashboard'}
 class FormManagerView(Mixed): extra_context = {'variant': 'forms_manager'}
 class EnumsManagerView(Mixed): extra_context = {'variant': 'enums_manager'}
+class EnumsManager2View(Mixed): extra_context = {'variant': 'enums_manager2'}
 class UsersManagerView(Mixed): extra_context = {'variant': 'users_manager'}
 class FieldsManagerView(Mixed): extra_context = {'variant': 'fields_manager'}

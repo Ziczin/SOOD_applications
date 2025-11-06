@@ -1,10 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.utils import timezone
 
 class UserRole(models.TextChoices):
     USER = 'Пользователь'
-    MODERATOR = 'Модератор'
-    ADMIN = 'Администратор'
+    MODERATOR = 'Исполнитель'
+    ADMIN = 'Руководитель'
 
 class Department(models.Model):
     name = models.CharField(max_length=127)
@@ -27,5 +28,18 @@ class CustomUser(AbstractUser):
         return self.username
 
 from django.db import models
+from django.utils import timezone
+from django.conf import settings
 
+class EventSubscriber(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    event = models.CharField(max_length=255)
+    response = models.TextField(null=True, blank=True)
+    last_check = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['user', 'event']),
+            models.Index(fields=['last_check']),
+        ]
 

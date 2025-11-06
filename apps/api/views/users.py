@@ -1,41 +1,28 @@
 from rest_framework import status, viewsets, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.views import APIView
-from django.contrib.auth import authenticate, login, logout
-from django.shortcuts import get_object_or_404, redirect
-from apps.users.models import CustomUser, UserRole, Department
+from apps.api.cache_tools.helper import CacheHelper
+
+from apps.users.models import CustomUser, UserRole
 from apps.api.core.get_permissions import get_permissions
 from apps.api.core.permissions import permissions
 from apps.api.serializers.users import (
-    UserRegistrationSerializer, UserDetailSerializer,
-    ChangeRoleSerializer, ChangeDepartmentSerializer,
-    DepartmentSerializer, RoleChoiceSerializer
+    UserDetailSerializer,
+    ChangeRoleSerializer,
+    ChangeDepartmentSerializer
 )
 
-def role_rep(role_value):
-    choices = {c.value: c.label for c in UserRole}
-    label = choices.get(role_value, '')
-    return {'id': label, 'name': role_value}
 
-class RegisterView(APIView):
-    def post(self, request):
-        s = UserRegistrationSerializer(data=request.data)
-        if s.is_valid():
-            u = s.save(); login(request, u)
-            return redirect('dashboard')
-        return Response(s.errors, status=400)
+user_cache = CacheHelper("users:user")
+users_list_cache = CacheHelper("users:list")
 
-class LoginView(APIView):
-    def post(self, request):
-        data = request.data
-        user = authenticate(username=data.get('username'), password=data.get('password'))
-        if user: login(request,user); return redirect('dashboard')
-        return Response({"error":"invalid"}, status=400)
 
-class LogoutView(APIView):
-    def post(self, request):
-        logout(request); return redirect('/')
+def role_representation(role_value):
+    return {
+        'id': dict((choice.value, choice.label) for choice in UserRole).get(role_value, ''),
+        'name': role_value
+    }
+
 
 @permissions("pppd : admin, proxy")
 class UsersViewSet(
@@ -43,109 +30,72 @@ class UsersViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin
-    ):
+):
     queryset = CustomUser.objects.all()
+    serializer_class = UserDetailSerializer
     lookup_field = 'pk'
 
-    def get_serializer_class(self):
-        return UserDetailSerializer
+    def enrich_user_data(self, user_instance, serialized_data):
+        serialized_data['permissions'] = get_permissions(user_instance)
+        serialized_data['role'] = role_representation(user_instance.role)
+        return serialized_data
 
-    def list(self, request, *a, **k):
-        q = request.GET.get('department')
-        qs = self.queryset
-        if q:
-            try:
-                qs = qs.filter(department__pk=int(q))
-            except (ValueError, TypeError):
-                qs = qs.none()
-        serializer = self.get_serializer(qs, many=True)
-        data = serializer.data
-        for i, user_obj in enumerate(qs):
-            data[i]['permissions'] = get_permissions(user_obj)
-            data[i]['role'] = role_rep(user_obj.role)
-        return Response(data)
+    def get_queryset(self):
+        base_queryset = super().get_queryset()
+        department_param = self.request.GET.get('department')
+        if department_param:
+            return base_queryset.filter(department__pk=int(department_param)) if department_param.isdigit() else base_queryset.none()
+        return base_queryset
 
-    def retrieve(self, request, pk=None):
-        user = get_object_or_404(CustomUser, pk=pk)
-        serializer = UserDetailSerializer(user)
-        data = serializer.data
-        data['permissions'] = get_permissions(user)
-        data['role'] = role_rep(user.role)
-        return Response(data, status=200)
-    
-    def partial_update(self, request, pk=None):
-        user = get_object_or_404(CustomUser, pk=pk)
-        serializer = UserDetailSerializer(user, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        data = serializer.data
-        data['permissions'] = get_permissions(user)
-        data['role'] = role_rep(user.role)
-        return Response(data, status=status.HTTP_200_OK)
-    
+    def list(self, request, *args, **kwargs):
+        department_param = request.GET.get('department')
+        cache_key_part = department_param if department_param is not None else "all"
+        cached_response = users_list_cache.get(cache_key_part)
+        if cached_response is not None:
+            return Response(cached_response)
+
+        response = super().list(request, *args, **kwargs)
+        queryset_list = list(self.get_queryset())
+        for index, user_instance in enumerate(queryset_list):
+            response.data[index] = self.enrich_user_data(user_instance, response.data[index])
+
+        users_list_cache.set(response.data, cache_key_part)
+        return response
+
+    def retrieve(self, request, *args, **kwargs):
+        user_instance = self.get_object()
+        cached_response = user_cache.get(user_instance.pk)
+        if cached_response is not None:
+            return Response(cached_response)
+
+        enriched_data = self.enrich_user_data(user_instance, self.get_serializer(user_instance).data)
+        user_cache.set(enriched_data, user_instance.pk)
+        return Response(enriched_data)
+
+    def save_and_refresh_cache(self, user_instance, serializer_instance):
+        serializer_instance.is_valid(raise_exception=True)
+        serializer_instance.save()
+        serialized_data = self.get_serializer(user_instance).data
+        enriched_data = self.enrich_user_data(user_instance, serialized_data)
+        user_cache.set(enriched_data, user_instance.pk)
+        users_list_cache.delete(getattr(user_instance, "department_id", "all"))
+        users_list_cache.delete("all")
+        return Response(enriched_data, status=status.HTTP_200_OK)
+
+    def partial_update(self, request, *args, **kwargs):
+        user_instance = self.get_object()
+        serializer_instance = self.get_serializer(user_instance, data=request.data, partial=True)
+        return self.save_and_refresh_cache(user_instance, serializer_instance)
+
+    def perform_custom_action(self, request, serializer_class):
+        user_instance = self.get_object()
+        serializer_instance = serializer_class(user_instance, data=request.data, partial=True)
+        return self.save_and_refresh_cache(user_instance, serializer_instance)
+
     @action(detail=True, methods=['patch'], url_path='change_role')
     def change_role(self, request, pk=None):
-        user = get_object_or_404(CustomUser, pk=pk)
-        serializer = ChangeRoleSerializer(user, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        updated = UserDetailSerializer(user).data
-        updated['permissions'] = get_permissions(user)
-        updated['role'] = role_rep(user.role)
-        return Response(updated, status=status.HTTP_200_OK)
+        return self.perform_custom_action(request, ChangeRoleSerializer)
 
     @action(detail=True, methods=['patch'], url_path='change_department')
     def change_department(self, request, pk=None):
-        user = get_object_or_404(CustomUser, pk=pk)
-        serializer = ChangeDepartmentSerializer(user, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        updated = UserDetailSerializer(user).data
-        updated['permissions'] = get_permissions(user)
-        updated['role'] = role_rep(user.role)
-        return Response(updated, status=status.HTTP_200_OK)
-
-class CurrentUserAPIView(APIView):
-    def get(self, request, *args, **kwargs):
-        serializer = UserDetailSerializer(request.user)
-        to_ret = serializer.data
-        to_ret['permissions'] = get_permissions(request.user)
-        to_ret['role'] = role_rep(request.user.role)
-        return Response(to_ret, status=status.HTTP_200_OK)
-
-class DepartmentViewSet(viewsets.ModelViewSet):
-    queryset = Department.objects.all()
-    serializer_class = DepartmentSerializer
-    lookup_field = 'pk'
-
-    def list(self, request, *args, **kwargs):
-        qs = self.queryset
-        return Response(self.get_serializer(qs, many=True).data)
-
-    def retrieve(self, request, pk=None, *args, **kwargs):
-        obj = get_object_or_404(self.queryset, pk=pk)
-        return Response(self.get_serializer(obj).data)
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
-    def partial_update(self, request, pk=None, *args, **kwargs):
-        return super().partial_update(request, *args, **kwargs)
-
-    def update(self, request, pk=None, *args, **kwargs):
-        return super().update(request, *args, **kwargs)
-
-    def destroy(self, request, pk=None, *args, **kwargs):
-        return super().destroy(request, *args, **kwargs)
-
-class RoleListView(mixins.ListModelMixin, viewsets.GenericViewSet):
-    queryset = Department.objects.none()
-    serializer_class = RoleChoiceSerializer
-
-    def list(self, request, *args, **kwargs):
-        data = [{'id': r.label, 'name': r.value} for r in UserRole]
-        return Response(data, status=status.HTTP_200_OK)
+        return self.perform_custom_action(request, ChangeDepartmentSerializer)

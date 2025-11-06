@@ -58,7 +58,8 @@
 
     let tag
     if (field && field.tag !== null) {
-      tag = await qEnumTagsHistory.at(field.tag).get()
+      console.log(field.tag)
+      tag = await qEnumTagsHistory.at(field.tag.id).view().get()
     }
 
     let depMatch = (field.department === me.department.id)

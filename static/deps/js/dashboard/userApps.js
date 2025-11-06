@@ -22,7 +22,7 @@ async function dashboardModer(qBase, userId, statuses, popup) {
     }
     function setVisibilityByStatus() {
         appList.children.forEach(card => {
-            if (card.status === statusSort.element.value || !statusSort.element.value) {
+            if (statusSort.element.value && card.status === statusSort.element.value || !statusSort.element.value) {
                 card.element.style.display = "block"
             }
             else {
@@ -32,6 +32,7 @@ async function dashboardModer(qBase, userId, statuses, popup) {
         appList.build()
     }
     const statusSort = make.Select(
+        make.OptionPlaceholder("Все"),
         ...statuses.map(status => make.Option(status.label, status.key)),
         make.on.change(setVisibilityByStatus)
     )

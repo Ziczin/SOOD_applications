@@ -1,120 +1,160 @@
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, status, serializers
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from apps.forms.models import FormField, Form, Enum
-from apps.api.serializers.forms import FormFieldSerializer, FormSerializer
 from django.shortcuts import get_object_or_404
 from django.db import transaction
 
+from apps.forms.models import FormField, Form, Enum, Field
+from apps.api.serializers.forms import (
+    FormFieldSerializer,
+    FormSerializer,
+    FormFieldWithEnumsSerializer
+)
+from apps.api.cache_tools.forms_cache import (
+    forms_data_cache,
+    forms_list_cache,
+    cache_key_for_form,
+    cache_key_for_forms_list
+)
+
 class FormFieldViewSet(viewsets.ModelViewSet):
-    queryset = FormField.objects.all()
+    queryset = FormField.objects.select_related('field', 'field__type', 'field__tag').all()
     serializer_class = FormFieldSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        qs = super().get_queryset()
-        form = self.request.query_params.get('form')
-        if form is not None:
-            return qs.filter(form=form).order_by('order')
-        return qs.order_by('order')
-    
+        queryset = super().get_queryset().order_by('order')
+        form_param = self.request.query_params.get('form')
+        if form_param is not None:
+            qs = queryset.filter(form=form_param)
+        else:
+            qs = queryset
+        return qs
+
     @action(detail=False, methods=['patch'])
     def swap(self, request):
-        a = request.data.get('a')
-        b = request.data.get('b')
-
-        qs = self.get_queryset()
-        a = qs.get(id=a)
-        b = qs.get(id=b)
-
+        first_id = request.data.get('a')
+        second_id = request.data.get('b')
+        queryset = self.get_queryset()
+        first = get_object_or_404(queryset, id=first_id)
+        second = get_object_or_404(queryset, id=second_id)
         with transaction.atomic():
-            tmp = a.order
-            FormField.objects.filter(pk=a.pk).update(order=b.order)
-            FormField.objects.filter(pk=b.pk).update(order=tmp)
+            FormField.objects.filter(pk=first.pk).update(order=second.order)
+            FormField.objects.filter(pk=second.pk).update(order=first.order)
+        first.refresh_from_db()
+        second.refresh_from_db()
+        serialized = self.get_serializer([first, second], many=True).data
+        forms_data_cache.delete(cache_key_for_form(getattr(first, 'form_id', None)))
+        forms_data_cache.delete(cache_key_for_form(getattr(second, 'form_id', None)))
+        forms_list_cache.delete_pattern()
+        return Response(serialized, status=status.HTTP_200_OK)
 
-        a.refresh_from_db()
-        b.refresh_from_db()
-        return Response(self.get_serializer([a, b], many=True).data)
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        forms_data_cache.delete(cache_key_for_form(getattr(instance, 'form_id', None)))
+        forms_list_cache.delete_pattern()
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        forms_data_cache.delete(cache_key_for_form(getattr(instance, 'form_id', None)))
+        forms_list_cache.delete_pattern()
+
+    def perform_destroy(self, instance):
+        form_id = getattr(instance, 'form_id', None)
+        instance.delete()
+        forms_data_cache.delete(cache_key_for_form(form_id))
+        forms_list_cache.delete_pattern()
+
 
 class FormViewSet(viewsets.ModelViewSet):
-    queryset = Form.objects.all()
+    queryset = Form.objects.filter(available=True).select_related('department')
     serializer_class = FormSerializer
 
     def get_queryset(self):
-        qs = Form.objects.filter(available=True)
+        base = self.queryset
         dept_param = self.request.query_params.get('department')
-        if not dept_param:
-            return qs
-        if dept_param.isdigit():
-            return qs.filter(department_id=int(dept_param))
-        return qs.filter(department_id=None)
+        if dept_param is None:
+            qs = base
+        else:
+            if dept_param.isdigit():
+                qs = base.filter(department_id=int(dept_param))
+            else:
+                qs = base.filter(department_id=None)
+        return qs
+
+    def list(self, request, *args, **kwargs):
+        dept_param = self.request.query_params.get('department')
+        department_id = dept_param if dept_param and dept_param.isdigit() else None
+        cache_key = cache_key_for_forms_list(department_id=department_id)
+        
+        cached = forms_list_cache.get(cache_key)
+        if cached is not None:
+            return Response(cached, status=status.HTTP_200_OK)
+        
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        forms_list_cache.set(serializer.data, cache_key)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def perform_create(self, serializer):
-        user = self.request.user
-        dept = getattr(user, "department", None)
+        department = getattr(self.request.user, "department", None)
         with transaction.atomic():
-            if dept is not None:
-                serializer.save(department=dept)
-            else:
-                serializer.save()
+            instance = serializer.save(department=department)
+        forms_data_cache.delete(cache_key_for_form(getattr(instance, 'pk', None)))
+        forms_list_cache.delete_pattern()
 
     def retrieve(self, request, pk=None):
-        form = get_object_or_404(Form.objects.all(), pk=pk)
-        serializer = self.get_serializer(form)
-        return Response(serializer.data)
+        instance = get_object_or_404(self.queryset, pk=pk)
+        serialized = self.get_serializer(instance).data
+        return Response(serialized, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'], url_path='visible')
     def visible(self, request):
+        cache_key = cache_key_for_forms_list(visible=True)
+        
+        cached = forms_list_cache.get(cache_key)
+        if cached is not None:
+            return Response(cached, status=status.HTTP_200_OK)
+        
         forms = Form.objects.filter(available=True, visible=True)
-        serializer = self.get_serializer(forms, many=True)
-        return Response(serializer.data)
-    
+        serialized = self.get_serializer(forms, many=True).data
+        forms_list_cache.set(serialized, cache_key)
+        return Response(serialized, status=status.HTTP_200_OK)
+
     @action(detail=True, methods=['get'], url_path='data')
     def data(self, request, pk=None):
-        form = get_object_or_404(Form.objects.filter(available=True), pk=pk)
+        cache_key = cache_key_for_form(pk)
+        cached = forms_data_cache.get(cache_key)
+        if cached is not None:
+            return Response(cached, status=status.HTTP_200_OK)
 
-        form_fields_qs = FormField.objects.filter(form=form).order_by('order').select_related('field', 'field__type', 'field__tag')
-        tag_ids = [ff.field.tag_id for ff in form_fields_qs if ff.field and ff.field.tag_id]
+        form = get_object_or_404(Form.objects.filter(available=True), pk=pk)
+        form_fields_qs = (
+            FormField.objects.filter(form=form)
+            .order_by('order')
+            .select_related('field', 'field__type', 'field__tag')
+        )
+        tag_ids = {ff.field.tag_id for ff in form_fields_qs if ff.field and ff.field.tag_id}
         enums_by_tag = {}
         if tag_ids:
-            enums = Enum.objects.filter(enum_tag_id__in=tag_ids, available=True).order_by('id')
-            for e in enums:
-                enums_by_tag.setdefault(e.enum_tag_id, []).append({"id": e.id, "value": e.value})
+            enums_qs = Enum.objects.filter(enum_tag_id__in=tag_ids, available=True).order_by('id')
+            for enum in enums_qs:
+                enums_by_tag.setdefault(enum.enum_tag_id, []).append({"id": enum.id, "value": enum.value})
+        serializer = FormFieldWithEnumsSerializer(form_fields_qs, many=True, context={'enums_map': enums_by_tag})
+        form_data = {"id": form.id, "label": form.label}
+        payload = {"form": form_data, "fields": serializer.data}
 
-        fields = []
-        for ff in form_fields_qs:
-            f = ff.field
-            field_obj = {
-                "id": ff.id if f else None,
-                "type": f.type.name if f and f.type else None,
-                "label": f.label if f else None,
-            }
-            if f and f.tag_id:
-                field_obj["enums"] = enums_by_tag.get(f.tag_id, [])
-            else:
-                field_obj["enums"] = []
-            fields.append(field_obj)
+        forms_data_cache.set(payload, cache_key)
+        return Response(payload, status=status.HTTP_200_OK)
 
-        form_data = {
-            "id": form.id,
-            "label": form.label,
-        }
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        forms_data_cache.delete(cache_key_for_form(getattr(instance, 'pk', None)))
+        forms_list_cache.delete_pattern()
+        return instance
 
-        return Response({"form": form_data, "fields": fields}, status=200)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    def perform_destroy(self, instance):
+        pk = getattr(instance, 'pk', None)
+        instance.delete()
+        forms_data_cache.delete(cache_key_for_form(pk))
+        forms_list_cache.delete_pattern()

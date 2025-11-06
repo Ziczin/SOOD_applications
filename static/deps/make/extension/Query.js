@@ -91,6 +91,7 @@ export default class Query {
     with(elem) { this.body.add(elem); return this; }
     where(elem) { this.query.add(elem); return this; }
 
+
     async get() { return await this.fetch('GET') }
     async post() { return await this.fetch('POST') }
     async patch() { return await this.fetch('PATCH') }
@@ -120,19 +121,25 @@ export default class Query {
         this.flush()
 
         let data;
-        try {
-            const text = await response.text();
+        const text = await response.text();
+        const parsed = (() => {
             try {
-                data = text ? JSON.parse(text) : {};
+                return text ? JSON.parse(text) : {};
             } catch (err) {
-                data = text;
+                return null;
             }
-        }
-        catch (error) {
-            console.error('Make-Query error:', error);
-            data = null;
-        }
+        })();
+        data = parsed === null ? text : parsed;
 
         return data;
+    }
+
+    repeat(delay, method, func) {
+        const intervalId = setInterval(async () => {
+            const res = await this.view().fetch(method);
+            if (res.response) 
+                func(res.response);
+        }, delay);
+        return () => clearInterval(intervalId);
     }
 }

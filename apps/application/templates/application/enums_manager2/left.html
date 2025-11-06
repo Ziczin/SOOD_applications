@@ -1,0 +1,106 @@
+{% load static %}
+
+<div id="left-exit-button"></div>
+
+<div class="content-strange", id="left-content"></div>
+
+<script type="module">
+  await import("{% static 'collected/static.js' %}");
+  //await import("{% static 'deps/make/make.js' %}");
+  const imp = (await import("{% static 'deps/js/tools/import.js' %}")).default(make)
+  const paragraphNotice = await imp("{% static 'deps/js/prefabs/paragraph_notice.js' %}")
+  const backButton = await imp("{% static 'deps/js/prefabs/exit_button.js' %}")
+  const actionNotice = await imp("{% static 'deps/js/prefabs/action_notice.js' %}")
+  const popup = await imp("{% static 'deps/js/prefabs/popup.js' %}")
+  const picButton = await imp("{% static 'deps/js/prefabs/pic_button.js' %}", popup, "{{ MEDIA_URL }}");
+  const basicManual = await imp("{% static 'deps/js/manual/basic_manual.js' %}", popup, picButton);
+
+  const curr = make.h1('test')
+  document.getElementById("left-exit-button").appendChild(backButton().build());
+  document.getElementById("left-exit-button").appendChild(basicManual(curr).build())
+
+  const csrfObj = await make.Query('/api/csrf-token').get()
+  const qBase = make.Query("/api").via({"X-CSRFToken": csrfObj.csrfToken}).view();
+  const qEnum = qBase.at("enums").view()
+  const qEnumTag = qBase.at("enum-tags").view()
+  
+  const me = await qBase.at("me").view().get()
+
+  const enumTagContainer = make.Div(
+    make.it.flexColumn,
+    make.style.gap(6),
+    make.style.minHeight(0),
+    make.with.style({flex: "1 1 auto"})
+  )
+
+  function universalHideBtn(component, route) {
+    return picButton("hide", "Скрыть перечисление от руководителей", make.it.act.alternative,
+      () => {
+        component.element.classList.toggle("make-mark-deactivated")
+        route.at(item.id).with({visible: !component.visibility}).patch()
+        component.visibility = !component.visibility
+        paragraphNotice("Видимость изменена!", make.color.yellow)
+      }
+    )
+  }
+
+  function universalDeleteBtn(component, route) {
+    return picButton("trash", "Удалить элемент", make.it.act.negative,
+      () => actionNotice({
+        confirmText: "Удалить", cancelText: "Отмена",
+        question: `Удалить ${component.input.element.value || "*пустой элемент*"}?`,
+        action: () => {
+          component.parent.removeChild(component)
+          route.at(item.id).with({available: false}).patch()
+          paragraphNotice("Удалено!", make.color.red)
+        }
+      })
+    )
+  }
+
+  function universalInput(route, enumTagLine, value, argName, nameEmpty) {
+    let universalInp
+    universalInp = make.Input(
+      make.with.attr({
+        value: value,
+        placeholder: value || nameEmpty
+      }),
+      make.on.input(() => enumTagLine.element.classList.add("make-mark-changed"))
+      make.on.inputTimeOut(3000, () => {
+        enumTagLine.element.classList.remove("make-mark-changed")
+        const data = {}
+        data[argName] = universalInp.element.value
+        qEnumTag.at(enumTagLine.id).with(data).view().patch()
+        make.ParagraphNotice("Изменено!", make.color.lgreen)
+      })
+    )
+    return universalInp
+  }
+
+  function universalDataGroup(data, valueSelector, route, nameEmpty) {
+    let dataGroup
+    let dataGroupInput
+    dataGroup = make.Div(
+      make.it.flexRow,
+      make.style.gap(6),
+      dataGroupInput = universalInput(route, dataGroup, data[valueSelector], nameEmpty)
+      universalHideBtn(dataGroup, route),
+      universalDeleteBtn(dataGroup, route)
+      
+
+    )
+    dataGroup.input = dataGroupInput
+    enumTagLine.id = enumTag.id
+  }
+
+  document.getElementById("left-content").appendChild(
+    enumTagContainer,
+    make.Button(
+      make.it.action,
+      make.it.act.neutral,
+      make.with.text("Добавить перечисление"),
+      make.on.click()
+    )
+  )
+
+</script>

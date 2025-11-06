@@ -4,12 +4,14 @@ from .views import (
     FormManagerView,
     EnumsManagerView,
     UsersManagerView,
-    FieldsManagerView
+    FieldsManagerView,
+    EnumsManager2View
 )
 urlpatterns = [
     path('dashboard/', DashboardView.as_view(), name='dashboard'),
     path('forms-manager/', FormManagerView.as_view(), name="forms-manager"),
     path('enums-manager/', EnumsManagerView.as_view(), name="enums-manager"),
+    path('enums-manager2/', EnumsManager2View.as_view(), name="enums-manager2"),
     path('users-manager/', UsersManagerView.as_view(), name="users-manager"),
     path('fields-manager/', FieldsManagerView.as_view(), name="fields-manager"),
 ]

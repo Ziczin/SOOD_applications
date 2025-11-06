@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+    "django_rq",
 
     'rest_framework',
 
@@ -42,6 +43,27 @@ INSTALLED_APPS = [
     'apps.forms',
     'apps.application',
 ]
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/0",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
+
+RQ_QUEUES = {
+    "default": {
+        "HOST": "127.0.0.1",
+        "PORT": 6379,
+        "DB": 2,
+        "DEFAULT_TIMEOUT": 360,
+    }
+}
 
 LOGGING = {
     'version': 1,
