@@ -25,7 +25,14 @@ const Tabs = content.prefab.Tabs(
     extension.Event
 );
 
-const Card = content.prefab.accordion.Card(extension.Component, createComponent, makeWith, makeOn);
+const Card = content.prefab.accordion.Card(
+    extension.Component,
+    createComponent,
+    makeWith,
+    makeOn,
+    extension.Event
+);
+
 const Accordion = content.prefab.accordion.Accordion(
     extension.Component, Card
 );

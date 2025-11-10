@@ -31,15 +31,18 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.username
+    
 
-from django.db import models
-from django.utils import timezone
-from django.conf import settings
+
+import threading
+import time
+from datetime import timedelta
 
 class EventSubscriber(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     event = models.CharField(max_length=255)
     response = models.TextField(null=True, blank=True)
+    other = models.BigIntegerField(null=True, blank=True)
     last_check = models.DateTimeField(default=timezone.now)
 
     class Meta:
@@ -48,3 +51,17 @@ class EventSubscriber(models.Model):
             models.Index(fields=['last_check']),
         ]
 
+def cleanup_old_subscribers():
+    cutoff_time = timezone.now() - timedelta(minutes=10)
+    return EventSubscriber.objects.filter(last_check__lt=cutoff_time).delete()[0]
+
+def start_cleanup_scheduler():
+    def scheduler():
+        while True:
+            time.sleep(600)
+            cleanup_old_subscribers()
+    
+    thread = threading.Thread(target=scheduler, daemon=True)
+    thread.start()
+
+start_cleanup_scheduler()

@@ -42,6 +42,7 @@ class Field(models.Model):
     label = models.CharField(max_length=50)
     tag = models.ForeignKey(EnumTag, on_delete=models.SET_NULL, null=True, default=None)
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, default=None)
+    required = models.BooleanField(default=False)
     
     class Meta:
         indexes = [
@@ -53,7 +54,6 @@ class Form(models.Model):
     def __str__(self): return self.label
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True)
     label = models.CharField(max_length=100, blank=True, default='')
-    confirm_button_text = models.CharField(max_length=100, blank=True, default='')
     available = models.BooleanField(default=True)
     visible = models.BooleanField(default=False)
     

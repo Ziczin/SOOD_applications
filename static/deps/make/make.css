@@ -222,13 +222,13 @@ p, form, h1, h2, h3, h4, h5, h6 {
 .make-tabs-menu {
     display: flex;
     flex: 0 0 auto;
-    max-height: fit-content;
+    min-height: fit-content;
     flex-direction: row;
     background-color: #0001;
 }
 
 .make-tabs-menu-scroll {
-    overflow-x: scroll;
+    overflow-x: auto;
 }
 .make-tabs-menu-scroll::-webkit-scrollbar {
     width: 8px;
@@ -241,11 +241,17 @@ p, form, h1, h2, h3, h4, h5, h6 {
 
 .make-tab-button {
     cursor: pointer;
-    flex: 1;
+    flex: 1 1 0;
+    min-width: fit-content;
     transition: filter var(--transition-very-slow) ease,
                 background-color var(--transition-very-slow) ease;
     background-color: #00000020;
 }
+.make-tab-button-square {
+    aspect-ratio: 1 / 1;
+    max-width: 20px;
+}
+
 .make-tab-button.make-mark-active-tab {
     outline: 2px solid #0006;
 }

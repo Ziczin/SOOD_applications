@@ -135,11 +135,39 @@ export default class Query {
     }
 
     repeat(delay, method, func) {
-        const intervalId = setInterval(async () => {
-            const res = await this.view().fetch(method);
-            if (res.response) 
-                func(res.response);
-        }, delay);
-        return () => clearInterval(intervalId);
+        let intervalId = null;
+
+        const schedule = (d) => {
+            if (intervalId !== null) clearInterval(intervalId);
+            intervalId = setInterval(async () => {
+                const res = await this.view().fetch(method);
+                if (res.stop) {
+                    clearInterval(intervalId);
+                    intervalId = null;
+                    return;
+                }
+                if (res.response) {
+                    func(res.response);
+                    // если ответ не null — используем delay из параметра (d), не меняем расписание
+                    return;
+                }
+                // если response == null, и сервер прислал корректный delay — перенастраиваем
+                if (res.delay && typeof res.delay === 'number' && res.delay > 0) {
+                    schedule(res.delay);
+                }
+            }, d);
+        };
+
+        schedule(delay);
+
+        return () => {
+            if (intervalId !== null) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+        };
     }
+
+
+
 }

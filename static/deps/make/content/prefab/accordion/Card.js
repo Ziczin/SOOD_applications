@@ -1,4 +1,4 @@
-export default function createCard(Component, createComponent, makeWith, makeOn) {
+export default function createCard(Component, createComponent, makeWith, makeOn, Event) {
   return class Card extends Component {
     constructor(...modifiers) {
       super('div');
@@ -7,6 +7,7 @@ export default function createCard(Component, createComponent, makeWith, makeOn)
       this.state = 'closed';
       this.addModifiers(...modifiers);
       this.accordion = null;
+      this.doCustomEvents = false
 
       this._onHeaderClick = (event) => {
         event.stopPropagation();
@@ -16,6 +17,16 @@ export default function createCard(Component, createComponent, makeWith, makeOn)
       };
       
       this.addDecorator(makeWith.css('make-card'));
+    }
+    allowCustomEvents() {
+        if (!this.doCustomEvents) {
+            this.doCustomEvents = true
+            this.onOpenStart = new Event({ret: this})
+            this.onOpenEnd = new Event({ret: this})
+            this.onCloseStart = new Event({ret: this})
+            this.onCloseEnd = new Event({ret: this})
+        }
+        return this
     }
 
     bindAccordion(accordion) {
@@ -67,9 +78,11 @@ export default function createCard(Component, createComponent, makeWith, makeOn)
         this.state = 'open';
         el.style.pointerEvents = 'auto';
         el.style.height = 'auto';
+        if (this.doCustomEvents) this.onOpenEnd.emit()
       } else if (this.state === 'closing') {
         this.state = 'closed';
         el.style.pointerEvents = 'none';
+        if (this.doCustomEvents) this.onCloseEnd.emit()
       }
     }
 
@@ -85,7 +98,7 @@ export default function createCard(Component, createComponent, makeWith, makeOn)
 
     openCard() {
       if (this.state !== 'closed' || !this.cardContent?.element) return;
-      
+      if (this.doCustomEvents) this.onOpenStart.emit()
       this.accordion?.closeAllCardsExcept(this);
       this.state = 'opening';
       const el = this.cardContent.element;
@@ -104,6 +117,7 @@ export default function createCard(Component, createComponent, makeWith, makeOn)
         this.state === 'closed' ||
         !this.cardContent?.element
       ) return;
+      if (this.doCustomEvents) this.onCloseStart.emit()
       
       this.state = 'closing';
       const el = this.cardContent.element;

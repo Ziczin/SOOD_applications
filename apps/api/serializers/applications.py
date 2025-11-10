@@ -1,6 +1,10 @@
 from rest_framework import serializers
-from apps.forms.models import Form, FormField, Field, FieldType, EnumTag, Enum
-from apps.application.models import Application, ApplicationFormField, ApplicationStatus
+from apps.forms.models import Form, FormField, Enum
+from apps.application.models import (
+    Application,
+    ApplicationFormField,
+    ApplicationStatus,
+)
 from apps.users.models import CustomUser, Department
 
 class ApplicationStatusListSerializer(serializers.Serializer):
@@ -54,7 +58,7 @@ class ApplicationCreateSerializer(serializers.Serializer):
 class SimpleFormSerializer(serializers.ModelSerializer):
     class Meta:
         model = Form
-        fields = ['id', 'label']
+        fields = ['id', 'label',  "department"]
 
 class SimpleDepartmentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -114,6 +118,15 @@ class ApplicationFieldOutputSerializer(serializers.ModelSerializer):
                 return enum_obj.value
         return val
 
+class ApplicationNoFieldsSerializer(serializers.ModelSerializer):
+    form = SimpleFormSerializer(read_only=True)
+    user = SimpleUserSerializer(read_only=True)
+    executor = SimpleUserSerializer(read_only=True)
+
+    class Meta:
+        model = Application
+        fields = ['id', 'form', 'user', 'executor', 'date', 'status', 'msg']
+
 class ApplicationSerializer(serializers.ModelSerializer):
     application_fields = ApplicationFieldOutputSerializer(many=True, read_only=True)
     form = SimpleFormSerializer(read_only=True)
@@ -122,7 +135,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Application
-        fields = ['id', 'form', 'user', 'executor', 'date', 'status', 'msg', 'application_fields']
+        fields = ['id', 'form', 'user', 'executor', 'date', 'status', 'msg', 'application_fields', 'last_status_change']
 
 class ApplicationUpdateSerializer(serializers.ModelSerializer):
     executor = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), allow_null=True, required=False)

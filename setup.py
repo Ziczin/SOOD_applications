@@ -12,6 +12,11 @@ from apps.application.models import Application, ApplicationFormField
 
 from itertools import product
 
+import random
+from datetime import datetime, timedelta
+from django.utils import timezone
+from django.db import transaction
+
 def create_superuser():
     User = get_user_model()
     if not User.objects.filter(username='toster').exists():
@@ -24,38 +29,56 @@ def create_superuser():
     super_user.verified = True
     super_user.proxy = True
     super_user.save()
+    print("Создан суперюзер: toster")
 
-def on_test_setup():
+def create_deps():
+    print("-- Создание отделов")
     prog_dep, c = Department.objects.get_or_create(name='Отдел программирования')
     rem_dep, c = Department.objects.get_or_create(name='Отдел сетевой поддержки')
+    print("Отделы созданы")
+    return rem_dep, prog_dep
 
-    User = get_user_model()
+def get_users_deps_product(deps):
+    print("-- Генерация сочетаний")
     users = [UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN]
-    deps = [prog_dep, rem_dep]
-    usrs = [p for p in product(deps, users) for _ in range(3)]
+    combos = [p for p in product(deps, users) for _ in range(3)]
+    print(f"Сгенерировано сочетаний: {len(combos)}")
+    return combos
 
-    for i, us in enumerate(usrs):
-        User.objects.create_user(
+def create_users(users_deps):
+    print("-- Создание пользователей")
+    User = get_user_model()
+    users = []
+    for i, us in enumerate(users_deps):
+        new_user = User.objects.create_user(
             username=str(i), password=str(i), fullname=str(i),
             department=us[0], role=us[1], verified=bool(i%2), proxy=i>3,
-        ).save()
-    
+        )
+        users.append(new_user)
+        print(f"Создан пользователь: {new_user.username}")
+    return users
+
+def create_enum_tags(rem_dep, prog_dep):
     print("-- Создание тэгов перечислений")
-    obj1, c = EnumTag.objects.get_or_create(name='Принтер', department=rem_dep, shared=True)
-    obj2, c = EnumTag.objects.get_or_create(name='Блюда')
-    obj3, c = EnumTag.objects.get_or_create(name='Компьютеры', department=prog_dep)
+    tag1, c = EnumTag.objects.get_or_create(name='Принтер', department=rem_dep, shared=True)
+    tag2, c = EnumTag.objects.get_or_create(name='Блюда')
+    tag3, c = EnumTag.objects.get_or_create(name='Компьютеры', department=prog_dep)
+    print("Тэги перечислений созданы")
+    return tag1, tag2, tag3
 
-
+def create_enums(tag1, tag2, tag3):
     print("-- Создание элементов перечислений")
-    Enum.objects.get_or_create(value='Принтер п-1', enum_tag=obj1)
-    Enum.objects.get_or_create(value='Принтер Lenovo', enum_tag=obj1)
-    Enum.objects.get_or_create(value='Мьясо', enum_tag=obj2)
-    Enum.objects.get_or_create(value='Пирожки с пирожками', enum_tag=obj2)
-    Enum.objects.get_or_create(value='OIDI-123', enum_tag=obj3)
-    Enum.objects.get_or_create(value='UZI-1', enum_tag=obj3)
-    Enum.objects.get_or_create(value='UZI-2', enum_tag=obj3)
-    Enum.objects.get_or_create(value='kpo-866', enum_tag=obj3)
+    Enum.objects.get_or_create(value='Принтер п-1', enum_tag=tag1)
+    Enum.objects.get_or_create(value='Принтер Lenovo', enum_tag=tag1)
+    Enum.objects.get_or_create(value='Мьясо', enum_tag=tag2)
+    Enum.objects.get_or_create(value='Пирожки с пирожками', enum_tag=tag2)
+    Enum.objects.get_or_create(value='OIDI-123', enum_tag=tag3)
+    Enum.objects.get_or_create(value='UZI-1', enum_tag=tag3)
+    Enum.objects.get_or_create(value='UZI-2', enum_tag=tag3)
+    Enum.objects.get_or_create(value='kpo-866', enum_tag=tag3)
+    print("Элементы перечислений созданы")
 
+def create_field_types():
     print("-- Создание типов полей")
     type_names = [
         ('numeric', "Число", False),
@@ -69,79 +92,149 @@ def on_test_setup():
         ('phone', "Телефон", False),
     ]
     types = {tn[0]: FieldType.objects.get_or_create(name=tn[0], label=tn[1], allow_tags=tn[2])[0] for tn in type_names}
+    print(f"Типов полей создано/получено: {len(types)}")
+    return types
 
+def create_form(dep, name):
+    new_form, c = Form.objects.get_or_create(
+        department=dep,
+        label=name,
+        visible=True,
+        )
+    print(f"Форма создана: {name}")
+    return new_form
+
+def create_forms(rem_dep, prog_dep):
     print("-- Создание форм")
-    form1, c = Form.objects.get_or_create(
-        department=rem_dep,
-        label='Testovaya Forma',
-        confirm_button_text='Confirm Button Text',
-        visible=True,
-        )
-    
-    form2, c = Form.objects.get_or_create(
-        department=rem_dep,
-        label='ttt',
-        confirm_button_text='Confirm Button Text',
-        visible=True,
-        )
-    
-    form3, c = Form.objects.get_or_create(
-        department=prog_dep,
-        label='Заявка на установку ПО',
-        confirm_button_text='Confirm Button Text',
-        visible=True,
-        )
-    
+    f1 = create_form(rem_dep, 'Testovaya Forma')
+    f2 = create_form(rem_dep, 'TTT')
+    f3 = create_form(prog_dep, 'Заявка на установку ПО')
+    print("Формы созданы")
+    return f1, f2, f3
+
+def create_field_examples(types, tag1, tag2, tag3):
     print("-- Создание примеров полей")
     fields = [
         {"label": "Количество", "type": types['int']},
-        {"label": "Технологические пирожки", "type": types['enum'], "tag": obj2},
-        {"label": "Компьютер", "type": types['enum'], "tag": obj3},
+        {"label": "Технологические пирожки", "type": types['enum'], "tag": tag2},
+        {"label": "Компьютер", "type": types['enum'], "tag": tag3},
         {"label": "Стоимость", "type": types['numeric']},
         {"label": "Наименование", "type": types['text']},
         {"label": "Описание", "type": types['bigtext']},
         {"label": "Цена", "type": types['numeric']},
-        {"label": "Принтер", "type": types['enum'], "tag": obj1},
+        {"label": "Принтер", "type": types['enum'], "tag": tag1},
         {"label": "Новое количество", "type": types['int']},
     ]
+    print(f"Примеров полей: {len(fields)}")
+    return fields
 
-
+def link_fields_to_forms(deps, forms, fields):
     ff1_list = []
     ff3_list = []
     for i, f in enumerate(fields):
         field, c = Field.objects.get_or_create(**f, department=deps[i%2])
-        ff, c = FormField.objects.get_or_create(form=[form1, form2, form3][i % 3], field=field)
+        ff, c = FormField.objects.get_or_create(form=forms[i % 3], field=field)
         if i % 3 == 0:
             ff1_list.append(ff)
         if i % 3 == 2:
             ff3_list.append(ff)
+        print(f"Поле привязано: {field.label} -> форма {forms[i % 3].label}")
+    print("Привязка полей к формам завершена")
+    return ff1_list, ff3_list
 
-    from django.utils import timezone
-    from datetime import datetime, timedelta
-    import calendar
+import uuid
+from collections import defaultdict
 
-    print("-- Создание примеров заявок")
+import uuid
+from collections import defaultdict
 
-    now = timezone.now()
-    current_days = calendar.monthrange(now.year, now.month)[1]
+def bulk_create_applications(count=10000, start_date_str=None, min_step_minutes=30, max_step_minutes=60, min_fields=1, max_fields=3):
+    if start_date_str:
+        start_dt = datetime.fromisoformat(start_date_str)
+        base_dt = timezone.make_aware(start_dt, timezone.get_default_timezone())
+    else:
+        base_dt = timezone.now()
+    users = list(get_user_model().objects.all())
+    form = Form.objects.first()
+    form_fields = list(FormField.objects.filter(form=form))
+    current_dt = base_dt
+    batch_size = 500
+    to_create = []
+    marker_to_date = {}
+    created_ids = []
+    total_created = 0
+    print(f"-- Начало массового создания заявок: {count}, старт = {base_dt.isoformat()}")
+    for i in range(count):
+        user = random.choice(users)
+        app_dt = current_dt
+        marker = str(uuid.uuid4())
+        app = Application(form=form, user=user, date=app_dt, last_status_change=app_dt, msg=marker)
+        to_create.append(app)
+        marker_to_date[marker] = app_dt
+        if len(to_create) >= batch_size:
+            Application.objects.bulk_create(to_create, batch_size=batch_size)
+            markers = [m for m in marker_to_date.keys() if m][-len(to_create):]
+            created = list(Application.objects.filter(msg__in=markers).values_list('id', 'msg'))
+            created_ids.extend([c[0] for c in created])
+            for cid, cm in created:
+                dt = marker_to_date.get(cm)
+                if dt:
+                    Application.objects.filter(id=cid).update(date=dt, last_status_change=dt, msg='')
+            total_created += len(to_create)
+            print(f"Пакет создан: {total_created}/{count} заявок (последняя дата в пакете {app_dt.isoformat()})")
+            to_create = []
+        step = random.randint(min_step_minutes, max_step_minutes)
+        current_dt -= timedelta(minutes=step)
+    if to_create:
+        Application.objects.bulk_create(to_create, batch_size=batch_size)
+        markers = [m for m in marker_to_date.keys() if m][-len(to_create):]
+        created = list(Application.objects.filter(msg__in=markers).values_list('id', 'msg'))
+        created_ids.extend([c[0] for c in created])
+        for cid, cm in created:
+            dt = marker_to_date.get(cm)
+            if dt:
+                Application.objects.filter(id=cid).update(date=dt, last_status_change=dt, msg='')
+        total_created += len(to_create)
+        print(f"Пакет создан: {total_created}/{count} заявок (последняя дата в пакете {app_dt.isoformat()})")
+    created_ids = created_ids[::-1]
+    app_qs = Application.objects.filter(pk__in=created_ids).order_by('id')
+    total_aff = 0
+    print("-- Начало создания полей для заявок")
+    with transaction.atomic():
+        for idx, app in enumerate(app_qs, 1):
+            num_fields = random.randint(min_fields, max_fields)
+            chosen_ff = random.sample(form_fields, min(num_fields, len(form_fields)))
+            aff_objs = [ApplicationFormField(application=app, form_field=ff, value=str(random.randint(1, 100))) for ff in chosen_ff]
+            ApplicationFormField.objects.bulk_create(aff_objs)
+            total_aff += len(aff_objs)
+            if idx % 1000 == 0 or idx == len(created_ids):
+                print(f"Обработано заявок для полей: {idx}/{len(created_ids)}")
+    print(f'Создано заявок: {len(created_ids)}')
+    print(f'Создано полей в заявках: {total_aff}')
 
-    prev_month = now.month - 1 if now.month > 1 else 12
-    prev_year = now.year if now.month > 1 else now.year - 1
-    prev_days = calendar.monthrange(prev_year, prev_month)[1]
+def on_test_setup():
+    User = get_user_model()
+    deps = create_deps()
 
-    total_days = current_days + prev_days
-    user = User.objects.get(username='1')
-    for i in range(1000):
-        if ((i+1) % 100) == 0:
-            print(f"{i+1}/1000")
-        app = Application.objects.create(form=form1, user=user)
-        for ff in ff1_list:
-            ApplicationFormField.objects.create(application=app, form_field=ff, value=str(i))
+    users_deps = get_users_deps_product(deps)
+    users = create_users(users_deps)
 
-    for i in range(10):
-        app = Application.objects.create(form=form3, user=user)
-        for ff in ff3_list:
-            ApplicationFormField.objects.create(application=app, form_field=ff, value=str(i))
+    tag1, tag2, tag3 = create_enum_tags(*deps)
+    create_enums(tag1, tag2, tag3)
+
+    types = create_field_types()
+
+    forms = create_forms(*deps)
+    
+    fields = create_field_examples(types, tag1, tag2, tag3)
+
+    link_fields_to_forms(deps, forms, fields)
+
+    ##bulk_create_applications(10000)
+
+    from django.core.cache import cache
+    cache.clear()
+
     print("База данных заполнена начальными данными!")
     
 if __name__ == '__main__':

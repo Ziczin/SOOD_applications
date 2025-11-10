@@ -6,8 +6,8 @@ class ApplicationStatus(models.TextChoices):
     SENDED = "SENDED", "Отправлена"
     IN_PROGRESS = "IN_PROGRESS", "В работе"
     COMPLETED = "COMPLETED", "Выполнена"
-    CANCELLED = "CANCELLED", "Отменена"
-    REJECTED = "REJECTED", "Отклонена"
+    CANCELLED = "CANCELLED", "Отменена отправителем"
+    REJECTED = "REJECTED", "Отклонена исполнителем"
 
 class Application(models.Model):
     def __str__(self): return str(self.form) + ' | ' + str(self.user)
@@ -22,6 +22,7 @@ class Application(models.Model):
         choices=ApplicationStatus.choices,
         default=ApplicationStatus.SENDED,
     )
+    last_status_change = models.DateTimeField(auto_now_add=True)
     msg = models.CharField(max_length=600, blank=True, default='')
 
     class Meta:
@@ -33,9 +34,26 @@ class Application(models.Model):
             models.Index(fields=['form', '-date']),
         ]
 
+class ApplicationStatusLog(models.Model):
+    def __str__(self): return str(self.application) + ' | ' + str(self.status) + ' | ' + str(self.date)
+    application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='application_status_log')
+    previous_status = models.CharField(
+        max_length=32,
+        choices=ApplicationStatus.choices,
+        default=ApplicationStatus.SENDED
+    )
+    status = models.CharField(
+        max_length=32,
+        choices=ApplicationStatus.choices,
+        default=ApplicationStatus.SENDED
+    )
+    date = models.DateTimeField(auto_now_add=True)
+    who = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
+
 class ApplicationFormField(models.Model):
     def __str__(self): return str(self.application) + ' | ' + str(self.form_field.outer_str()) + ' | ' + str(self.value)
-    application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='application_fields')
+    application = models.ForeignKey(
+        Application, on_delete=models.SET_NULL, related_name='application_fields', null=True)
     form_field = models.ForeignKey(FormField, on_delete=models.SET_NULL, null=True)
     value = models.CharField(max_length=100)
 

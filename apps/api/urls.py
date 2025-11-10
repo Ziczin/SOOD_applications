@@ -16,9 +16,7 @@ from apps.api.views.applications import (
     ApplicationStatusListAPIView,
     ApplicationStatusUpdateAPIView,
 )
-from apps.api.views.events import (
-    SubscribeView, UnsubscribeView, CheckView
-)
+from apps.api.views.events import EventCheckView
 from apps.api.views.report import ReportXlsxView
 
 CRUD = {'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}
@@ -75,9 +73,7 @@ urlpatterns = [
     path('report/', ReportXlsxView.as_view(), name='report'),
     
     # Events endpoints
-    path('events/sub/', SubscribeView.as_view(), name='subscribe'),
-    path('events/unsub/', UnsubscribeView.as_view(), name='unsubscribe'),
-    path('events/check/', CheckView.as_view(), name='check'),
+    path('events/check/', EventCheckView.as_view(), name='check'),
     
     # Router URLs (должен быть последним)
     path('', include(router.urls)),

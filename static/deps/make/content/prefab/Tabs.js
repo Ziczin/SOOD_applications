@@ -11,9 +11,11 @@ export default function createTabs(Component, createComponent, makeWith, makeOn,
 
         header(...modifiers) {
             let addit = this._isFirst ? [makeWith.css('make-mark-active-tab')] : []
+            const squareStyle = this._handler.squareTabs ? [makeWith.css('make-tab-button-square')] : []
             this._header = createComponent(
                 'div',
                 makeWith.css('make-tab-button'),
+                ...squareStyle,
                 makeOn.click(() => {
                     this._handler.activateTab(this)
                 }),
@@ -25,12 +27,23 @@ export default function createTabs(Component, createComponent, makeWith, makeOn,
         }
         
         content(...modifiers) {
-            this._content = createComponent(
-                'div',
-                makeWith.css('make-tab-content'),
-                makeWith.attr(this._isFirst ? {} : {hidden: true}),
-                ...modifiers
-            );
+            if (this._handler._noAnimation) {
+                const initialStyle = this._isFirst ? '' : 'display:none;';
+                this._content = createComponent(
+                    'div',
+                    makeWith.css('make-tab-content'),
+                    makeWith.attr({ style: initialStyle }),
+                    ...modifiers
+                );
+            } else {
+                const attrs = this._isFirst ? {} : { hidden: true };
+                this._content = createComponent(
+                    'div',
+                    makeWith.css('make-tab-content'),
+                    makeWith.attr(attrs),
+                    ...modifiers
+                );
+            }
             this._handler.contentContainer.addChild(this._content);
             return this._handler;
         }
@@ -44,12 +57,14 @@ export default function createTabs(Component, createComponent, makeWith, makeOn,
     }
 
     return class Tabs extends Component {
-        constructor({scroll=false}={}, ...modifiers) {
+        constructor({scroll=false, noAnimation=false, squareTabs=false}={}, ...modifiers) {
             super('div');
             this.name = 'tabs'
             this.addModifiers(...modifiers);
             this.addDecorator(makeWith.css('make-tabs'));
             
+            this._noAnimation = !!noAnimation;
+            this.squareTabs = !!squareTabs;
             this.tabs = [];
             let addit = scroll ? [makeWith.css('make-tabs-menu-scroll'), ] : []
             this.menuContainer = createComponent('div', makeWith.css('make-tabs-menu'), ...addit);
@@ -87,12 +102,20 @@ export default function createTabs(Component, createComponent, makeWith, makeOn,
             this.currentTab?.onClose.emit(tab)
             
             if (this.currentTab && this.currentTab._content && this.currentTab._content.element) {
-                this.currentTab._content.element.setAttribute('hidden', '');
+                if (this._noAnimation) {
+                    this.currentTab._content.element.style.display = 'none';
+                } else {
+                    this.currentTab._content.element.setAttribute('hidden', '');
+                }
                 this.currentTab._header.element.classList.remove('make-mark-active-tab')
             }
             
             if (tab._content && tab._content.element) {
-                tab._content.element.removeAttribute('hidden');
+                if (this._noAnimation) {
+                    tab._content.element.style.display = '';
+                } else {
+                    tab._content.element.removeAttribute('hidden');
+                }
                 tab._header.element.classList.add('make-mark-active-tab')
             }
             

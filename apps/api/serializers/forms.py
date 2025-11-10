@@ -27,7 +27,6 @@ class FormSerializer(serializers.ModelSerializer):
             "id",
             "department",
             "label",
-            "confirm_button_text",
             "available",
             "visible",
         )

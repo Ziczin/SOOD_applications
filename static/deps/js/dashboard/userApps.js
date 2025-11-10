@@ -1,5 +1,5 @@
 export default (make) =>
-async function dashboardModer(qBase, userId, statuses, popup) {
+async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice) {
     const appList = make.Scrollbox(
         make.it.flexColumn,
         make.style.height("100%"),
@@ -121,6 +121,7 @@ async function dashboardModer(qBase, userId, statuses, popup) {
               make.it.flexRow,
               make.style.gap(9),
               make.with.style({alignSelf: "center"}),
+              make.Paragraph(`№ ${app.id}`, make.it.textBold, make.with.style({flex: "0 1 auto"})),
               make.Paragraph(timeFormat(app.date), make.with.style({flex: "1 1 auto"})),
               make.Paragraph(app.form.label, make.with.style({flex: "100 1 auto"}))
             ),
@@ -210,6 +211,7 @@ async function dashboardModer(qBase, userId, statuses, popup) {
                               if (inp.element.value) {
                                 await qBase.at("applications").at(app.id).with({
                                   status: "CANCELLED",
+                                  executor: userId,
                                   msg: inp.element.value
                                 }).view().patch()
                                 card.status = "CANCELLED"
@@ -241,6 +243,7 @@ async function dashboardModer(qBase, userId, statuses, popup) {
           )
         )
         card.btn2 = btn2
+        card.cardBody = cardBody
 
         return card
     }
@@ -250,5 +253,49 @@ async function dashboardModer(qBase, userId, statuses, popup) {
       handler.onBuild.unsub(getAndDraw)
     })
     window.getAndDrawUserApps = getAndDraw
+
+    qBase.at("events").at("check").with(
+      {user_id: userId, event: "application-status-change-userboard", other: userId}
+    ).view().repeat(
+      1000, 'POST', (resp)=> {
+        appList.children.forEach((card) => {
+          if (card.id === resp.id) {
+            card.status = resp.status
+            card.cardBody.addChild(
+              make.Separator(4, make.style.rounded(12), make.color.lgray),
+            )
+            if (resp.msg) {
+              card.cardBody.addChild(
+                make.Div(
+                  make.it.marginOnHover,
+                  make.Paragraph(`Причина: ${resp.msg}`),
+                )
+              )
+            }
+            else {
+              card.cardBody.addChild(
+                make.Div(
+                  make.it.marginOnHover,
+                  make.Paragraph(`Исполнитель: ${resp.executor}`),
+                )
+              )
+            }
+            
+            card.removeChild(card.btn2)
+            card.btn2.destroy()
+          }
+        })
+        setVisibilityByStatus()
+        paragraphNotice(
+          ["Изменён статус по заявке",
+            `${resp.form} №${resp.id}`,
+            `Исполнитель: ${resp.executor}`,
+            `Статус: ${resp.status}`,
+            resp.msg && `Сообщение: ${resp.msg}`,
+          ],
+          make.color.yellow, 2500, false
+        )
+      }
+    )
     return handler
 }

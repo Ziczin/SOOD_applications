@@ -1,4 +1,4 @@
-export default (Decorator, Event) => 
+export default (Decorator, Event) =>
 class Component {
     constructor(elementType, autoRebuild = true) {
         this.name = 'component'
