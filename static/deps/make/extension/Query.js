@@ -148,10 +148,8 @@ export default class Query {
                 }
                 if (res.response) {
                     func(res.response);
-                    // если ответ не null — используем delay из параметра (d), не меняем расписание
                     return;
                 }
-                // если response == null, и сервер прислал корректный delay — перенастраиваем
                 if (res.delay && typeof res.delay === 'number' && res.delay > 0) {
                     schedule(res.delay);
                 }

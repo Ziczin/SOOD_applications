@@ -115,13 +115,13 @@ def create_forms(rem_dep, prog_dep):
 def create_field_examples(types, tag1, tag2, tag3):
     print("-- Создание примеров полей")
     fields = [
+        {"label": "Компьютер", "type": types['enum'], "tag": tag3},
         {"label": "Количество", "type": types['int']},
         {"label": "Технологические пирожки", "type": types['enum'], "tag": tag2},
-        {"label": "Компьютер", "type": types['enum'], "tag": tag3},
-        {"label": "Стоимость", "type": types['numeric']},
         {"label": "Наименование", "type": types['text']},
-        {"label": "Описание", "type": types['bigtext']},
+        {"label": "Стоимость", "type": types['numeric']},
         {"label": "Цена", "type": types['numeric']},
+        {"label": "Описание", "type": types['bigtext']},
         {"label": "Принтер", "type": types['enum'], "tag": tag1},
         {"label": "Новое количество", "type": types['int']},
     ]
@@ -230,7 +230,7 @@ def on_test_setup():
 
     link_fields_to_forms(deps, forms, fields)
 
-    ##bulk_create_applications(10000)
+    # bulk_create_applications(10000)
 
     from django.core.cache import cache
     cache.clear()

@@ -5,6 +5,7 @@ import Tabs from './Tabs.js';
 import accordion from './accordion/_.js';
 import Collector from './Collector.js';
 import Annotation from './Annotation.js';
+import Modal from './Modal.js';
 
 export default {
     basic,
@@ -14,4 +15,5 @@ export default {
     accordion,
     Collector,
     Annotation,
+    Modal,
 }

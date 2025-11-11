@@ -16,6 +16,7 @@
   const buildAdminTab = await imp("{% static 'deps/js/dashboard/admin.js' %}")
   const buildModerTab = await imp("{% static 'deps/js/dashboard/moder.js' %}")
   const buildUserTab = await imp("{% static 'deps/js/dashboard/user.js' %}")
+  const buildUserAppsTab = await imp("{% static 'deps/js/dashboard/userApps.js' %}")
   
   const qBase = make.Query('/api').via({"X-CSRFToken": csrfObj.csrfToken}).view()
   const departments = await qBase.at('departments').view().get()
@@ -33,6 +34,8 @@
     resultModer = await buildModerTab(
       qBase, me.department.id, statuses, popup, onOpenFooContainer, me, paragraphNotice);
   }
+
+  const userApps = await buildUserAppsTab(qBase, me.id, statuses, popup, paragraphNotice)
 
   const tabs = make.Tabs(make.style.height('100%'))
   .menu(
@@ -60,15 +63,15 @@
       ...make.callif(permissions.length === 0,
         () => make.h1("Перед началом работы верифицируйте аккаунт у администратора отдела или в отделе программирования.")
       ),
-      ...make.callif(permissions.length === 1,
-        () => [
-          make.h1("Создание заявки"),
-          ...buildUserTabWrapper()
-        ]
-      ),
-      ...make.callif(permissions.length > 1,
+      ...make.callif(permissions.length > 0,
         () => {
           if (permissions.includes('user'))
+            tabs.tab()
+            .header(...getHeaderComponent("Мои заявки"))
+            .content(
+              make.it.flexColumn,
+              userApps
+            );
             tabs.tab()
             .header(...getHeaderComponent("Создать заявку"))
             .content(
@@ -84,7 +87,7 @@
             );
           if (permissions.includes('admin'))
             tabs.tab()
-            .header(...getHeaderComponent("Управление отделом"))
+            .header(...getHeaderComponent("Управление"))
             .content(
               ...buildAdminTab(qBase)
           );

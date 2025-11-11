@@ -1,6 +1,24 @@
 export default (make) =>
 async function dashboardModer(qBase, department, statuses, popup, onOpenFooContainer, me, paragraphNotice) {
+  const Row = (...args) => make.Div(make.it.flexRow, make.style.gap(6), ...args)
+  const Column = (...args) => make.Div(make.it.flexColumn, make.style.gap(6), ...args)
+
+  function setStatusStyle(element, style) {
+    if (!element || typeof element.className !== 'string') return;
+    element.className = element.className
+      .split(/\s+/)
+      .filter(function(c) { return c.indexOf('have-status-') !== 0; })
+      .join(' ')
+      .trim();
+    if (style && style.toString().trim() !== '') {
+      var newClass = 'have-status-' + style;
+      if (element.className) element.className += ' ' + newClass;
+      else element.className = newClass;
+    }
+  }
+
   onOpenFooContainer.push(getAndDraw)
+  const executors = await qBase.at('users').where({department: department, permissions: "moderator"}).view().get()
   const appList = make.Scrollbox(
     make.it.flexColumn,
     make.style.maxWidth('100%'),
@@ -64,14 +82,15 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
   function setVisibilityByStatus() {
     let cards = []
     appList.cards.forEach(card => {
-      const matchStatus = statusSort.element.value === card.status
+      const matchStatus = !statusSort.element.value || statusSort.element.value === card.status
+      const matchExecutor = !executorSort.element.value || executorSort.element.value == card.executor?.id
       const sended = card.status === "SENDED"
       const in_progress = card.status === "IN_PROGRESS"
       const completed = card.status === "COMPLETED"
       const rejected = card.status === "REJECTED"
       const bntBuilded = card.element && card.btnProc && card.btnProc.element
       if (card.element) {
-        if (!matchStatus) card.element.style.display = "none"
+        if (!matchStatus || !matchExecutor) {card.element.style.display = "none"}
         else {
           cards.push(card)
           card.element.style.display = "block"
@@ -90,7 +109,14 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
     redrawTabs(cards)
   }
   const statusSort = make.Select(
+    make.OptionPlaceholder("Все"),
     ...statuses.map(status => make.Option(status.label, status.key)),
+    make.on.change(setVisibilityByStatus)
+  )
+
+  const executorSort = make.Select(
+    make.OptionPlaceholder("Все"),
+    ...executors.map(exec => make.Option(exec.fullname, exec.id)),
     make.on.change(setVisibilityByStatus)
   )
 
@@ -120,30 +146,32 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
     make.on.change(getAndDraw)
   )
 
-  const sortElement = make.Div(
-    make.it.flexRow,
-    make.style.gap(6),
+  const sortElement = Row(
     make.with.style({flex: 0}),
-    make.Div(
-      make.it.flexRow,
-      make.style.gap(6),
-      make.Paragraph("Статус: ", make.with.style({alignSelf: "center"})),
-      statusSort,
-    ),
-    make.SideSeparator(12),
-    make.Div(
-      make.it.flexRow,
-      make.style.gap(6),
-      make.Paragraph("с ", make.with.style({alignSelf: "center"})),
-      inputDateFrom,
-      make.SideSeparator(12),
-      make.Paragraph("по ", make.with.style({alignSelf: "center"})),
-      inputDateTo
+    Row(
+      Column(
+        Row(
+          make.Paragraph("Статус: ", make.with.style({alignSelf: "center"})),
+          statusSort
+        ),
+        Row(
+          make.Paragraph("Исполнитель: ", make.with.style({alignSelf: "center"})),
+          executorSort
+        )
+      ),
+      Column(
+        Row(
+          make.Paragraph("от", make.with.style({alignSelf: "center"})),
+          inputDateFrom
+        ),
+        Row(
+          make.Paragraph("по ", make.with.style({alignSelf: "center"})),
+          inputDateTo
+        ),
+      ),
     )
   )
-  const handler = make.Div(
-    make.it.flexColumn,
-    make.style.gap(6),
+  const handler = Column(
     make.style.maxWidth('100%'),
     sortElement,
     appList
@@ -164,15 +192,15 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
     )
     card.status = app.status
     card.id = app.id
+    card.executor = app.executor
     let btnProc
     let btnCanc
     let cardBody
     let btnHolder
     let fieldData
     card.header(
-      make.Div(
-        make.it.flexRow,
-        make.style.gap(6),
+      make.with.css(`have-status-${app.status}`),
+      Row(
         make.Div(
           make.it.flexRow,
           make.style.gap(9),
@@ -192,15 +220,10 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
       make.style.rounded(12),
       make.with.style({border: "3px solid #ddd"}),
     ).content(
-      make.Separator(6),
       make.style.height('100%'),
-      cardBody = make.Div(
-        make.it.flexColumn,
-        make.style.gap(6),
+      cardBody = Column(
         make.Separator(),
-        make.Div(
-          make.it.flexRow,
-          make.style.gap(6),
+        Row(
           make.it.marginOnHover,
           make.Paragraph(`От: ${app.user.fullname}`),
           make.callif(app.user.department,
@@ -212,11 +235,7 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
             make.it.marginOnHover
           )
         ),
-        make.Separator(2, make.color.lgray),
-        fieldData = make.Div(
-          make.it.flexColumn,
-          make.style.gap(6)
-        ),
+        fieldData = Column(),
         ...make.if(app.msg,
           make.Paragraph(
             app.status === "REJECTED"
@@ -230,9 +249,7 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
         ...make.if(
           ["SENDED", "IN_PROGRESS"].includes(card.status)
           && (app.executor === null || app.executor.id === me.id),
-          btnHolder = make.Div(
-            make.it.flexRow,
-            make.style.gap(6),
+          btnHolder = Row(
             make.style.margin(2),
             btnProc = make.Button(
               make.with.style({flex: 1}),
@@ -249,8 +266,19 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
                   executor: me.id
                 }).view().patch()
                 card.status = newStatus
+                if (!card.executor) {
+                  card.cardBody.addChild(
+                    make.Div(
+                      make.it.marginOnHover,
+                      make.Paragraph(`Исполнитель: ${me.fullname}`),
+                    )
+                  )
+                  card.executor = me
+                }
                 if (card.status === "COMPLETED")
                   btnProc.element.display = "none"
+                setStatusStyle(card.cardHeader.element, card.status)
+
                 setVisibilityByStatus()
               })
             ),
@@ -265,41 +293,39 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
                 e.stopPropagation();
                 const inp = make.Input()
                 make.Notice([500, Infinity, 500, "actionNotice"],
-                  make.Div(
-                    make.it.flexColumn,
-                    make.style.gap(6),
+                  Column(
                     make.it.contented,
                     make.Paragraph("Для того чтобы отказать в заявке укажите причину отказа:"),
                     inp,
-                    make.Div(
-                      make.it.flexRow,
-                      make.style.gap(6),
+                    Row(
                       make.Button(
-                          make.it.action,
-                          make.it.act.negative,
-                          make.with.text("Отказать"),
-                          make.with.style({flex: 1}),
-                          make.on.click(async () => {
-                            if (inp.element.value) {
-                              await qBase.at("applications").at(app.id).with({
-                                status: "REJECTED",
-                                msg: inp.element.value,
-                                executor: me.id
-                              }).view().patch()
-                              card.status = "REJECTED"
-                              setVisibilityByStatus()
-                              card.btnProc.destroy()
-                              card.btnCanc.destroy()
-                              card.btnHolder.destroy()
-                              cardBody.addChild(
-                                make.Paragraph(
-                                  `Причина отказа: ${inp.element.value}`,
-                                  make.it.marginOnHover
-                                )
+                        make.it.action,
+                        make.it.act.negative,
+                        make.with.text("Отказать"),
+                        make.with.style({flex: 1}),
+                        make.on.click(async () => {
+                          if (inp.element.value) {
+                            await qBase.at("applications").at(app.id).with({
+                              status: "REJECTED",
+                              msg: inp.element.value,
+                              executor: me.id
+                            }).view().patch()
+                            card.status = "REJECTED"
+                            card.executor = me
+                            setStatusStyle(card.cardHeader.element, card.status)
+                            setVisibilityByStatus()
+                            card.btnProc.destroy()
+                            card.btnCanc.destroy()
+                            card.btnHolder.destroy()
+                            cardBody.addChild(
+                              make.Paragraph(
+                                `Причина отказа: ${inp.element.value}`,
+                                make.it.marginOnHover
                               )
-                              make.other.closeCurrentNotice()
-                            }
-                          })
+                            )
+                            make.other.closeCurrentNotice()
+                          }
+                        })
                       ),
                       make.Button(
                         make.it.action,
@@ -320,6 +346,7 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
           
       )
     )
+    setStatusStyle(card.cardHeader.element, app.status)
     card.cardBody = cardBody
     card.allowCustomEvents()
     async function drawFields()
@@ -327,9 +354,7 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
       const _app = await qBase.at("applications").at(app.id).view().get()
       _app.application_fields.forEach(field => 
         fieldData.addChild(
-          make.Div(
-            make.it.flexRow,
-            make.style.gap(6),
+          Row(
             make.it.marginOnHover,
             make.Paragraph(`${field.label}: ${field.value}`),
             ...make.if(field.tag !== null,
@@ -359,7 +384,7 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
         [`${resp.form.label} № ${resp.id}`, `От ${resp.user.fullname}`],
         make.color.yellow, 2500, false
       )
-    }
+    }, 401
   )
   qBase.at("events").at("check").with(
     {user_id: me.id, event: "application-status-change-moderboard", other: department}
@@ -368,26 +393,25 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
       appList.cards.forEach((card) => {
         if (card.id === resp.id) {
           card.status = resp.status
-          card.cardBody.addChild(
-            make.Separator(4, make.style.rounded(12), make.color.lgray),
-          )
           if (resp.msg) {
             card.cardBody.addChild(
               make.Div(
                 make.it.marginOnHover,
-                make.Paragraph(`Причина: ${resp.msg}`),
+                make.Paragraph(`Причина: ${resp.msg}`, make.it.textBold),
               )
             )
           }
           else {
-            card.cardBody.addChild(
-              make.Div(
-                make.it.marginOnHover,
-                make.Paragraph(`Исполнитель: ${resp.executor}`),
+            if (!card.executor) {
+              card.cardBody.addChild(
+                make.Div(
+                  make.it.marginOnHover,
+                  make.Paragraph(`Исполнитель: ${resp.executor.fullname, make.it.textBold}`),
+                )
               )
-            )
+              card.executor = resp.executor
+            }
           }
-          
           card.removeChild(card.btnCanc)
           card.btnCanc.destroy()
         }
@@ -402,7 +426,7 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
         ],
         make.color.blue, 2500, false
       )
-    }
+    }, 401
   )
   return [handler]
 }

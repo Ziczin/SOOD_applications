@@ -2,6 +2,7 @@ from rest_framework import status, viewsets, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from apps.api.cache_tools.helper import CacheHelper
+from django.db.models import Q
 
 from apps.users.models import CustomUser, UserRole
 from apps.api.core.get_permissions import get_permissions
@@ -35,6 +36,23 @@ class UsersViewSet(
     serializer_class = UserDetailSerializer
     lookup_field = 'pk'
 
+    def filter_queryset_by_permission(self, queryset, permission: str):
+        if not permission:
+            return queryset
+        perm = permission.strip()
+        prelim_q = Q()
+        if perm == 'proxy':
+            prelim_q &= Q(proxy=True)
+        if prelim_q:
+            queryset = queryset.filter(prelim_q)
+        users = list(queryset)
+        filtered_pks = []
+        for user in users:
+            perms = set(get_permissions(user) or [])
+            if perm in perms:
+                filtered_pks.append(user.pk)
+        return queryset.filter(pk__in=filtered_pks)
+
     def enrich_user_data(self, user_instance, serialized_data):
         serialized_data['permissions'] = get_permissions(user_instance)
         serialized_data['role'] = role_representation(user_instance.role)
@@ -44,21 +62,23 @@ class UsersViewSet(
         base_queryset = super().get_queryset()
         department_param = self.request.GET.get('department')
         if department_param:
-            return base_queryset.filter(department__pk=int(department_param)) if department_param.isdigit() else base_queryset.none()
+            base_queryset = base_queryset.filter(department__pk=int(department_param)) if department_param.isdigit() else base_queryset.none()
+        permission_param = self.request.GET.get('permissions')
+        if permission_param:
+            base_queryset = self.filter_queryset_by_permission(base_queryset, permission_param)
         return base_queryset
 
     def list(self, request, *args, **kwargs):
         department_param = request.GET.get('department')
-        cache_key_part = department_param if department_param is not None else "all"
+        permission_param = request.GET.get('permissions')
+        cache_key_part = f"dept={department_param or 'all'};perm={permission_param or 'all'}"
         cached_response = users_list_cache.get(cache_key_part)
         if cached_response is not None:
             return Response(cached_response)
-
         response = super().list(request, *args, **kwargs)
         queryset_list = list(self.get_queryset())
         for index, user_instance in enumerate(queryset_list):
             response.data[index] = self.enrich_user_data(user_instance, response.data[index])
-
         users_list_cache.set(response.data, cache_key_part)
         return response
 
@@ -72,14 +92,14 @@ class UsersViewSet(
         user_cache.set(enriched_data, user_instance.pk)
         return Response(enriched_data)
 
-    def save_and_refresh_cache(self, user_instance, serializer_instance):
+    def save_and_refresh_cache(self, user_instance, serializer_instance, clear_related=True):
         serializer_instance.is_valid(raise_exception=True)
         serializer_instance.save()
         serialized_data = self.get_serializer(user_instance).data
         enriched_data = self.enrich_user_data(user_instance, serialized_data)
         user_cache.set(enriched_data, user_instance.pk)
-        users_list_cache.delete(getattr(user_instance, "department_id", "all"))
-        users_list_cache.delete("all")
+        if clear_related:
+            users_list_cache.clear()
         return Response(enriched_data, status=status.HTTP_200_OK)
 
     def partial_update(self, request, *args, **kwargs):
@@ -90,7 +110,11 @@ class UsersViewSet(
     def perform_custom_action(self, request, serializer_class):
         user_instance = self.get_object()
         serializer_instance = serializer_class(user_instance, data=request.data, partial=True)
-        return self.save_and_refresh_cache(user_instance, serializer_instance)
+        pre_change_pk = user_instance.pk
+        response = self.save_and_refresh_cache(user_instance, serializer_instance)
+        user_cache.clear(pre_change_pk)
+        users_list_cache.clear()
+        return response
 
     @action(detail=True, methods=['patch'], url_path='change_role')
     def change_role(self, request, pk=None):

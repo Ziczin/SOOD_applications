@@ -39,6 +39,8 @@ const Accordion = content.prefab.accordion.Accordion(
 
 const Annotation = content.prefab.Annotation(core, extension.Component)
 
+const Modal = content.prefab.Modal(extension.Component)
+
 const noticeCollection = content.prefab.Notice(core, extension.Component, extension.Event, extension.Preferences)
 other.closeCurrentNotice = noticeCollection.noticeHandler.closeActive.bind(noticeCollection.noticeHandler);
 other.noticeHandler = noticeCollection.noticeHandler;
@@ -69,17 +71,16 @@ window.make = (() => {
         ),
 
         //Advanced prefabs:
-        Tabs: (...tabs) => new Tabs(...tabs),
-        Card: (...decorators) => new Card(...decorators),
+        Tabs: (...mods) => new Tabs(...mods),
+        Card: (...mods) => new Card(...mods),
         Accordion: (...cards) => new Accordion(...cards),
         UniqueNotice: noticeCollection.createUniqueNotice,
         Preferences: (...args) => new extension.Preferences(...args),
         Notice: noticeCollection.createNotice,
         Query: (...params) => extension.Query.new(...params),
         Collector: (...params) => new Collector(...params),
-        Annotation: (t, ...params) => new Annotation(t, ...params),
-
-        //meta
+        Annotation: (params, ...mods) => new Annotation(params, ...mods),
+        Modal: (params, ...mods) => new Modal(params, ...mods),
         meta: meta,
     };
 })();

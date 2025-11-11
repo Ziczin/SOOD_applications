@@ -9,10 +9,7 @@
   //await import("{% static 'collected/static.js' %}");
   await import("{% static 'deps/make/make.js' %}");
   const imp = (await import("{% static 'deps/js/tools/import.js' %}")).default(make)
-  const buildUserTab = await imp("{% static 'deps/js/dashboard/userApps.js' %}")
   const csrfObj = await make.Query('/api/csrf-token').get()
-  const popup = await imp("{% static 'deps/js/prefabs/popup.js' %}")
-  const paragraphNotice = await imp("{% static 'deps/js/prefabs/paragraph_notice.js' %}")
 
   const qBase = make.Query('/api').via({"X-CSRFToken": csrfObj.csrfToken}).view();
   const qLogout = qBase.at('auth/logout').view()
@@ -22,7 +19,6 @@
   const statuses = await qBase.at('application-statuses').view().get()
   const me = await qCurrentUser.get();
 
-  const userApps = await buildUserTab(qBase, me.id, statuses, popup, paragraphNotice)
   document.getElementById('logout-btn').appendChild(
     make.Button(
       make.with.css('content', 'exit', 'flex'),
@@ -78,7 +74,6 @@
           )
         )
       ),
-      userApps
     ).build()
   );
 

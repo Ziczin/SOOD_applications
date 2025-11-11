@@ -44,6 +44,51 @@ body {
                 box-shadow 0.1s ease,
                 padding-right 0.5s cubic-bezier(0, 0, 0.01, 1);}
                 
+.have-status-SENDED {
+    background: linear-gradient(230deg,
+        #9999ee88 0%,
+        #9999ee33 15%,
+        #ececec 50%,
+        #ececec 100%
+    ) !important;
+}
+.have-status-IN_PROGRESS
+{
+    background: linear-gradient(230deg,
+        #ffcc9988 0%,
+        #ffcc9933 15%,
+        #ececec 50%,
+        #ececec 100%
+    ) !important;
+}
+.have-status-COMPLETED
+{
+    background: linear-gradient(230deg,
+        #99ee9988 0%,
+        #99ee9933 15%,
+        #ececec 50%,
+        #ececec 100%
+    ) !important;
+}
+.have-status-CANCELLED
+{
+    background: linear-gradient(230deg,
+        #ee999988 0%,
+        #ee999933 15%,
+        #ececec 50%,
+        #ececec 100%
+    ) !important;
+}
+.have-status-REJECTED
+{
+    background: linear-gradient(230deg,
+        #ee99ee88 0%,
+        #ee99ee33 15%,
+        #ececec 50%,
+        #ececec 100%
+    ) !important;
+}
+
 .content-strange {
     flex: auto;
     height: 0;

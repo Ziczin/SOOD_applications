@@ -49,8 +49,11 @@ function dashboardUser(qBase, deps, forms, paragraphNotice, popup, rebuildFoo, p
     async function formNotice(formId) {
       let data = await qBase.at('forms').at(formId).at('data').view().get()
       let collector = make.Collector()
+      let modalForm
       collector.addModifiers(
-        make.style.maxHeight("96vh"),
+        make.style.height("auto"),
+        make.style.minHeight("0"),
+        make.with.style({overflow: "visible"}),
         make.it.flexColumn,
         make.with.attr({flex: "0"}),
         make.style.gap(6),
@@ -58,7 +61,7 @@ function dashboardUser(qBase, deps, forms, paragraphNotice, popup, rebuildFoo, p
           make.it.flexRow,
           make.style.gap(6),
           make.h1(data.form.label, make.with.style({alignSelf: "center", flex: 1})),
-          picButton("close", "Закрыть", make.it.act.negative, () => make.other.closeCurrentNotice())
+          picButton("close", "Закрыть", make.it.act.negative, () => modalForm.close())
         ),
         make.Scrollbox(
           make.with.attr({flex: "999999"}),
@@ -105,15 +108,19 @@ function dashboardUser(qBase, deps, forms, paragraphNotice, popup, rebuildFoo, p
             }
             await qBase.at('applications').view().with(request).post()
             await rebuildFoo()
+            modalForm.close()
             paragraphNotice("Заявка отправлена!", make.color.lgreen)
           })
         )
       )
-      make.Notice([500, Infinity, 500, {weak: true}],
+      modalForm = make.Modal({blur: 8, autoHeight: true},
+        make.it.flexColumn,
         make.Div(
+          make.it.flexColumn,
           make.it.content,
-          make.with.style({border: "2px solid black"}),
-          make.style.maxHeight("fit-content"),
+          make.with.style({border: "2px solid black", boxSizing: "border-box", overflow: "visible"}),
+          make.style.minHeight('0'),
+          make.style.height('auto'),
           collector,
         )
       )
