@@ -37,8 +37,9 @@
 
   const userApps = await buildUserAppsTab(qBase, me.id, statuses, popup, paragraphNotice)
 
-  const tabs = make.Tabs(make.style.height('100%'))
+  const tabs = make.Tabs({scroll: true}, make.style.height('100%'))
   .menu(
+    make.with.style({flex: '0 0 auto'}),
     make.it.flexRow,
     make.it.gap10px,
     make.style.rounded(12),

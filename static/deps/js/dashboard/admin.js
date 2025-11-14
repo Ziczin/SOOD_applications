@@ -14,8 +14,8 @@ function(qBase) {
       loc: '/applications/enums-manager/',
     },
     {
-      text: 'Новое управление перечислениями',
-      loc: '/applications/enums-manager2/',
+      text: 'Управление наборами символов',
+      loc: '/applications/charsets-manager/',
     },
     {
       text: 'Управление шаблонами полей',

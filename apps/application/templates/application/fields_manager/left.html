@@ -2,7 +2,7 @@
 
 <div id="left-exit-button"></div>
 
-<div class="content", id="left-content"></div>
+<div class="content" id="left-content"></div>
 
 <script type="module">
   //await import("{% static 'collected/static.js' %}");
@@ -22,175 +22,199 @@
 
   const csrfObj = await make.Query('/api/csrf-token').get()
   const qBase = make.Query('/api').via({"X-CSRFToken": csrfObj.csrfToken}).view();
-  const qFieldTypes = qBase.at('field-types').view();
-  const fieldTypes = await qFieldTypes.get()
+  const mePromise = qBase.at("me").view().get()
+
   const qFields = qBase.at('fields').view()
-  const me = await qBase.at('me').get()
+  const qFieldTypes = qBase.at('field-types').view();
+
   const qEnumTags = qBase.at('enum-tags').view()
   const qEnumTagsHistory = qEnumTags.at('history').view()
-  const enumTags = await qEnumTags.get()
 
-  async function fieldComponent(field, isEnum) {
-    let enabledPopup = make.Annotation(1500, 
-      make.Div(
-        make.it.popup,
-        make.Paragraph("Нажмите на поле ввода для редактирования имени шаблона"),
-        make.Paragraph("Если элемент подсвечен, то он сохранится через некоторое время"),
-        make.Paragraph("Если вы перейдёте на другой элемент, то этот так же сохранится автоматически"),
-      )
-    )
+  const qFieldCharsets = qBase.at('field-charsets').view()
+  const qFieldCharsetsHistory = qFieldCharsets.at('history').view()
 
-    let enabledPopupSelect = make.Annotation(1500, 
-      make.Div(
-        make.it.popup,
-        make.Paragraph("Нажмите для выбора группы перечислений"),
-        make.Paragraph("После выбора элемент сохранится автоматически"),
-      )
-    )
+  const fieldTypesPromise = qFieldTypes.get()
+  const fieldTypesHistoryPromise = qFieldCharsetsHistory.get()
+  
+  const enumTagsPromise = qEnumTags.get()
+  const enumTagsHistoryPromise = qEnumTagsHistory.get()
 
-    let disabledPopup = make.Annotation(1500, 
-      make.Div(
-        make.it.popup,
-        make.Paragraph("Это шаблон другого отдела"),
-        make.Paragraph("Вы можете его использовать, но не можете редактировать"),
-      )
-    )
-
-    let tag
-    if (field && field.tag !== null) {
-      tag = await qEnumTagsHistory.at(field.tag.id).view().get()
-    }
-
-    let depMatch = (field.department === me.department.id)
-
-    let inp
-    let out
-    out = make.Div(
-      make.it.marginOnHover,
-      ...make.if(isEnum,
-        make.it.flexRow,
-        make.style.gap(6),
-      ),
-      inp = make.Input(
-        ...make.if(depMatch, enabledPopup),
-        ...make.if(!depMatch,
-          make.with.attrs("disabled"),
-          disabledPopup
-        ),
-        make.with.attr({
-          value: field.label || "",
-          placeholder: field.label || "Пустое поле"
-        }),
-        make.on.input((e) =>
-          out.element.classList.add("make-mark-changed")
-        ),
-        make.on.inputTimeOut(3000, () => {
-          out.element.classList.remove("make-mark-changed")
-          qFields.at(field.id).with({label: inp.element.value || ''}).patch()
-          paragraphNotice("Сохранено!", make.color.lgreen)
-        }),
-        
-      ),
-      ...make.if(isEnum,
-        make.Select(
-          ...make.if(!depMatch,
-            make.with.attrs("disabled"),
-            disabledPopup
-          ),
-          ...make.if(depMatch, enabledPopupSelect),
-          ...make.if(tag,
-            make.Option(tag?.name, tag?.id),
-            ...enumTags.map((enumTag) =>
-              tag?.id !== enumTag.id && make.Option(enumTag.name, enumTag.id)
-            ),
-          ),
-          ...make.if(!tag,
-            ...enumTags.map((enumTag) =>
-              make.Option(enumTag.name, enumTag.id)
-            )
-          ),
-          make.on.change(async (e) => {
-            paragraphNotice("Изменено!", make.color.lgreen)
-            qFields.at(field.id).with({tag: e.target.value}).patch()
-          })
-        )
-      )
-    )
-    if (isEnum) {return make.Div(out)}
-    else {return out}
-  }
-
-  function setUniqueClass(element, className = 'make-mark-selected-group') {
-    document.querySelectorAll(`.${className}`).forEach(el => {
-        el.classList.remove(className);
-    });
-    element.classList.add(className);
-  }
+  const fieldCharsetsPromise = qFieldCharsets.get()
+  const fieldCharsetsHistoryPromise = qFieldCharsetsHistory.get()
 
   let currentFieldType
   let fieldTemplateContainer
-  document.getElementById("left-content").appendChild(
-    make.Div(
-      make.h1("Типы полей"),
-      make.Separator(6),
-      make.Scrollbox(
-        make.it.flexColumn,
-        make.style.gap(6),
-        ...fieldTypes.map((fType) => {
-          let fTypeComp
-          return fTypeComp = make.Div(
-            make.it.marginOnHover,
-            make.style.rounded(12),
-            make.style.padding(6),
-            make.with.css('make-tab-button'),
-            make.Paragraph(fType.label),
-            make.on.click(async () => {
-              if (currentFieldType === fType) { return }
-              currentFieldType = fType
-              setUniqueClass(fTypeComp.element)
-              let center = document.getElementById('center-container')
-              let fields = await qFields.where({ type: fType.id}).get()
-              center.innerHTML = ''
-              center.appendChild(
-                make.Div(
-                  make.it.flexColumn,
-                  make.h1(fType.label),
-                  make.Separator(6),
-                  make.style.height("100%"),
-                  fieldTemplateContainer = make.Scrollbox(
-                    make.it.flexColumn,
-                    make.style.gap(6)
-                  ),
-                  make.Separator(6),
-                  make.Button(
-                    make.with.text("Добавить новый шаблон"),
-                    make.with.style({flex: 0}),
-                    make.it.action,
-                    make.it.act.positive,
-                    make.on.click(() =>
-                      actionNotice({
-                        confirmText: "Создать", cancelText: "Отмена",
-                        question: [
-                          make.Paragraph(`Вы уверены что хотите создать новый шаблон?`),
-                          make.Paragraph(`Это действие невозможно будет отменить`, make.it.textBold),
-                        ],
-                        action: async () => {
-                          let resp = await qFields.with({type: fType.id, department: me.department.id}).post()
-                          const comp = await fieldComponent(resp, fType.allow_tags)
-                          fieldTemplateContainer.addChild(comp)
-                        }
-                      })
-                    )
-                  )
-                ).build()
-              )
-              for (const f of fields) {
-                const comp = await fieldComponent(f, fType.allow_tags)
-                fieldTemplateContainer.addChild(comp)
-              }
-            })
-          )      
+
+  const center = document.getElementById('center-container')
+
+  const Row = (...mods) => make.Div(make.it.flexRow, make.style.gap(6), ...mods)
+  const Column = (...mods) => make.Div(make.it.flexColumn, make.style.gap(6), ...mods)
+
+  function enumField(field, inpField) {
+    const select = make.Select()
+    async function fillField() {
+      const enumTags = await enumTagsPromise
+      const enumTagsHistory = await enumTagsHistoryPromise
+      const exists = enumTags.some(tag => tag.id === field.tag.id)
+      let found
+      if (!exists) { found = enumTagsHistory.find(tag => tag.id === field.tag.id) }
+      select.addModifiers(
+        make.OptionPlaceholder("--- выбрать перечисление ---"),
+        ...make.callif(found, () => {
+          inpField.addModifiers(make.with.attrs("disabled"))
+          return [make.Option(found.name, found.id), make.with.attrs("disabled")]
+        }),
+        ...enumTags.map(tag => make.Option(tag.name, tag.id)),
+        make.on.change((e) => {
+          if (!found) {
+            qFields.at(field.id).with({tag: e.target.value}).view().patch()
+            paragraphNotice("Изменено!", make.color.green)
+          }
         })
+      )
+    }
+    function setSelected() {
+      select.children.forEach((ch) => {
+        if (ch.element.value == field.tag.id) {
+          select.element.value = ch.element.value
+        }
+      })
+      select.onBuild.unsub(setSelected)
+    }
+    select.allowEvents()
+    select.onBuild.sub(() => setSelected())
+    fillField()
+    return select
+  }
+
+  function charsetField(field, inpField) {
+    const select = make.Select()
+    async function fillField() {
+      const charsets = await fieldCharsetsPromise
+      const charsetsHistory = await fieldCharsetsHistoryPromise
+      console.log(field)
+
+      const exists = charsets.some(set => set.id === field.charset?.id)
+      let found
+      if (!exists) { found = charsetsHistory.find(set => set.id === field.charset?.id) }
+      select.addModifiers(
+        make.OptionPlaceholder("--- выбрать набор символов ---"),
+        ...make.callif(found, () => {
+          inpField.addModifiers(make.with.attrs("disabled"))
+          return [make.Option(found.label, found.id), make.with.attrs("disabled")]
+        }),
+        ...charsets.map(set => make.Option(set.label, set.id)),
+        make.on.change((e) => {
+          if (!found) {
+            qFields.at(field.id).with({charset: e.target.value}).view().patch()
+            paragraphNotice("Изменено!", make.color.green)
+          }
+        })
+      )
+    }
+    function setSelected() {
+      select.children.forEach((ch) => {
+        if (ch.element.value == field.charset?.id) {
+          select.element.value = ch.element.value
+        }
+      })
+      select.onBuild.unsub(setSelected)
+    }
+    select.allowEvents()
+    select.onBuild.sub(() => setSelected())
+    fillField()
+    return select
+  }
+
+  function labelField(field, row) {
+    const input = make.Input(
+      make.with.attr({
+        value: field.label,
+        placeholder: field.label
+      }),
+    )
+    input.addModifiers(
+      make.on.input(() => row.element.classList.add("make-mark-changed")),
+      make.on.inputTimeOut(3000, () => {
+        qFields.at(field.id).with({label: input.element.value}).view().patch()
+        row.element.classList.remove("make-mark-changed")
+        paragraphNotice("Изменено!", make.color.green)
+      })
+    )
+    return input
+  }
+
+  function placeholderField(field, row) {
+    const input = make.Input(
+      make.with.attr({
+        value: field.placeholder,
+        placeholder: "Плейсхолдер"
+      }),
+    )
+    input.addModifiers(
+      make.on.input(() => row.element.classList.add("make-mark-changed")),
+      make.on.inputTimeOut(3000, () => {
+        qFields.at(field.id).with({placeholder: input.element.value}).view().patch()
+        row.element.classList.remove("make-mark-changed")
+        paragraphNotice("Изменено!", make.color.green)
+      })
+    )
+    return input
+  }
+
+  function fieldFactory(field, type) {
+    const row = Row(
+      make.it.marginOnHover,
+      make.with.style({flex: "0 0 auto"})
+    )
+    const inpField = labelField(field, row)
+    row.addModifiers(
+      inpField,
+      ...make.callif(type !== "enum", () => placeholderField(field, row)),
+      ...make.callif(type === "enum", () => enumField(field, inpField)),
+      ...make.callif(type === "charset", () => charsetField(field, inpField)),
+    )
+    return row
+  }
+
+  async function fillCenter(fieldType) {
+    center.innerHTML = ``
+    const fields = await qFields.where({type: fieldType.id}).view().get()
+    const me = await mePromise
+    const scrollbox = make.Scrollbox(make.it.flexColumn, make.style.gap(6))
+    console.log(fieldType)
+    center.appendChild(
+      Column(
+        scrollbox.addModifiers(
+          ...fields.map(field => fieldFactory(field, fieldType.type))
+        ),
+        make.Button(
+          make.with.text("Добавить новый шаблон"),
+          make.it.action,
+          make.it.act.neutral,
+          make.on.click(async () => {
+            const newField = await qFields.with({
+              type: fieldType.id,
+              department: me.department.id
+            }).view().post()
+            scrollbox.addChild(
+              fieldFactory(newField, fieldType.type)
+            )
+          })
+        )
+      ).build()
+    )
+  }
+  const fieldTypes = await fieldTypesPromise
+  document.getElementById('left-content').appendChild(
+    Column(
+      ...fieldTypes.map(fieldType => 
+        make.Button(
+          make.it.action,
+          make.it.act.neutral,
+          make.with.text(fieldType.label),
+          make.on.click(() => fillCenter(fieldType))
+        )
       )
     ).build()
   )

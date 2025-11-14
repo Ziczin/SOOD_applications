@@ -2,7 +2,7 @@
 import os
 from collections import defaultdict
 
-ALLOWED = {'py', 'js', 'html'}
+ALLOWED = {'py', 'js', 'html', 'css'}
 
 def valid_extension(name):
     if '.' not in name:
@@ -32,10 +32,12 @@ def walk_and_count(start_path='.'):
     total_files = 0
     total_dirs = 0
     total_lines = 0
-    ext_lines = defaultdict(int)
+    ext_stats = defaultdict(lambda: {'files': 0, 'lines': 0})
+    
     for root, dirs, files in os.walk(start_path):
         dirs[:] = [d for d in dirs if d != 'migrations' and not is_hidden(d)]
         total_dirs += 1
+        
         for name in files:
             if is_hidden(name):
                 continue
@@ -47,16 +49,26 @@ def walk_and_count(start_path='.'):
                 continue
             if not file_nonempty(path):
                 continue
+            
             lines = count_nonblank_lines(path)
             total_files += 1
             total_lines += lines
-            ext_lines[ext] += lines
-    return total_files, total_dirs, total_lines, ext_lines
+            ext_stats[ext]['files'] += 1
+            ext_stats[ext]['lines'] += lines
+            
+    return total_files, total_dirs, total_lines, ext_stats
 
 if __name__ == '__main__':
-    files, dirs, lines, ext_lines = walk_and_count('.')
-    if ext_lines:
-        top_ext = max(ext_lines.items(), key=lambda x: x[1])[0]
-    else:
-        top_ext = ''
-    print(files, dirs, lines, top_ext)
+    files, dirs, lines, ext_stats = walk_and_count('.')
+    print()
+    print(f"  Total files: {files}")
+    print(f"  Total dirs: {dirs}")
+    print(f"  Total lines: {lines}")
+    print("\n  Statistics by extension:")
+    print(" ", "-" * 40)
+    
+    for ext in sorted(ext_stats.keys()):
+        stats = ext_stats[ext]
+        print(f"  {ext.upper():<6} - Files: {stats['files']:>4}, Lines: {stats['lines']:>6}")
+    
+while True: pass

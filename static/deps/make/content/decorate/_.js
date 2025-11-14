@@ -6,6 +6,7 @@ import inner from './inner.js'
 import on from './on.js'
 import size from './size.js'
 import style from './style.js'
+import limit from './limit.js'
 
 export default {
     with: with_,
@@ -15,4 +16,5 @@ export default {
     on: on,
     size: size,
     style: style,
+    limit: limit,
 }

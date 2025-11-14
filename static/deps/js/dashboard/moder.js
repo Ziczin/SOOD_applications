@@ -402,7 +402,7 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
             )
           }
           else {
-            if (!card.executor) {
+            if (!card.executor && resp.executor) {
               card.cardBody.addChild(
                 make.Div(
                   make.it.marginOnHover,
@@ -420,7 +420,7 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
       paragraphNotice(
         ["Изменён статус по заявке",
           `${resp.form} №${resp.id}`,
-          `Исполнитель: ${resp.executor}`,
+          `Исполнитель: ${resp.executor || resp.user.fullname}`,
           `Статус: ${resp.status}`,
           resp.msg && `Сообщение: ${resp.msg}`,
         ],

@@ -283,12 +283,17 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
             card.cardBody.addChild(
               make.Div(
                 make.it.marginOnHover,
-                make.Paragraph(`Причина: ${resp.msg}`),
+                make.Paragraph(resp.status === "REJECTED"
+                ? `Причина отказа: ${resp.msg}`
+                : resp.status === "CANCELLED"
+                ? `Причина отмены: ${resp.msg}`
+                : "Этой надписи тут быть не должно - обратитесь в отдел программирования",),
               )
             )
+            card.msg = resp.msg
           }
           else {
-            if (!card.executor) {
+            if (!card.executor && resp.executor) {
               card.cardBody.addChild(
                 make.Div(
                   make.it.marginOnHover,

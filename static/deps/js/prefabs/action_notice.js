@@ -2,6 +2,7 @@ export default (make) =>
 function actionNotice({
   question=[],
   action=()=>{},
+  cancel=()=>{},
   confirmText="Удалить",
   cancelText="Отмена"
   }) {
@@ -26,7 +27,7 @@ function actionNotice({
           make.with.text(confirmText),
           make.with.style({flex: 1}),
           make.on.click(() => {
-            action(),
+            action()
             make.other.closeCurrentNotice()
           })
         ),
@@ -36,6 +37,7 @@ function actionNotice({
           make.with.text(cancelText),
           make.with.style({flex: 1}),
           make.on.click(() => {
+            cancel()
             make.other.closeCurrentNotice()
           })
         ),

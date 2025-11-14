@@ -1,4 +1,4 @@
-export default (event, delay) => 
+export default (event) => 
 {
     const basic = event.basic
     const custom = event.custom
@@ -10,6 +10,8 @@ export default (event, delay) =>
         click: basic('click'),
         change: basic('change'),
         input: basic('input'),
+        keydown: basic('keydown'),
+        paste: basic('paste'),
         inputTimeOut: custom(
         (time, foo) => {
             let timer = null;
@@ -21,18 +23,18 @@ export default (event, delay) =>
                 }
             }
 
-            function startOrRefresh() {
+            function startOrRefresh(e) {
                 clearTimer();
                 timer = setTimeout(() => {
                     timer = null;
-                    foo();
+                    foo(e);
                 }, time);
             }
 
-            function onBlur() {
+            function onBlur(e) {
                 if (timer !== null) {
                     clearTimer();
-                    foo();
+                    foo(e);
                 }
             }
 

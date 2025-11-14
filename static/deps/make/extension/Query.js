@@ -92,11 +92,11 @@ export default class Query {
     where(elem) { this.query.add(elem); return this; }
 
 
-    async get() { return await this.fetch('GET') }
-    async post() { return await this.fetch('POST') }
-    async patch() { return await this.fetch('PATCH') }
-    async delete() { return await this.fetch('DELETE') }
-    async put() { return await this.fetch('PUT') }
+    get() { return this.fetch('GET') }
+    post() { return this.fetch('POST') }
+    patch() { return this.fetch('PATCH') }
+    delete() { return this.fetch('DELETE') }
+    put() { return this.fetch('PUT') }
 
     async fetch(method=null) {
         const route = this.route.build();

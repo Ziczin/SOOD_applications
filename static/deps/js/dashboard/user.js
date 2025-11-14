@@ -87,7 +87,28 @@ function dashboardUser(qBase, deps, forms, paragraphNotice, popup, rebuildFoo, p
               );
             } else {
               wrapper.addChild(
-                make.Input(make.with.attr({ id: field.id }))
+                make.Input(
+                  make.with.attr({ id: field.id, placeholder: field.placeholder || ''}),
+                  ...make.callif(field.type === 'charset',
+                    () => {
+                      console.log
+                      const toRet = [
+                        make.limit.charactersWhiteList(field.charset.preview),
+                        popup(200, "Это ограниченное поле, доступные символы:",
+                          field.charset.humanized_preview
+                        )
+                      ]
+
+                      if (field.charset.min_length) {
+                        toRet.push(make.with.attr({minlength: field.charset.min_length}))
+                      }
+                      if (field.charset.max_length) {
+                        toRet.push(make.with.attr({maxlength: field.charset.max_length}))
+                      }
+                      return toRet
+                    }
+                  )
+                )
               );
             }
             return wrapper;

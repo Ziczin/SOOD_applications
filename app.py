@@ -26,7 +26,6 @@ def remove_migrations():
 
 def reset_database():
     """Сбрасывает базу данных в зависимости от типа."""
-    # Добавляем проверку инициализации Django
     if not settings.configured:
         setup_django()
     
@@ -56,13 +55,13 @@ def main():
     parser.add_argument('--reset', action='store_true', help='Полный сброс миграций и БД и установка базовых значений')
     parser.add_argument('--model-recover', action='store_true', help='Полный сброс миграций и БД')
     parser.add_argument('--run', action='store_true', help='Запустить сервер разработки')
+    parser.add_argument('--apps-10000', action='store_true', help='Вбить в сервис 10000 заявок')
     args = parser.parse_args()
 
     if not any(vars(args).values()):
         parser.print_help()
         return
 
-    # Всегда настраиваем Django перед выполнением любых операций
     setup_django()
 
     from setup import on_test_setup, create_superuser
@@ -75,7 +74,7 @@ def main():
         create_superuser()
         if args.reset:
             print("Загрузка предустановленных значений...")
-            on_test_setup()
+            on_test_setup(args.apps_10000)
         print("=== БАЗА ПОЧИНЕНА ===\n")
 
     if args.run:

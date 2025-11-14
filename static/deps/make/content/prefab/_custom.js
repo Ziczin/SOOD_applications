@@ -40,5 +40,9 @@ export default function(createComponent, makeWith) {
         OptionPlaceholder: (txt, ...d) => typeof txt === 'string'
             ? createComponent('option', makeWith.text(txt), makeWith.attr({value: ''}), ...d)
             : createComponent('option', ...d),
+        Checkbox: (...d) => createComponent('input',
+            makeWith.attr({type: 'checkbox'}),
+            makeWith.css('make-checkbox'), ...d
+        )
     }
 }

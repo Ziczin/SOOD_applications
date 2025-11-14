@@ -1,4 +1,4 @@
-export default (Decorator, splitLastN) => {
+export default (Decorator) => {
     function add(component, eventType, handler) {
         component.element.addEventListener(eventType, handler, { passive: true });
     }

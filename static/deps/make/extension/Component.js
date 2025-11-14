@@ -30,11 +30,14 @@ class Component {
     }
 
     addModifiers(...modifiers) {
+        this.autoRebuild = false
         for (const modifier of modifiers) {
             modifier instanceof Component && this.addChild(modifier);   
             modifier instanceof Decorator && this.addDecorator(modifier);
             modifier instanceof Function && this.addDecorator(modifier)
         }
+        this.autoRebuild = true
+        this.build(true);
         return this
     }
 

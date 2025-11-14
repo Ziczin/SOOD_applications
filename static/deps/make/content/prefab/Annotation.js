@@ -15,7 +15,7 @@ export default function createAnnotationFactory(core, Component) {
 
     build(force = false) {
       if (this.element && !force) return this.element;
-      this.parent.allowEvents()
+      this.parent?.allowEvents()
       this.element = document.createElement(this.elementType);
       this.element.makeComponent = this;
       this.element.classList.add('make-annotation-placeholder');

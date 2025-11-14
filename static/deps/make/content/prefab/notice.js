@@ -105,7 +105,7 @@ export default function createNoticeFactory(core, Component, Event, Preferences)
                 el.style.right = '0';
                 el.style.transform = 'translateX(100%)';
                 el.style.transition = `transform ${this.pref.get('in')}ms ease-in-out`;
-                el.style.zIndex = '1000';
+                el.style.zIndex = '10000';
                 el.style.display = 'flexbox';
                 el.style.minWidth = '25%';
                 el.style.maxWidth = '100%';

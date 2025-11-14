@@ -168,8 +168,13 @@
 
     let addit = ""
     if (field.tag) {
-      addit = ` "${field.tag}"`
+      addit = ` "${field.tag.label}"`
     }
+    if (field.charset) {
+      addit = ` "${field.charset.humanized_preview}"`
+
+    }
+      console.log(field)
     ret.addModifiers(
       make.it.marginOnHover,
       make.Div(
@@ -222,7 +227,7 @@
                     make.Paragraph(`Вы уверены что хотите удалить это поле из формы?`),
                   ],
                   action: async () => {
-                    await qFormField.at(ret.id).delete()
+                    qFormField.at(ret.id).with({available: false}).view().patch()
                     let next = ret.nextFormFieldElem
                     let prev = ret.prevFormFieldElem
                     if (prev) prev.nextFormFieldElem = next

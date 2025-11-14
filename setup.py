@@ -7,7 +7,7 @@ django.setup()
 from django.contrib.auth import get_user_model
 
 from apps.users.models import Department, UserRole
-from apps.forms.models import Enum, EnumTag, FieldType, Form, FormField, Field
+from apps.forms.models import Enum, EnumTag, FieldType, Form, FormField, Field, FieldCharSet
 from apps.application.models import Application, ApplicationFormField
 
 from itertools import product
@@ -45,18 +45,32 @@ def get_users_deps_product(deps):
     print(f"Сгенерировано сочетаний: {len(combos)}")
     return combos
 
+from django.contrib.auth import get_user_model
+from django.db import transaction
+
 def create_users(users_deps):
     print("-- Создание пользователей")
     User = get_user_model()
     users = []
+    
     for i, us in enumerate(users_deps):
-        new_user = User.objects.create_user(
-            username=str(i), password=str(i), fullname=str(i),
-            department=us[0], role=us[1], verified=bool(i%2), proxy=i>3,
+        user = User(
+            username=str(i),
+            fullname=str(i),
+            department=us[0],
+            role=us[1],
+            verified=bool(i % 2),
+            proxy=i > 3,
         )
-        users.append(new_user)
-        print(f"Создан пользователь: {new_user.username}")
-    return users
+        user.set_password(str(i))
+        users.append(user)
+    
+    created_users = User.objects.bulk_create(users)
+    
+    for user in created_users:
+        print(f"Создан пользователь: {user.username}")
+    
+    return created_users
 
 def create_enum_tags(rem_dep, prog_dep):
     print("-- Создание тэгов перечислений")
@@ -81,17 +95,21 @@ def create_enums(tag1, tag2, tag3):
 def create_field_types():
     print("-- Создание типов полей")
     type_names = [
-        ('numeric', "Число", False),
-        ('int', "Целое число", False),
-        ('float', "Дробное число", False),
-        ('text', "Строка", False),
-        ('bigtext', "Текст", False),
-        ('date', "Дата", False),
-        ('time', "Время", False),
-        ('enum', "Перечисление", True),
-        ('phone', "Телефон", False),
+        ('numeric', "Число"),
+        ('int', "Целое число"),
+        ('float', "Дробное число"),
+        ('text', "Строка"),
+        ('bigtext', "Текст"),
+        ('date', "Дата"),
+        ('time', "Время"),
+        ('enum', "Перечисление", 'enum'),
+        ('charset', "Набор символов", 'charset'),
     ]
-    types = {tn[0]: FieldType.objects.get_or_create(name=tn[0], label=tn[1], allow_tags=tn[2])[0] for tn in type_names}
+    types = {tn[0]: FieldType.objects.get_or_create(
+        name=tn[0],
+        label=tn[1],
+        type='' if len(tn)==2 else tn[2]
+        )[0] for tn in type_names}
     print(f"Типов полей создано/получено: {len(types)}")
     return types
 
@@ -112,18 +130,59 @@ def create_forms(rem_dep, prog_dep):
     print("Формы созданы")
     return f1, f2, f3
 
-def create_field_examples(types, tag1, tag2, tag3):
+def create_default_charsets(*deps):
+    print("-- Создание стандартных наборов символов для полей")
+    with transaction.atomic():
+        digits, _ = FieldCharSet.objects.get_or_create(
+            label='digits',
+            defaults={
+                'digits': True,
+                'department': deps[0],
+                'visible': True,
+                'included': '.'
+            }
+        )
+
+        latin_plus_digits, _ = FieldCharSet.objects.get_or_create(
+            label='latin_plus_digits',
+            defaults={
+                'latin_lower': True,
+                'latin_upper': True,
+                'digits': True,
+                'visible': True,
+                'shared': True,
+                'department': deps[1],
+            }
+        )
+
+        cyrillic_full, _ = FieldCharSet.objects.get_or_create(
+            label='cyrillic_full',
+            defaults={
+                'cyrillic_lower': True,
+                'cyrillic_upper': True,
+                'visible': True,
+                'department': deps[1],
+            }
+        )
+
+    return {
+        'digits': digits,
+        'latin_plus_digits': latin_plus_digits,
+        'cyrillic_full': cyrillic_full,
+    }
+
+def create_field_examples(types, tag1, tag2, tag3, charset):
     print("-- Создание примеров полей")
     fields = [
-        {"label": "Компьютер", "type": types['enum'], "tag": tag3},
-        {"label": "Количество", "type": types['int']},
         {"label": "Технологические пирожки", "type": types['enum'], "tag": tag2},
-        {"label": "Наименование", "type": types['text']},
+        {"label": "Количество", "type": types['int']},
+        {"label": "Компьютер", "type": types['enum'], "tag": tag3},
         {"label": "Стоимость", "type": types['numeric']},
-        {"label": "Цена", "type": types['numeric']},
+        {"label": "Цена", "type": types['charset'], "charset": charset},
         {"label": "Описание", "type": types['bigtext']},
         {"label": "Принтер", "type": types['enum'], "tag": tag1},
         {"label": "Новое количество", "type": types['int']},
+        {"label": "Наименование", "type": types['text']},
     ]
     print(f"Примеров полей: {len(fields)}")
     return fields
@@ -143,10 +202,6 @@ def link_fields_to_forms(deps, forms, fields):
     return ff1_list, ff3_list
 
 import uuid
-from collections import defaultdict
-
-import uuid
-from collections import defaultdict
 
 def bulk_create_applications(count=10000, start_date_str=None, min_step_minutes=30, max_step_minutes=60, min_fields=1, max_fields=3):
     if start_date_str:
@@ -212,7 +267,7 @@ def bulk_create_applications(count=10000, start_date_str=None, min_step_minutes=
     print(f'Создано заявок: {len(created_ids)}')
     print(f'Создано полей в заявках: {total_aff}')
 
-def on_test_setup():
+def on_test_setup(apps_10000 = False):
     User = get_user_model()
     deps = create_deps()
 
@@ -226,14 +281,17 @@ def on_test_setup():
 
     forms = create_forms(*deps)
     
-    fields = create_field_examples(types, tag1, tag2, tag3)
+    charset = create_default_charsets(*deps)
+
+    fields = create_field_examples(types, tag1, tag2, tag3, charset['digits'])
 
     link_fields_to_forms(deps, forms, fields)
 
-    # bulk_create_applications(10000)
+    if apps_10000: bulk_create_applications(10000)
 
     from django.core.cache import cache
     cache.clear()
+
 
     print("База данных заполнена начальными данными!")
     

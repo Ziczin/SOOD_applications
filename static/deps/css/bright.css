@@ -73,8 +73,8 @@ body {
 .have-status-CANCELLED
 {
     background: linear-gradient(230deg,
-        #ee999988 0%,
-        #ee999933 15%,
+        #ee99ee88 0%,
+        #ee99ee33 15%,
         #ececec 50%,
         #ececec 100%
     ) !important;
@@ -82,8 +82,8 @@ body {
 .have-status-REJECTED
 {
     background: linear-gradient(230deg,
-        #ee99ee88 0%,
-        #ee99ee33 15%,
+        #ee999988 0%,
+        #ee999933 15%,
         #ececec 50%,
         #ececec 100%
     ) !important;

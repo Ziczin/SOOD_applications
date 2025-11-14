@@ -1,23 +1,32 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
-# Импорты из отдельных файлов (без __init__.py)
-from apps.api.views.auth import RegisterView, LoginView, LogoutView, CurrentUserAPIView, csrf_token_view
 from apps.api.views.users import UsersViewSet
-from apps.api.views.departments import DepartmentViewSet
 from apps.api.views.roles import RoleListView
-
 from apps.api.views.enums import EnumTagViewSet, EnumViewSet
-from apps.api.views.fields import FieldViewSet, FieldTypeViewSet
 from apps.api.views.forms import FormFieldViewSet, FormViewSet
+from apps.api.views.events import EventCheckView
+from apps.api.views.report import ReportXlsxView
+from apps.api.views.departments import DepartmentViewSet
+
+from apps.api.views.auth import (
+    RegisterView,
+    LoginView,
+    LogoutView,
+    CurrentUserAPIView,
+    csrf_token_view
+)
+from apps.api.views.fields import (
+    FieldViewSet,
+    FieldTypeViewSet,
+    FieldCharSetViewSet,
+)
 from apps.api.views.applications import (
     ApplicationAPIView,
     ApplicationRetrieveUpdateAPIView,
     ApplicationStatusListAPIView,
     ApplicationStatusUpdateAPIView,
 )
-from apps.api.views.events import EventCheckView
-from apps.api.views.report import ReportXlsxView
 
 CRUD = {'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}
 RU = {'get': 'list', 'post': 'create'}
@@ -39,9 +48,7 @@ router.register(r'fields', FieldViewSet, basename='fields')
 router.register(r'forms', FormViewSet, basename='forms')
 router.register(r'field-types', FieldTypeViewSet, basename='field-types')
 router.register(r'form-fields', FormFieldViewSet, basename='form-fields')
-
-# RoleListView - это APIView, а не ViewSet, поэтому регистрируем отдельно через path
-# EnumTagViewSet и EnumViewSet уже зарегистрированы через as_view() выше
+router.register(r'field-charsets', FieldCharSetViewSet, basename='field-charset')
 
 urlpatterns = [
     # Enum endpoints

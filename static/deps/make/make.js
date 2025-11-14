@@ -62,6 +62,7 @@ window.make = (() => {
         size: content.decorate.size(makeWith.css),
         color: content.decorate.color(makeWith.css),
         style: content.decorate.style(makeWith.style),
+        limit: content.decorate.limit(createDecorator),
 
         //prefabs:
         ...content.prefab.basic(createComponent),

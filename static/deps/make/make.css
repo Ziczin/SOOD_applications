@@ -210,6 +210,36 @@ p, form, h1, h2, h3, h4, h5, h6 {
 .make-button {
     border-radius: 12px;
 }
+.make-checkbox{
+    width:24px;
+    height:24px;
+    appearance:none;
+    -webkit-appearance:none;
+    border:2px solid #888;
+    border-radius: 6px;
+    display:inline-grid;
+    place-items:center;
+    cursor:pointer;
+    background:#fff;
+    transition:background .12s, border-color .12s;
+    font-size:14px;
+    line-height:1;
+}
+.make-checkbox::after{
+    content:"✔";
+    color:transparent;
+    transition:color .12s, transform .12s;
+    transform:scaleX(1.4) scaleY(.9);
+}
+.make-checkbox:checked{
+    background:#0b74ff;
+    border-color:#0b74ff;
+}
+.make-checkbox:checked::after{
+    color:#fff;
+    transform:scaleX(1.4) scaleY(1) scale(1);
+}
+
 
 /* tabs */
 .make-tabs {

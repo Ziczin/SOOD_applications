@@ -18,24 +18,21 @@ from apps.api.cache_tools.forms_cache import (
 )
 
 class FormFieldViewSet(viewsets.ModelViewSet):
-    queryset = FormField.objects.select_related('field', 'field__type', 'field__tag').all()
+    queryset = FormField.objects.select_related('field', 'field__type', 'field__tag').filter(available=True)
     serializer_class = FormFieldSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         queryset = super().get_queryset().order_by('order')
         form_param = self.request.query_params.get('form')
         if form_param is not None:
-            qs = queryset.filter(form=form_param)
-        else:
-            qs = queryset
-        return qs
+            return queryset.filter(form=form_param, available=True)
+        return queryset
 
     @action(detail=False, methods=['patch'])
     def swap(self, request):
         first_id = request.data.get('a')
         second_id = request.data.get('b')
-        queryset = self.get_queryset()
+        queryset = FormField.objects.select_related('field', 'field__type', 'field__tag').all()
         first = get_object_or_404(queryset, id=first_id)
         second = get_object_or_404(queryset, id=second_id)
         with transaction.atomic():
@@ -130,7 +127,7 @@ class FormViewSet(viewsets.ModelViewSet):
 
         form = get_object_or_404(Form.objects.filter(available=True), pk=pk)
         form_fields_qs = (
-            FormField.objects.filter(form=form)
+            FormField.objects.filter(form=form, available=True)
             .order_by('order')
             .select_related('field', 'field__type', 'field__tag')
         )

@@ -29,7 +29,7 @@ class ApplicationCreateSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         form = attrs['form']
-        form_field_ids = set(form.form_fields.values_list('pk', flat=True))
+        form_field_ids = set(FormField.objects.filter(form=form).values_list('pk', flat=True))
         for item in attrs['data']:
             if item['id'] not in form_field_ids:
                 raise serializers.ValidationError(f"FormField id {item['id']} does not belong to form {form.pk}")
@@ -135,7 +135,11 @@ class ApplicationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Application
-        fields = ['id', 'form', 'user', 'executor', 'date', 'status', 'msg', 'application_fields', 'last_status_change']
+        fields = [
+            'id', 'form',
+            'user', 'executor',
+            'date', 'status', 'msg',
+            'application_fields', 'last_status_change']
 
 class ApplicationUpdateSerializer(serializers.ModelSerializer):
     executor = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), allow_null=True, required=False)
