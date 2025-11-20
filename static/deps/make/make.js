@@ -4,46 +4,36 @@ import content from './content/_.js'
 import core from './core/_.js'
 import other from './other/_.js';
 import meta from './meta.js';
+import config from './config.js';
 
-extension.Component = extension.Component(extension.Decorator, extension.Event)
-const createComponent = factory.Component(extension.Component);
-const createDecorator = factory.Decorator(extension.Decorator);
-const createHandler = factory.Handler(extension.Decorator);
+const Event = extension.Event
+const Decorator = extension.Decorator
+const Component = extension.Component(Decorator, Event, config.generateTestIds)
+const Preferences = extension.Preferences
 
-const makeWith = content.decorate.with(createDecorator);
-const makeOn = content.decorate.on(createHandler);
+const decoratorFactory = factory.Decorator(Decorator);
+const componentFactory = factory.Component(Component);
+const handlerFactory = factory.Handler(Decorator);
 
-const Collector = content.prefab.Collector(
-    extension.Component,
-)
+const makeWith = content.decorate.with(decoratorFactory);
+const makeOn = content.decorate.on(handlerFactory);
 
-const Tabs = content.prefab.Tabs(
-    extension.Component,
-    createComponent,
-    makeWith,
-    makeOn,
-    extension.Event
-);
+const Collector = content.prefab.Collector(Component, Event)
 
-const Card = content.prefab.accordion.Card(
-    extension.Component,
-    createComponent,
-    makeWith,
-    makeOn,
-    extension.Event
-);
+const customComponentSetup = [Component, componentFactory, makeWith, makeOn, Event]
 
-const Accordion = content.prefab.accordion.Accordion(
-    extension.Component, Card
-);
+const Tabs = content.prefab.Tabs(...customComponentSetup);
+const Card = content.prefab.accordion.Card(...customComponentSetup);
 
-const Annotation = content.prefab.Annotation(core, extension.Component)
+const Accordion = content.prefab.accordion.Accordion(Component, Card);
+const Annotation = content.prefab.Annotation(core, Component)
+const Modal = content.prefab.Modal(Component)
 
-const Modal = content.prefab.Modal(extension.Component)
+const noticeCollection = content.prefab.Notice(core, Component, Event, Preferences)
 
-const noticeCollection = content.prefab.Notice(core, extension.Component, extension.Event, extension.Preferences)
 other.closeCurrentNotice = noticeCollection.noticeHandler.closeActive.bind(noticeCollection.noticeHandler);
 other.noticeHandler = noticeCollection.noticeHandler;
+
 window.make = (() => {
     console.log(meta.greetings)
     console.log("Version: " + meta.version)
@@ -62,12 +52,12 @@ window.make = (() => {
         size: content.decorate.size(makeWith.css),
         color: content.decorate.color(makeWith.css),
         style: content.decorate.style(makeWith.style),
-        limit: content.decorate.limit(createDecorator),
+        limit: content.decorate.limit(decoratorFactory),
 
         //prefabs:
-        ...content.prefab.basic(createComponent),
+        ...content.prefab.basic(componentFactory),
         ...content.prefab.custom(
-            createComponent, makeWith,
+            componentFactory, makeWith,
             content.decorate.inner(makeWith.css),
         ),
 
@@ -76,7 +66,7 @@ window.make = (() => {
         Card: (...mods) => new Card(...mods),
         Accordion: (...cards) => new Accordion(...cards),
         UniqueNotice: noticeCollection.createUniqueNotice,
-        Preferences: (...args) => new extension.Preferences(...args),
+        Preferences: (...args) => new Preferences(...args),
         Notice: noticeCollection.createNotice,
         Query: (...params) => extension.Query.new(...params),
         Collector: (...params) => new Collector(...params),

@@ -2,6 +2,7 @@ export default (withCss) =>
 {
     return {
         error: withCss('make-color-error'),
+        lred: withCss('make-color-l-red'),
         red: withCss('make-color-red'),
         dred: withCss('make-color-d-red'),
         blue: withCss('make-color-blue'),

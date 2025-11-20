@@ -265,7 +265,6 @@ export default (make, popup, picButton) => (additionalContent) => {
   }
 
   return make.Div(
-    make.Separator(6),
     make.Button(
       make.color.lblue,
       make.it.action,

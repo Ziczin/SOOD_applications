@@ -35,10 +35,15 @@ class LoginView(APIView):
     def post(self, request):
         username = request.data.get('username')
         password = request.data.get('password')
+        next_url = request.data.get('next')
+        print("+"*1231, request.data)
         user = authenticate(username=username, password=password)
+        
         if user:
             login(request, user)
-            return redirect('dashboard')
+            if next_url: return redirect(next_url)
+            else: return redirect('dashboard')
+                
         return Response({"error": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
 
 class LogoutView(APIView):

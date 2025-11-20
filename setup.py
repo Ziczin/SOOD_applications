@@ -95,13 +95,15 @@ def create_enums(tag1, tag2, tag3):
 def create_field_types():
     print("-- Создание типов полей")
     type_names = [
-        ('numeric', "Число"),
-        ('int', "Целое число"),
-        ('float', "Дробное число"),
         ('text', "Строка"),
-        ('bigtext', "Текст"),
+        ('textarea', "Текст"),
+        ('number', "Число", 'number'),
         ('date', "Дата"),
         ('time', "Время"),
+        ('datetime', "Дата и время"),
+        ('month', "Месяц"),
+        ('week', "Неделя"),
+        ('checkbox', "Чекбокс"),
         ('enum', "Перечисление", 'enum'),
         ('charset', "Набор символов", 'charset'),
     ]
@@ -175,14 +177,21 @@ def create_field_examples(types, tag1, tag2, tag3, charset):
     print("-- Создание примеров полей")
     fields = [
         {"label": "Технологические пирожки", "type": types['enum'], "tag": tag2},
-        {"label": "Количество", "type": types['int']},
+        {"label": "Количество", "type": types['number']},
         {"label": "Компьютер", "type": types['enum'], "tag": tag3},
-        {"label": "Стоимость", "type": types['numeric']},
-        {"label": "Цена", "type": types['charset'], "charset": charset},
-        {"label": "Описание", "type": types['bigtext']},
+        {"label": "Стоимость", "type": types['number'], "decimals": 2},
+        {"label": "Цена", "type": types['number'], "decimals": 2},
+        {"label": "Описание", "type": types['textarea']},
         {"label": "Принтер", "type": types['enum'], "tag": tag1},
-        {"label": "Новое количество", "type": types['int']},
+        {"label": "Новое количество", "type": types['number']},
         {"label": "Наименование", "type": types['text']},
+        {"label": "Ценник", "type": types['charset'], "charset": charset},
+        {"label": "Дата 1", "type": types['date']},
+        {"label": "Время 1", "type": types['time']},
+        {"label": "Дата и время 1", "type": types['datetime']},
+        {"label": "Месяц 1", "type": types['month']},
+        {"label": "Неделя 1", "type": types['week']},
+        {"label": "Чекбокс 1", "type": types['checkbox']},
     ]
     print(f"Примеров полей: {len(fields)}")
     return fields

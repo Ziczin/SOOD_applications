@@ -1,18 +1,18 @@
 export default function(createComponent, makeWith) {
     return {
         Separator: (size = 8, ...decorators) => {
-            return createComponent('div', 
+            return createComponent(['div', 'separator'], 
                 makeWith.style({ 'padding-top': `${size}px` }),
                 ...decorators
             );
         },
         SideSeparator: (size = 8, ...decorators) => {
-            return createComponent('div', 
+            return createComponent(['div', 'separator'], 
                 makeWith.style({ 'padding-left': `${size}px` }),
                 ...decorators
             );
         },
-        Scrollbox: (...d) => createComponent('div', makeWith.css('make-scrollbox'), ...d),
+        Scrollbox: (...d) => createComponent(['div', 'scrollbox'], makeWith.css('make-scrollbox'), ...d),
         Paragraph: (txt, ...d) => typeof txt === 'string'
             ? createComponent('p', makeWith.text(txt), ...d)
             : createComponent('p', ...d),
@@ -38,9 +38,9 @@ export default function(createComponent, makeWith) {
             ? createComponent('option', makeWith.text(txt), makeWith.attr({value: value}), ...d)
             : createComponent('option', ...d),
         OptionPlaceholder: (txt, ...d) => typeof txt === 'string'
-            ? createComponent('option', makeWith.text(txt), makeWith.attr({value: ''}), ...d)
-            : createComponent('option', ...d),
-        Checkbox: (...d) => createComponent('input',
+            ? createComponent(['option', 'option-placeholder'], makeWith.text(txt), makeWith.attr({value: ''}), ...d)
+            : createComponent(['option', 'option-placeholder'], ...d),
+        Checkbox: (...d) => createComponent(['input', 'checkbox'],
             makeWith.attr({type: 'checkbox'}),
             makeWith.css('make-checkbox'), ...d
         )

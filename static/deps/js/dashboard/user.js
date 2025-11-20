@@ -40,15 +40,139 @@ function dashboardUser(qBase, deps, forms, paragraphNotice, popup, rebuildFoo, p
             make.with.text(form.label || "Безымянная форма"),
             make.with.style({color: "#333"}),
             make.it.leftAlign,
-            make.on.click(async () => formNotice(form.id))
+            make.on.click(async () => formModal(form.id)),
+            popup(400, "Нажмите, чтобы открыть окно заполнения формы")
           )
         )
       )
     });
 
-    async function formNotice(formId) {
+    function formFieldElem(field, type) {
+      const wrapper = make.Div(
+        make.it.marginOnHover,
+        make.style.rounded(12),
+        make.style.padding(12),
+        ...make.callif(field.required && field.type !== 'checkbox', () => make.color.lred),
+        ...make.callif(!field.required || field.type === 'checkbox', () => make.color.lgray)
+
+      )
+      if (type !== "checkbox") {
+        wrapper.addModifiers(
+          make.it.flexColumn,
+          make.style.gap(6),
+          make.Paragraph(field.label),
+          (() => {
+            const map = {
+              text: () => textFieldElem(field),
+              textarea: () => make.TextArea(),
+              number: () => numberFieldElem(field),
+              date: () => dateFieldElem("date"),
+              time: () => dateFieldElem("time"),
+              datetime: () => dateFieldElem("datetime-local"),
+              month: () => dateFieldElem("month"),
+              week: () => dateFieldElem("week"),
+              charset: () => charsetFieldElem(field),
+              enum: () => enumField(field)
+            };
+
+            const fieldComp = map[type]().addModifiers(
+              make.with.attr({id: field.id}),
+              ...make.callif(field.required && field.type !== 'checkbox',
+                () => popup(100,
+                  "Это поле обязательно для заполнения",
+                )
+              )
+            )
+            fieldComp.element.makeDataRequired = field.required || false
+            return fieldComp
+          })()
+        )
+      }
+      else {
+        wrapper.addModifiers(
+          make.it.flexRow,
+          make.style.gap(6),
+          make.Checkbox(make.with.attr({id: field.id})),
+          make.Paragraph(field.label, make.with.style({alignSelf: "center"})),
+        )
+      }
+      return wrapper
+    }
+
+    function dateFieldElem(type) {
+      return make.Input(
+        make.with.attr({type: type})
+      )
+    }
+
+    function textFieldElem(field) {
+      return make.Input(
+        make.with.attr({placeholder: field.placeholder || ''})
+      )
+    }
+
+    function numberFieldElem(field) {
+      return make.Input(
+        make.with.attr({type: "number"}),
+        ...make.callif(field.decimals,
+          () => make.limit.decimalPrecision(field.decimals)
+        ),
+        ...make.callif(field.minimum,
+          () => make.with.attr({min: field.minimum})
+        ),
+        ...make.callif(field.maximum,
+          () => make.with.attr({max: field.maximum})
+        ),
+
+      )
+    }
+
+    function charsetFieldElem(field) {
+      return make.Input(
+        make.with.attr({placeholder: field.placeholder || ''}),
+        make.limit.charactersWhiteList(field.charset.preview),
+        popup(200, "Это ограниченное поле, доступные символы:",
+          field.charset.humanized_preview
+        ),
+        ...make.callif(field.charset.min_length,
+          () => make.with.attr({minlength: field.charset.min_length})
+        ),  
+        ...make.callif(field.charset.max_length,
+          () => make.with.attr({maxlength: field.charset.max_length})
+        )
+      )
+    }
+
+    function enumField(field) {
+      return make.Select(
+        make.OptionPlaceholder(`--- выберите элемент--- `),
+        ...field.enums.map(enu => make.Option(enu.value, enu.id))
+      );
+    }
+
+    async function formModal(formId) {
       let data = await qBase.at('forms').at(formId).at('data').view().get()
       let collector = make.Collector()
+      const popupCanSend = popup(100, "Нажмите, чтобы отправить заявку")
+      const popupCantSend = popup(100, "Вы не можете отправить заявку!", "Не заполненны все обязательные поля!")
+      collector.allowEvents()
+      console.log(collector)
+      collector.onAllRequiredFieldsFilled.sub(() => {
+        collector.btn.element.disabled = false
+        collector.btn.removeChild(popupCantSend)
+        collector.btn.addChild(popupCanSend)
+      })
+      collector.onRequiredFieldMissing.sub(() => {
+        collector.btn.element.disabled = true
+        collector.btn.removeChild(popupCanSend)
+        collector.btn.addChild(popupCantSend)
+      })
+      collector.onAllRequiredFieldsFilled.sub(() => console.log("COLLECTED"))
+      collector.onRequiredFieldMissing.sub(() => console.log("MISSING"))
+      collector.onBuild.sub(() => {
+        if (collector.check()) collector.onAllRequiredFieldsFilled.emit()
+        else collector.onRequiredFieldMissing.emit()
+      })
       let modalForm
       collector.addModifiers(
         make.style.height("auto"),
@@ -67,54 +191,11 @@ function dashboardUser(qBase, deps, forms, paragraphNotice, popup, rebuildFoo, p
           make.with.attr({flex: "999999"}),
           make.style.gap(6),
           make.it.flexColumn,
-          ...data.fields.map(field => {
-            const wrapper = make.Div(
-              make.it.marginOnHover,
-              make.color.lgray,
-              make.style.rounded(12),
-              make.style.padding(12),
-              make.it.flexColumn,
-              make.style.gap(6),
-              make.Paragraph(field.label)
-            );
-            if (field.type === "enum") {
-              wrapper.addChild(
-                make.Select(
-                  make.with.attr({ id: field.id }),
-                  make.OptionPlaceholder(`--- выберите элемент--- `),
-                  ...field.enums.map(enu => make.Option(enu.value, enu.id))
-                )
-              );
-            } else {
-              wrapper.addChild(
-                make.Input(
-                  make.with.attr({ id: field.id, placeholder: field.placeholder || ''}),
-                  ...make.callif(field.type === 'charset',
-                    () => {
-                      console.log
-                      const toRet = [
-                        make.limit.charactersWhiteList(field.charset.preview),
-                        popup(200, "Это ограниченное поле, доступные символы:",
-                          field.charset.humanized_preview
-                        )
-                      ]
-
-                      if (field.charset.min_length) {
-                        toRet.push(make.with.attr({minlength: field.charset.min_length}))
-                      }
-                      if (field.charset.max_length) {
-                        toRet.push(make.with.attr({maxlength: field.charset.max_length}))
-                      }
-                      return toRet
-                    }
-                  )
-                )
-              );
-            }
-            return wrapper;
-          }),
+          ...data.fields.map(field =>
+            formFieldElem(field, field.type)
+          ),
         ),
-        make.Button(
+        collector.btn = make.Button(
           make.it.action,
           make.it.act.positive,
           make.with.attr({flex: "0"}),

@@ -1,16 +1,33 @@
-export default (Decorator, Event) =>
+const dataTestIds = {}
+
+function getRelatedTestId(name) {
+  if (!dataTestIds[name]) {
+    dataTestIds[name] = 0
+  }
+  dataTestIds[name] += 1
+  const id = dataTestIds[name]
+  return `make-${name}-${id}`
+}
+
+export default (Decorator, Event, generateTestIds) =>
 class Component {
     constructor(elementType, autoRebuild = true) {
-        this.name = 'component'
         this.elementType = elementType;
         this.element = null;
+        this.parent = null;
         this.decorators = [];
         this.children = [];
-        this.parent = null;
-        this.autoRebuild = autoRebuild;
         this.buildLock = true
         this.destroyed = false;
         this.doEvents = false
+        this.autoRebuild = autoRebuild;
+    }
+
+    getTestId() {
+        if (this.testId) return this.testId
+        if (generateTestIds) return getRelatedTestId(
+            this.name || 'basic' + '-' + this.elementType
+        )
     }
 
     allowEvents() {
@@ -23,10 +40,6 @@ class Component {
             this.onSwap = new Event({ret: this})
         }
         return this
-    }
-
-    view() {
-        return `${this.elementType}=${this.name}`
     }
 
     addModifiers(...modifiers) {
@@ -57,17 +70,15 @@ class Component {
             if (force) this.element.innerHTML = '';
             else return this.element;
         }
-        else this.element = document.createElement(this.elementType);
-        this.element.makeComponent = this
-        for (const decorator of this.decorators) {
-            decorator.apply(this);
+        else {
+            this.element = document.createElement(this.elementType);
+            this.element.setAttribute('data-test-id', this.getTestId())
+            this.element.makeComponent = this
         }
-
-        for (const child of this.children) {
-            if (!child.destroyed) {
-                this.element.appendChild(child.build());
-            }
-        }
+        this.decorators.forEach((decorator) => decorator.apply(this))
+        this.children.forEach((child) => {
+            if (!child.destroyed) this.element.appendChild(child.build())
+        })
         this.onBuild?.emit(this)
         return this.element;
     }

@@ -4,6 +4,7 @@ export default function createAccordion(Component, Card) {
       super('div');
       this.addModifiers(...modifiers)
       this.cards = new Set();
+      this.name = 'accordion'
     }
 
     addChild(child) {

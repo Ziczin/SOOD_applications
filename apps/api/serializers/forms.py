@@ -81,10 +81,6 @@ class FieldNestedSerializer(serializers.ModelSerializer):
             "humanized_preview": build_humanized_preview(charset_obj)
         }
 
-    def get_humanized_preview(self, obj):
-        charset_obj = getattr(obj, 'charset', None)
-        return build_humanized_preview(charset_obj)
-
 class FormFieldSerializer(serializers.ModelSerializer):
     form = serializers.PrimaryKeyRelatedField(queryset=FormField._meta.get_field('form').related_model.objects.all())
     field = FieldNestedSerializer(read_only=True)
@@ -92,7 +88,7 @@ class FormFieldSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FormField
-        fields = ("id", "form", "field", "field_id", "order", "available")
+        fields = ("id", "form", "field", "field_id", "order", "available", "required")
 
 class FormSerializer(serializers.ModelSerializer):
     class Meta:
@@ -106,17 +102,35 @@ class FormSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ("id",)
 
-
 class FormFieldWithEnumsSerializer(serializers.Serializer):
     id = serializers.IntegerField(allow_null=True)
     type = serializers.CharField(allow_null=True)
     label = serializers.CharField(allow_null=True)
+    placeholder = serializers.CharField(allow_null=True)
     charset = serializers.DictField(allow_null=True)
-    enums = serializers.ListField(child=serializers.DictField(), source='enums_list')
+    required = serializers.BooleanField(allow_null=True)
+    minimum = serializers.IntegerField(allow_null=True)
+    maximum = serializers.IntegerField(allow_null=True)
+    decimals = serializers.IntegerField(allow_null=True)
+    enums = serializers.ListField(child=serializers.DictField())
 
     def to_representation(self, instance):
         field_instance = getattr(instance, 'field', None)
-        charset_obj = getattr(field_instance, 'charset', None) if field_instance is not None else None
+        if not field_instance:
+            return {
+                'id': None,
+                'type': None,
+                'label': None,
+                'placeholder': None,
+                'charset': None,
+                'required': False,
+                'minimum': None,
+                'maximum': None,
+                'decimals': None,
+                'enums': []
+            }
+
+        charset_obj = getattr(field_instance, 'charset', None)
         charset_value = None
         if charset_obj is not None:
             charset_value = {
@@ -126,15 +140,22 @@ class FormFieldWithEnumsSerializer(serializers.Serializer):
                 'preview': charset_obj.build_charset(),
                 'humanized_preview': build_humanized_preview(charset_obj)
             }
-        base = {
-            'id': instance.id if field_instance else None,
-            'type': getattr(getattr(field_instance, 'type', None), 'name', None) if field_instance else None,
-            'label': getattr(field_instance, 'label', None) if field_instance else None,
-            'placeholder': getattr(field_instance, 'placeholder', None) if field_instance else None,
-            'charset': charset_value,
-        }
-        tag_id = getattr(field_instance, 'tag_id', None) if field_instance else None
+
+        tag = getattr(field_instance, 'tag', None)
+        tag_id = tag.id if tag is not None else None
         enums_map = self.context.get('enums_map', {})
-        base['enums'] = enums_map.get(tag_id, []) if tag_id else []
+        enums_list = enums_map.get(tag_id, []) if tag_id is not None else []
+
+        base = {
+            'id': instance.id,
+            'type': getattr(getattr(field_instance, 'type', None), 'name', None),
+            'label': getattr(field_instance, 'label', None),
+            'placeholder': getattr(field_instance, 'placeholder', None),
+            'charset': charset_value,
+            'required': bool(getattr(instance, 'required', False)),
+            'minimum': getattr(field_instance, 'minimum', None),
+            'maximum': getattr(field_instance, 'maximum', None),
+            'decimals': getattr(field_instance, 'decimals', None),
+            'enums': enums_list,
+        }
         return base
-    

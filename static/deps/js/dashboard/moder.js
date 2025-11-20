@@ -67,6 +67,7 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
     appList.addChild(tabs)
     appList.build()
   }
+
   async function fillApps(dateFrom, dateTo) {
     paragraphNotice(["Заявки загружаются", "Это может занять некоторое время"], make.color.yellow, 2500)
     const apps = await qBase.at("applications").where({
@@ -79,6 +80,7 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
     appList.cards = apps.map((app) => appCard(app))
     redrawTabs(appList.cards)
   }
+
   function setVisibilityByStatus() {
     let cards = []
     appList.cards.forEach(card => {
@@ -108,16 +110,23 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
     })
     redrawTabs(cards)
   }
+
   const statusSort = make.Select(
     make.OptionPlaceholder("Все"),
     ...statuses.map(status => make.Option(status.label, status.key)),
-    make.on.change(setVisibilityByStatus)
+    make.on.change(setVisibilityByStatus),
+    popup(["Укажите статус", "Сервис отсортирует все заявки к вашему отделу по указанному статусу"])
   )
 
   const executorSort = make.Select(
     make.OptionPlaceholder("Все"),
     ...executors.map(exec => make.Option(exec.fullname, exec.id)),
-    make.on.change(setVisibilityByStatus)
+    make.on.change(setVisibilityByStatus),
+    popup([
+      "Укажите исполнителя",
+      "Сервис отсортирует все заявки к вашему отделу по указанному исполнителю",
+      'Обратите внимание, что у конкретного исполнителя не может быть заявок со статусом "Отправлена"'
+    ])
   )
 
   function formatDateForInput(date){
@@ -138,12 +147,22 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
 
   const inputDateFrom = make.Input(
     make.with.attr({type: "date", value: formatDateForInput(weekAgo)}),
-    make.on.change(getAndDraw)
+    make.on.change(getAndDraw),
+    popup([
+      "Дата начала выборки",
+      "Как только вы смените дату, сервис повторно загрузит ваши заявки за данный период",
+      "Это может занять некоторое время, если выбранный период будет слишком большим"
+    ])
   )
 
   const inputDateTo = make.Input(
     make.with.attr({type: "date", value: formatDateForInput(today)}),
-    make.on.change(getAndDraw)
+    make.on.change(getAndDraw),
+    popup([
+      "Дата конца выборки",
+      "Как только вы смените дату, сервис повторно загрузит ваши заявки за данный период",
+      "Это может занять некоторое время, если выбранный период будет слишком большим"
+    ])
   )
 
   const sortElement = Row(
@@ -171,6 +190,7 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
       ),
     )
   )
+
   const handler = Column(
     make.style.maxWidth('100%'),
     sortElement,
@@ -183,6 +203,7 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
     return `${pad(d.getDate())}.${pad(d.getMonth() + 1)} `+
             `${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
+
   function appCard(app) {
     const card = make.Card(
       make.it.marginOnHover,
@@ -213,7 +234,10 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
           make.Paragraph(app.form.label)
         ),
       ),
-      popup("Нажмите чтобы развернуть заявку"),
+      popup([
+        "Нажмите чтобы увидеть подробности заявки",
+        "Данные заявки подгружаются по клику, возможна небольшая задержка"
+      ]),
       make.color.lgray,
       make.style.margin(-8),
       make.style.padding(6),
@@ -258,6 +282,7 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
               make.it.act.positive,
               make.style.padding(3),
               make.style.margin(-2),
+              popup(["Нажмите, чтобы изменить статус заявки"]),
               make.on.click(async (e) => {
                 e.stopPropagation();
                 const newStatus = card.status === "SENDED" ? "IN_PROGRESS" : "COMPLETED"
@@ -289,6 +314,10 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
               make.it.act.negative,
               make.style.padding(3),
               make.style.margin(-2),
+              popup([
+                "Нажмите, чтобы отказать в выполнении заявки",
+                "Отказавая в выполнении заявки, вы обязаны указать причину отказа"
+              ]),
               make.on.click(async (e) => {
                 e.stopPropagation();
                 const inp = make.Input()
@@ -351,18 +380,95 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
     card.allowCustomEvents()
     async function drawFields()
     {
+      function formatYearMonth(input) {
+        const [year, month] = input.split('-');
+        const months = [
+          'Январь','Февраль','Март','Апрель','Май','Июнь',
+          'Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'
+        ];
+        return `${months[Number(month) - 1]} ${year}`;
+      }
+      function formatYearWeek(input) {
+        if (!input) return ""
+        const [yearPart, weekPart] = input.split('-W');
+        const year = Number(yearPart);
+        const week = Number(weekPart);
+
+        function getMondayOfISOWeek(yr, wk) {
+          const jan4 = new Date(Date.UTC(yr, 0, 4));
+          const dayOfWeek = jan4.getUTCDay() || 7;
+          const thursday = new Date(jan4);
+          thursday.setUTCDate(jan4.getUTCDate() + (4 - dayOfWeek));
+          const week1Monday = new Date(thursday);
+          week1Monday.setUTCDate(thursday.getUTCDate() - 3);
+          const targetMonday = new Date(week1Monday);
+          targetMonday.setUTCDate(week1Monday.getUTCDate() + (wk - 1) * 7);
+          return targetMonday;
+        }
+
+        function formatDateRus(date) {
+          const dd = String(date.getUTCDate()).padStart(2, '0');
+          const mm = String(date.getUTCMonth() + 1).padStart(2, '0');
+          const yyyy = date.getUTCFullYear();
+          return `${dd}.${mm}.${yyyy}`;
+        }
+
+        const monday = getMondayOfISOWeek(year, week);
+        const sunday = new Date(monday);
+        sunday.setUTCDate(monday.getUTCDate() + 6);
+
+        return `${year}  Неделя №${week} с ${formatDateRus(monday)} по ${formatDateRus(sunday)}`;
+      }
       const _app = await qBase.at("applications").at(app.id).view().get()
-      _app.application_fields.forEach(field => 
-        fieldData.addChild(
-          Row(
-            make.it.marginOnHover,
-            make.Paragraph(`${field.label}: ${field.value}`),
-            ...make.if(field.tag !== null,
-              make.Paragraph(`(${field.tag})`, make.it.subtitleText),
+      _app.application_fields.forEach(field => {
+        if (!field.value) {
+          fieldData.addChild(
+            Row(
+              make.it.marginOnHover,
+              make.Paragraph(`${field.label}: <<< не указано >>>`),
+              make.it.subtitleText
             )
           )
-        )
-      )
+        }
+        else {
+          if (field.type.name === "textarea") {
+            fieldData.addChild(
+              make.Card(
+                make.it.littleDarker,
+                make.style.rounded(12),
+                make.style.padding(4)
+              )
+              .header(make.Paragraph(field.label))
+              .content(make.Paragraph(field.value))
+            )
+          }
+          else {
+            let value = field.value
+            if (field.type.name === "datetime") {
+              value = field.value.replace(/T/g, ' ');
+            }
+            if (field.type.name === "month") {
+              value = formatYearMonth(field.value)
+            }
+            if (field.type.name === "week") {
+              value = formatYearWeek(field.value)
+            }
+            if (field.type.name === "checkbox") {
+              value = field.value === 'on' ? "Да" : "Нет"
+            }
+            fieldData.addChild(
+              Row(
+                make.it.marginOnHover,
+                make.Paragraph(`${field.label}: ${value}`),
+                ...make.if(field.tag !== null,
+                  make.Paragraph(`(${field.tag})`, make.it.subtitleText),
+                ),
+              )
+            )
+          }
+        }
+        
+      })
       card.onOpenStart.unsub(drawFields)
     }
     card.onOpenStart.sub(drawFields)

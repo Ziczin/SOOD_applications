@@ -1,6 +1,7 @@
 {% load static %}
 
-<div id="left-exit-button"></div>
+<div id='left-btns'></div>
+<div id="manual-button"></div>
 
 <div class="content-strange" id="left-content"></div>
 
@@ -16,11 +17,27 @@
     [paragraphNoticePromise, backButtonPromise, actionNoticePromise, popupPromise]
   )
   const picButton = await imp("{% static 'deps/js/prefabs/pic_button.js' %}", popup, "{{ MEDIA_URL }}");
+
   const basicManual = await imp("{% static 'deps/js/manual/basic_manual.js' %}", popup, picButton);
+  const leftBtns = make.Card(
+    make.style.rounded(12),
+    make.style.padding(6),
+    make.it.content
+  )
+  .header(make.it.marginOnHover, make.h3("Перейти", make.it.subtitleText))
+  .content(
+    make.it.flexColumn,
+    make.style.gap(6),
+    make.Separator(),
+    backButton(),
+    backButton("Формы", '/applications/forms-manager/'),
+    backButton("Перечисления", '/applications/enums-manager/'),
+    backButton("Шаблоны полей", '/applications/fields-manager/')
+  )
+  document.getElementById("left-btns").appendChild(leftBtns.build());
 
   const curr = make.h1('test')
-  document.getElementById("left-exit-button").appendChild(backButton().build());
-  document.getElementById("left-exit-button").appendChild(basicManual(curr).build())
+  document.getElementById("manual-button").appendChild(basicManual(curr).build())
 
   const csrfObj = await make.Query('/api/csrf-token').get()
   const qBase = make.Query("/api").via({"X-CSRFToken": csrfObj.csrfToken}).view();

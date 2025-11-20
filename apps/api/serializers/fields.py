@@ -69,7 +69,11 @@ class FieldSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Field
-        fields = ('id', 'type', 'label', 'tag', 'department', 'required', 'charset', 'placeholder')
+        fields = (
+            'id', 'type', 'department',
+            'placeholder', 'label', 'charset', 'tag',
+            'decimals', 'minimum', 'maximum', 'is_multienum'
+        )
         read_only_fields = ('id',)
 
     def to_representation(self, instance):

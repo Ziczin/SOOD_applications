@@ -28,7 +28,11 @@
   await import("{% static 'deps/make/make.js' %}");
   document.getElementById('left-container').appendChild(
     make.Div(
-      make.Paragraph("TEST")
+      make.Paragraph("TEST"),
+      make.Input(
+        make.with.attr({type: "number"}),
+        make.limit.decimalPrecision(2)
+      )
     ).build()
   )
   document.getElementById('left-container').appendChild(

@@ -3,6 +3,7 @@
     --red: hsla(0, 87%, 75%, 1);
     --red-hover: hsla(0, 87%, 72%, 1);
 
+    --l-red: hsla(0, 100%, 95%, 1);
     --d-red: hsla(0, 87%, 60%, 1);
     --d-red-hover: hsla(0, 87%, 55%, 1);
     
@@ -449,6 +450,9 @@ p, form, h1, h2, h3, h4, h5, h6 {
 .make-color-white {
     background-color: white;
 }
+.make-color-l-red {
+    background-color: var(--l-red);
+}
 .make-color-red {
     background-color: var(--red);
 }
@@ -554,7 +558,7 @@ p, form, h1, h2, h3, h4, h5, h6 {
 
 /* animatic */
 .make-margin-on-hover {
-    transition: margin-left 0.2s ease }
+    transition: margin-left 0.25s ease }
 .make-margin-on-hover:hover {
-    margin-left: 0.6%;
-    transition: margin-left 0.2s ease;}
+    margin-left: 3px;
+    transition: margin-left 0.25s ease;}

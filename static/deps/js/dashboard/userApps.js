@@ -50,7 +50,8 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
   const statusSort = make.Select(
     make.OptionPlaceholder("Все"),
     ...statuses.map(status => make.Option(status.label, status.key)),
-    make.on.change(setVisibilityByStatus)
+    make.on.change(setVisibilityByStatus),
+    popup(["Укажите статус", "Сервис отсортирует все ваши заявки по указанному статусу"])
   )
 
   function formatDateForInput(date){
@@ -71,12 +72,22 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
 
   const inputDateFrom = make.Input(
     make.with.attr({type: "date", value: formatDateForInput(weekAgo)}),
-    make.on.change(getAndDraw)
+    make.on.change(getAndDraw),
+    popup([
+      "Дата начала выборки",
+      "Как только вы смените дату, сервис повторно загрузит ваши заявки за данный период",
+      "Это может занять некоторое время, если выбранный период будет слишком большим"
+    ])
   )
 
   const inputDateTo = make.Input(
     make.with.attr({type: "date", value: formatDateForInput(today)}),
-    make.on.change(getAndDraw)
+    make.on.change(getAndDraw),
+    popup([
+      "Дата конца выборки",
+      "Как только вы смените дату, сервис повторно загрузит ваши заявки за данный период",
+      "Это может занять некоторое время, если выбранный период будет слишком большим"
+    ])
   )
 
   const sortElement = make.Div(
@@ -117,6 +128,7 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
       make.with.style({border: "3px solid #ddd", backgroundColor: "#f5f5f5"}),
       make.style.padding(6),
       make.style.rounded(12),
+      popup(400, "Нажмите, чтобы раскрыть подробности")
     )
     card.status = app.status
     card.id = app.id
@@ -188,6 +200,10 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
             make.it.act.negative,
             make.style.padding(3),
             make.style.margin(-2),
+            popup([
+              "Нажмите чтобы отменить заявку",
+              "Отменить заявку можно только если она не была принята в работу"
+            ]),
             ...make.if(card.status === "SENDED",
               make.on.click(async (e) => {
                 e.stopPropagation()
@@ -209,7 +225,7 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
                     make.it.flexColumn,
                     make.style.gap(6),
                     make.it.contented,
-                    make.Paragraph("Для отмены заявки укажите причину отмены:"),
+                    make.Paragraph("Для отмены заявки укажите причину:"),
                     inp,
                     make.Div(
                       make.it.flexRow,

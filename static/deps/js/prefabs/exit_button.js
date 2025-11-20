@@ -1,10 +1,15 @@
 export default (make) =>
-function exitWithNotice(
-  text="Вернуться в аккаунт", style="back",
-  location="/applications/dashboard/"){
-  return make.Button(
-    make.with.css("content", style, "flex"),
-    make.with.text(text),
-    make.on.click(() => window.location.href=location),
+function (
+  text="Вернуться в аккаунт",
+  location="/applications/dashboard/") {
+  return make.Div(
+    make.it.marginOnHover,
+    make.Button(
+      make.it.action,
+      make.it.leftAlign,
+      make.it.act.neutral,
+      make.with.text(text),
+      make.on.click(() => window.location.href=location),
+    )
   )
 }

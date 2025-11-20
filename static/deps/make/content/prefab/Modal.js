@@ -13,7 +13,7 @@ class Modal extends Component {
         autoHeight = false
     } = {}, ...modifiers) {
         super(elementType, autoRebuild)
-        this.name = 'overlayComponent'
+        this.name = 'modal'
         this.left = left
         this.top = top
         this.width = width

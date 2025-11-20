@@ -45,8 +45,11 @@ class Field(models.Model):
     placeholder = models.CharField(max_length=100, blank=True, default='')
     tag = models.ForeignKey(EnumTag, on_delete=models.SET_NULL, null=True, default=None)
     charset = models.ForeignKey('FieldCharSet', on_delete=models.SET_NULL, null=True, blank=True, default=None, related_name='fields')
+    decimals = models.PositiveIntegerField(null=True, blank=True)
+    minimum = models.PositiveIntegerField(null=True, blank=True)
+    maximum = models.PositiveIntegerField(null=True, blank=True)
+    is_multienum = models.BooleanField(default=False)
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, default=None)
-    required = models.BooleanField(default=False)
     
     class Meta:
         indexes = [
@@ -74,6 +77,7 @@ class FormField(models.Model):
     form = models.ForeignKey('Form', on_delete=models.CASCADE, related_name='form_fields')
     field = models.ForeignKey('Field', on_delete=models.CASCADE, related_name='field_forms')
     order = models.PositiveIntegerField(validators=[MinValueValidator(1)], null=True, blank=True)
+    required = models.BooleanField(default=True)
     available = models.BooleanField(default=True)
 
     class Meta:

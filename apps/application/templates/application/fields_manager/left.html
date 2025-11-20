@@ -1,6 +1,7 @@
 {% load static %}
 
-<div id="left-exit-button"></div>
+<div id='left-btns'></div>
+<div id="manual-button"></div>
 
 <div class="content" id="left-content"></div>
 
@@ -15,10 +16,25 @@
   const picButton = await imp("{% static 'deps/js/prefabs/pic_button.js' %}", popup, "{{ MEDIA_URL }}");
 
   const basicManual = await imp("{% static 'deps/js/manual/basic_manual.js' %}", popup, picButton);
+  const leftBtns = make.Card(
+    make.style.rounded(12),
+    make.style.padding(6),
+    make.it.content
+  )
+  .header(make.it.marginOnHover, make.h3("Перейти", make.it.subtitleText))
+  .content(
+    make.it.flexColumn,
+    make.style.gap(6),
+    make.Separator(),
+    backButton(),
+    backButton("Формы", '/applications/forms-manager/'),
+    backButton("Перечисления", '/applications/enums-manager/'),
+    backButton("Наборы символов", '/applications/charsets-manager/'),
+  )
+  document.getElementById("left-btns").appendChild(leftBtns.build());
 
-  document.getElementById("left-exit-button").appendChild(backButton().build());
   const curr = make.h1('test')
-  document.getElementById("left-exit-button").appendChild(basicManual(curr).build())
+  document.getElementById("manual-button").appendChild(basicManual(curr).build())
 
   const csrfObj = await make.Query('/api/csrf-token').get()
   const qBase = make.Query('/api').via({"X-CSRFToken": csrfObj.csrfToken}).view();
@@ -51,7 +67,9 @@
   const Column = (...mods) => make.Div(make.it.flexColumn, make.style.gap(6), ...mods)
 
   function enumField(field, inpField) {
-    const select = make.Select()
+    const select = make.Select(
+      popup("Доступные перечисления")
+    )
     async function fillField() {
       const enumTags = await enumTagsPromise
       const enumTagsHistory = await enumTagsHistoryPromise
@@ -88,7 +106,9 @@
   }
 
   function charsetField(field, inpField) {
-    const select = make.Select()
+    const select = make.Select(
+      popup("Доступные наборы символов")
+    )
     async function fillField() {
       const charsets = await fieldCharsetsPromise
       const charsetsHistory = await fieldCharsetsHistoryPromise
@@ -128,9 +148,15 @@
 
   function labelField(field, row) {
     const input = make.Input(
+      popup("Название поля на форме"),
       make.with.attr({
         value: field.label,
-        placeholder: field.label
+        placeholder: field.label || "Название"
+      }),
+      make.with.style({
+        height: "fit-content",
+        display: "flex",
+        flexDirection: "row",
       }),
     )
     input.addModifiers(
@@ -146,9 +172,15 @@
 
   function placeholderField(field, row) {
     const input = make.Input(
+      popup("Подсказка для поля на форме", "Будет показываться серым цветом и не влияет на значение"),
       make.with.attr({
         value: field.placeholder,
         placeholder: "Плейсхолдер"
+      }),
+      make.with.style({
+        height: "fit-content",
+        display: "flex",
+        flexDirection: "row",
       }),
     )
     input.addModifiers(
@@ -162,6 +194,50 @@
     return input
   }
 
+  function decimalsField(field, row) {
+    function elemDecimalFields(isPositive, queryArgument, popupText, placeholderText) { 
+      const input = make.Input(
+        popup(200, popupText),
+        make.with.attr({
+          type: "number",
+          value: field[queryArgument],
+          placeholder: placeholderText
+        }),
+        ...make.callif(isPositive, () => make.with.attr({min: 0})),
+      )
+      input.addModifiers(
+        make.on.input(() => row.element.classList.add("make-mark-changed")),
+        make.on.inputTimeOut(3000, () => {
+          qFields.at(field.id).with({[queryArgument]: input.element.value}).view().patch()
+          row.element.classList.remove("make-mark-changed")
+          paragraphNotice("Изменено!", make.color.green)
+        })
+      )
+      return input
+    }
+    
+    return make.Card(
+      make.it.littleDarker,
+      make.style.rounded(12),
+      make.style.padding(6)
+    )
+    .header(
+      popup("Нажмите чтобы скрыть или показать дополнительные параметры"),
+      make.Paragraph("Дополнительно")
+    )
+    .content(
+      make.it.flexColumn,
+      make.style.gap(6),
+      make.Separator(),
+      elemDecimalFields(true, "decimals", "Количество знаков после запятой", "Точность"),
+      elemDecimalFields(false, "minimum", "Минимальное допустимое значение", "Минимум"),
+      elemDecimalFields(false, "maximum", "Максимальное допустимое значение", "Максимум")
+    )
+  }
+
+  const doPlaceholder = [
+    "text", "textarea", "number", "charset"
+  ]
   function fieldFactory(field, type) {
     const row = Row(
       make.it.marginOnHover,
@@ -170,9 +246,10 @@
     const inpField = labelField(field, row)
     row.addModifiers(
       inpField,
-      ...make.callif(type !== "enum", () => placeholderField(field, row)),
+      ...make.callif(doPlaceholder.includes(type), () => placeholderField(field, row)),
       ...make.callif(type === "enum", () => enumField(field, inpField)),
       ...make.callif(type === "charset", () => charsetField(field, inpField)),
+      ...make.callif(type === "number", () => decimalsField(field, inpField)),
     )
     return row
   }
@@ -197,14 +274,26 @@
               type: fieldType.id,
               department: me.department.id
             }).view().post()
+            const newRow = fieldFactory(newField, fieldType.type)
             scrollbox.addChild(
-              fieldFactory(newField, fieldType.type)
+              newRow
             )
+            newRow.children[0].element.focus()
           })
         )
       ).build()
     )
   }
+
+  document.addEventListener('keydown', function(e){
+    if(e.key !== 'Enter') return;
+    const active = document.activeElement;
+    if(!active) return;
+    if(active === document.body) return;
+    active.click();
+    active.blur();
+  });
+
   const fieldTypes = await fieldTypesPromise
   document.getElementById('left-content').appendChild(
     Column(

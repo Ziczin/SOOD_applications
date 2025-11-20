@@ -53,7 +53,8 @@
       })
     )
   ]
-
+  const nextUrl = new URLSearchParams(window.location.search).get('next')
+  console.log(nextUrl)
   const title = make.Div(
     make.it.flexRow,
     make.it.centered,
@@ -68,6 +69,12 @@
       method: 'post',
       action: data.action,
     }),
+    ...make.callif(nextUrl, () => make.Input(
+      make.with.attr({
+        type: 'hidden',
+        value: nextUrl
+      })
+    )),
     make.with.csrf(csrfObj.csrfToken),
     ...data.fields.map(el =>
       make.Div(

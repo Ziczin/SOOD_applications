@@ -8,6 +8,7 @@ export default function createCard(Component, createComponent, makeWith, makeOn,
       this.addModifiers(...modifiers);
       this.accordion = null;
       this.doCustomEvents = false
+      this.name = 'card'
 
       this._onHeaderClick = (event) => {
         event.stopPropagation();
@@ -21,10 +22,10 @@ export default function createCard(Component, createComponent, makeWith, makeOn,
     allowCustomEvents() {
         if (!this.doCustomEvents) {
             this.doCustomEvents = true
-            this.onOpenStart = new Event({ret: this})
             this.onOpenEnd = new Event({ret: this})
-            this.onCloseStart = new Event({ret: this})
             this.onCloseEnd = new Event({ret: this})
+            this.onOpenStart = new Event({ret: this})
+            this.onCloseStart = new Event({ret: this})
         }
         return this
     }
@@ -35,7 +36,7 @@ export default function createCard(Component, createComponent, makeWith, makeOn,
 
     header(...modifiers) {
       this.cardHeader = createComponent(
-        'div',
+        ['div', 'card-header'],
         makeWith.css('make-card-header'),
         makeOn.click(this._onHeaderClick),
         ...modifiers)
@@ -44,7 +45,7 @@ export default function createCard(Component, createComponent, makeWith, makeOn,
     }
 
     content(...modifier) {
-      this.cardContent = createComponent('div', ...modifier)
+      this.cardContent = createComponent(['div', 'card-content'], ...modifier)
       this.addChild(this.cardContent);
       this.setupContentAnimation();
       return this;
@@ -128,6 +129,12 @@ export default function createCard(Component, createComponent, makeWith, makeOn,
       
       void el.offsetHeight;
       el.style.height = '0px';
+    }
+
+    build(force = false) {
+      const el = super.build(force)
+      el.setAttribute('data-test-id', this.getTestId())
+      return el
     }
   };
 }

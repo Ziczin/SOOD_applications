@@ -55,7 +55,7 @@ class ApplicationFormField(models.Model):
     application = models.ForeignKey(
         Application, on_delete=models.SET_NULL, related_name='application_fields', null=True)
     form_field = models.ForeignKey(FormField, on_delete=models.SET_NULL, null=True)
-    value = models.CharField(max_length=100)
+    value = models.TextField(blank=True)
 
     class Meta:
         indexes = [

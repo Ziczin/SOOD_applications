@@ -1,8 +1,9 @@
 {% load static %}
 
-<div id="left-exit-button"></div>
+<div id='left-btns'></div>
+<div id="manual-button"></div>
 
-<div class="content-strange", id="left-content"></div>
+<div class="content-strange" id="left-content"></div>
 
 <script type="module">
   //await import("{% static 'collected/static.js' %}");
@@ -15,10 +16,25 @@
   const picButton = await imp("{% static 'deps/js/prefabs/pic_button.js' %}", popup, "{{ MEDIA_URL }}");
 
   const basicManual = await imp("{% static 'deps/js/manual/basic_manual.js' %}", popup, picButton);
+  const leftBtns = make.Card(
+    make.style.rounded(12),
+    make.style.padding(6),
+    make.it.content
+  )
+  .header(make.it.marginOnHover, make.h3("Перейти", make.it.subtitleText))
+  .content(
+    make.it.flexColumn,
+    make.style.gap(6),
+    make.Separator(),
+    backButton(),
+    backButton("Формы", '/applications/forms-manager/'),
+    backButton("Наборы символов", '/applications/charsets-manager/'),
+    backButton("Шаблоны полей", '/applications/fields-manager/')
+  )
+  document.getElementById("left-btns").appendChild(leftBtns.build());
 
-  document.getElementById("left-exit-button").appendChild(backButton().build());
   const curr = make.h1('test')
-  document.getElementById("left-exit-button").appendChild(basicManual(curr).build())
+  document.getElementById("manual-button").appendChild(basicManual(curr).build())
 
   function enumElem({id, value, ph, enabled=true, container, visible, makeQuery}) {
     let acc;
