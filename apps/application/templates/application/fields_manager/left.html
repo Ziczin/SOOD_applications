@@ -112,7 +112,6 @@
     async function fillField() {
       const charsets = await fieldCharsetsPromise
       const charsetsHistory = await fieldCharsetsHistoryPromise
-      console.log(field)
 
       const exists = charsets.some(set => set.id === field.charset?.id)
       let found
@@ -259,7 +258,6 @@
     const fields = await qFields.where({type: fieldType.id}).view().get()
     const me = await mePromise
     const scrollbox = make.Scrollbox(make.it.flexColumn, make.style.gap(6))
-    console.log(fieldType)
     center.appendChild(
       Column(
         scrollbox.addModifiers(

@@ -43,7 +43,6 @@ function(qBase) {
       type: "date", value: formatDateForInput(startOfNextMonth)
     }),
   )
-  let testModal
   return [
     make.it.flexColumn,
     make.style.gap(6),

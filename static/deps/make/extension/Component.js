@@ -36,21 +36,31 @@ class Component {
             this.onBuild = new Event({ret: this})
             this.onDestroy = new Event({ret: this})
             this.onChildAdd = new Event({ret: this})
+            this.onChildDetach = new Event({ret: this})
             this.onChildRemove = new Event({ret: this})
             this.onSwap = new Event({ret: this})
         }
         return this
     }
 
+    pushModifiers(...modifiers) {
+        for (const modifier of modifiers) {
+            modifier instanceof Component && this.pushChild(modifier);   
+            modifier instanceof Decorator && this.addDecorator(modifier);
+            modifier instanceof Function && this.addDecorator(modifier)
+        }
+    }
+
     addModifiers(...modifiers) {
+        const autoRebuild = this.autoRebuild
         this.autoRebuild = false
         for (const modifier of modifiers) {
             modifier instanceof Component && this.addChild(modifier);   
             modifier instanceof Decorator && this.addDecorator(modifier);
             modifier instanceof Function && this.addDecorator(modifier)
         }
-        this.autoRebuild = true
-        this.build(true);
+        this.autoRebuild = autoRebuild
+        if (this.element && this.autoRebuild) this.build(true);
         return this
     }
 
@@ -58,9 +68,13 @@ class Component {
         this.decorators.push(decorator)
     }
 
-    addChild(child) {
+    pushChild(child) {
         child.parent = this;
         this.children.push(child);
+    }
+
+    addChild(child) {
+        this.pushChild(child);
         if (this.autoRebuild) this.build(true);
         this.onChildAdd?.emit(child)
     }
@@ -72,47 +86,62 @@ class Component {
         }
         else {
             this.element = document.createElement(this.elementType);
-            this.element.setAttribute('data-test-id', this.getTestId())
+            if (generateTestIds) this.element.setAttribute('data-test-id', this.getTestId())
             this.element.makeComponent = this
         }
         this.decorators.forEach((decorator) => decorator.apply(this))
         this.children.forEach((child) => {
-            if (!child.destroyed) this.element.appendChild(child.build())
+            this.element.appendChild(child.build())
         })
         this.onBuild?.emit(this)
         return this.element;
     }
 
-    destroy() {
+    destroy(detach = true) {
         if (this.destroyed) return;
         this.destroyed = true;
         
-        if (this.parent) {
-            this.parent.removeChild(this);
-            this.parent = null;
-        }
+        if (this.parent && detach) this.parent.detachChild(this)
+
+        this.children.forEach(child => child.destroy(false));
+        this.children = [];
         this.decorators = [];
         
-        this.children.forEach(child => child.destroy());
-        this.children = [];
-        
-        if (this.element && this.element.parentNode) {
-            this.element.parentNode.removeChild(this.element);
-        }
         this.element = null;
+
+        if (this.doEvents) {
+            this.doEvents = null
+            this.onBuild = null
+            this.onDestroy = null
+            this.onChildAdd = null
+            this.onChildDetach = null
+            this.onChildRemove = null
+            this.onSwap = null
+        }
+
+        this.destroyed = null;
+
         this.onDestroy?.emit(this)
     }
 
-    removeChild(child, destroy=true) {
+    detachChild(child) {
         const index = this.children.indexOf(child);
-        if (index === -1) return false;
-        this.children.splice(index, 1);
-        if (destroy) child.destroy()
+        if (index !== -1){
+            this.children.splice(index, 1);
+            child.parent = null;
+        }
         if (this.autoRebuild && this.element) {
             this.build(true);
         }
+        this.onChildDetach?.emit(child)
+        return this
+    }
+
+    removeChild(child) {
+        this.detachChild(child)
+        child.destroy()
         this.onChildRemove?.emit(child)
-        return true;
+        return this;
     }
 
     swap(other) {
@@ -132,5 +161,6 @@ class Component {
         if (bParent.element && bParent.autoRebuild) bParent.build(true);
 
         this.onSwap?.emit({ a, b });
+        return this
     }
 }

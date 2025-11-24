@@ -21,7 +21,7 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
   }
 
   async function fillApps(dateFrom, dateTo) {
-    appList.children.forEach(child => appList.removeChild(child))
+    appList.children.forEach(child => child.parent?.detachChild(child))
     appList.children = []
     const apps = await qBase.at("applications").where({
       user: userId,
@@ -113,7 +113,9 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
     make.with.style({flex: 1}),
     sortElement,
     appList
-  )
+  ).allowEvents().onBuild.once(getAndDraw)
+  
+  window.getAndDrawUserApps = getAndDraw
 
   function timeFormat(iso) {//.${d.getFullYear()}
     const d = new Date(iso);
@@ -207,7 +209,7 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
             ...make.if(card.status === "SENDED",
               make.on.click(async (e) => {
                 e.stopPropagation()
-                await qBase.at("applications").at(app.id).with({
+                qBase.at("applications").at(app.id).with({
                   status: "CANCELLED",
                 }).view().patch()
                 card.status = "CANCELLED"
@@ -237,7 +239,7 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
                         make.with.style({flex: 1}),
                         make.on.click(async () => {
                           if (inp.element.value) {
-                            await qBase.at("applications").at(app.id).with({
+                            qBase.at("applications").at(app.id).with({
                               status: "CANCELLED",
                               executor: userId,
                               msg: inp.element.value
@@ -276,13 +278,6 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
 
     return card
   }
-
-  handler.allowEvents()
-  handler.onBuild.sub(async () => {
-    await getAndDraw()
-    handler.onBuild.unsub(getAndDraw)
-  })
-  window.getAndDrawUserApps = getAndDraw
 
   qBase.at("events").at("check").with(
     {user_id: userId, event: "application-status-change-userboard", other: userId}

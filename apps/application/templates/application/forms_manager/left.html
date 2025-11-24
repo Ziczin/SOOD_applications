@@ -189,9 +189,7 @@
     }
     if (field.charset) {
       addit = ` "${field.charset.humanized_preview}"`
-
     }
-      console.log(field)
     ret.addModifiers(
       make.it.marginOnHover,
       make.Div(
@@ -282,7 +280,6 @@
                   () => make.with.attrs('checked')
                 ),
                 make.on.change((e) => {
-                  console.log({required: wrapper.element.checked})
                   qFormField.at(formField.id).with({required: wrapper.element.checked}).view().patch()
                 })
               )

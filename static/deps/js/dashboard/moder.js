@@ -26,8 +26,8 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
   )
 
   function redrawTabs(cards) {
-    appList.children.forEach(child => appList.removeChild(child))
-    appList.children = []
+    cards.forEach(card => card.parent?.detachChild(card))
+    appList.children.forEach(child => appList.detachChild(child))
 
     const tabs = make.Tabs(
       {scroll: true, noAnimation: true, squareTabs: true},
@@ -98,9 +98,9 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
           card.element.style.display = "block"
           if (bntBuilded) {
             if (completed || rejected) {
-              card.btnProc.parent.removeChild(card.btnProc)
-              card.btnCanc.parent.removeChild(card.btnCanc)
-              card.btnHolder.parent.removeChild(card.btnHolder)
+              card.btnProc.parent?.removeChild(card.btnProc)
+              card.btnCanc.parent?.removeChild(card.btnCanc)
+              card.btnHolder.parent?.removeChild(card.btnHolder)
             }
             else if (sended) card.btnProc.element.textContent = "Принять"
             else if (in_progress) card.btnProc.element.textContent = "Завершить"
@@ -334,7 +334,7 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
                         make.with.style({flex: 1}),
                         make.on.click(async () => {
                           if (inp.element.value) {
-                            await qBase.at("applications").at(app.id).with({
+                            qBase.at("applications").at(app.id).with({
                               status: "REJECTED",
                               msg: inp.element.value,
                               executor: me.id
@@ -523,10 +523,12 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
         }
       })
       setVisibilityByStatus()
+      console.log(resp)
+
       paragraphNotice(
         ["Изменён статус по заявке",
           `${resp.form} №${resp.id}`,
-          `Исполнитель: ${resp.executor || resp.user.fullname}`,
+          `Исполнитель: ${resp.executor || ""}`,
           `Статус: ${resp.status}`,
           resp.msg && `Сообщение: ${resp.msg}`,
         ],

@@ -2,11 +2,12 @@ export default (make) =>
 async function dashboardProxy(me) {
   const csrfObj = await make.Query('/api/csrf-token').get()
   const qBase = make.Query('/api').via({"X-CSRFToken": csrfObj.csrfToken}).view();
-  const roles = await qBase.at('roles').get()
-  const departments = await qBase.at('departments').get()
+  const rolesProm = await qBase.at('roles').get()
+  const departmentsProm = await qBase.at('departments').get()
   const qChangeRole = qBase.at('users').at(me.id).at("change_role").view()
   const qChangeDepartment = qBase.at('users').at(me.id).at("change_department").view()
 
+  const [roles, departments] = await Promise.all([rolesProm, departmentsProm])
   return [
     make.it.flexColumn,
     make.it.gap10px,

@@ -52,9 +52,11 @@ function dashboardUser(qBase, deps, forms, paragraphNotice, popup, rebuildFoo, p
         make.it.marginOnHover,
         make.style.rounded(12),
         make.style.padding(12),
-        ...make.callif(field.required && field.type !== 'checkbox', () => make.color.lred),
+        ...make.callif(
+          field.required && field.type !== 'checkbox',
+          () => make.with.css("have-status-REJECTED")
+        ),
         ...make.callif(!field.required || field.type === 'checkbox', () => make.color.lgray)
-
       )
       if (type !== "checkbox") {
         wrapper.addModifiers(
@@ -75,12 +77,25 @@ function dashboardUser(qBase, deps, forms, paragraphNotice, popup, rebuildFoo, p
               enum: () => enumField(field)
             };
 
-            const fieldComp = map[type]().addModifiers(
+            const fieldComp = map[type]()
+            fieldComp.addModifiers(
               make.with.attr({id: field.id}),
               ...make.callif(field.required && field.type !== 'checkbox',
-                () => popup(100,
-                  "Это поле обязательно для заполнения",
-                )
+                () => [
+                  popup(100,
+                    "Это поле обязательно для заполнения",
+                  ),
+                  make.on.inputTimeOut(100, (e) => {
+                    if (e.target.value) {
+                      wrapper.element.classList.remove("have-status-REJECTED")
+                      wrapper.element.classList.add("have-status-COMPLETED")
+                    }
+                    else {
+                      wrapper.element.classList.remove("have-status-COMPLETED")
+                      wrapper.element.classList.add("have-status-REJECTED")
+                    }
+                  })
+                ]
               )
             )
             fieldComp.element.makeDataRequired = field.required || false
@@ -131,7 +146,7 @@ function dashboardUser(qBase, deps, forms, paragraphNotice, popup, rebuildFoo, p
       return make.Input(
         make.with.attr({placeholder: field.placeholder || ''}),
         make.limit.charactersWhiteList(field.charset.preview),
-        popup(200, "Это ограниченное поле, доступные символы:",
+        popup(2000, "Это ограниченное поле, доступные символы:",
           field.charset.humanized_preview
         ),
         ...make.callif(field.charset.min_length,
@@ -153,28 +168,36 @@ function dashboardUser(qBase, deps, forms, paragraphNotice, popup, rebuildFoo, p
     async function formModal(formId) {
       let data = await qBase.at('forms').at(formId).at('data').view().get()
       let collector = make.Collector()
-      const popupCanSend = popup(100, "Нажмите, чтобы отправить заявку")
-      const popupCantSend = popup(100, "Вы не можете отправить заявку!", "Не заполненны все обязательные поля!")
+      let popupCanSend
+      let popupCantSend
       collector.allowEvents()
-      console.log(collector)
       collector.onAllRequiredFieldsFilled.sub(() => {
-        collector.btn.element.disabled = false
-        collector.btn.removeChild(popupCantSend)
-        collector.btn.addChild(popupCanSend)
+        if (collector.btn.element) {
+          collector.btn.element.disabled = false
+          if (popupCantSend) collector.btn.removeChild(popupCantSend)
+          collector.btn.addChild(
+            popupCanSend = popup(100, "Нажмите, чтобы отправить заявку")
+          )
+          collector.btn.element.classList.remove('make-btn-action-negative')
+          collector.btn.element.classList.add('make-btn-action-positive')
+        }
       })
       collector.onRequiredFieldMissing.sub(() => {
-        collector.btn.element.disabled = true
-        collector.btn.removeChild(popupCanSend)
-        collector.btn.addChild(popupCantSend)
-      })
-      collector.onAllRequiredFieldsFilled.sub(() => console.log("COLLECTED"))
-      collector.onRequiredFieldMissing.sub(() => console.log("MISSING"))
-      collector.onBuild.sub(() => {
-        if (collector.check()) collector.onAllRequiredFieldsFilled.emit()
-        else collector.onRequiredFieldMissing.emit()
+        if (collector.btn.element) {
+          collector.btn.element.disabled = true
+          if (popupCanSend) collector.btn.removeChild(popupCanSend)
+          collector.btn.addChild(
+            popupCantSend = popup(100,
+              "Вы не можете отправить заявку!",
+              "Не заполненны все обязательные поля!"
+            )
+          )
+          collector.btn.element.classList.remove('make-btn-action-positive')
+          collector.btn.element.classList.add('make-btn-action-negative')
+        }
       })
       let modalForm
-      collector.addModifiers(
+      collector.pushModifiers(
         make.style.height("auto"),
         make.style.minHeight("0"),
         make.with.style({overflow: "visible"}),
@@ -208,8 +231,8 @@ function dashboardUser(qBase, deps, forms, paragraphNotice, popup, rebuildFoo, p
               data: res,
               form: formId
             }
-            await qBase.at('applications').view().with(request).post()
-            await rebuildFoo()
+            qBase.at('applications').view().with(request).post()
+            rebuildFoo()
             modalForm.close()
             paragraphNotice("Заявка отправлена!", make.color.lgreen)
           })

@@ -130,11 +130,5 @@ export default function createCard(Component, createComponent, makeWith, makeOn,
       void el.offsetHeight;
       el.style.height = '0px';
     }
-
-    build(force = false) {
-      const el = super.build(force)
-      el.setAttribute('data-test-id', this.getTestId())
-      return el
-    }
   };
 }

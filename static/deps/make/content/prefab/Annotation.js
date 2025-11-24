@@ -101,7 +101,7 @@ export default function createAnnotationFactory(core, Component) {
       this.positionPopup();
       await core.delay(10);
       if (popup) popup.style.opacity = '1';
-      if (this.parent.element.display === 'none')
+      if (!(this.parent?.element?.display !== 'none'))
         this.hide()
     }
 
