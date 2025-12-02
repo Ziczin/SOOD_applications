@@ -200,17 +200,14 @@ class FieldCharSetViewSet(viewsets.ModelViewSet):
         return FieldCharSet.objects.filter(base_q)
 
     def _clear_charset_caches(self, instance):
-        """Очищает все связанные кеши при изменении FieldCharSet"""
         field_charsets_cache.delete_pattern()
         
-        # Очищаем кеши полей, которые используют этот charset
         fields_using_charset = Field.objects.filter(charset_id=getattr(instance, 'pk', None))
         for field in fields_using_charset:
             fields_cache.delete("all")
             fields_cache.delete(f"type:{getattr(field, 'type_id', None)}")
             fields_cache.delete(f"items:type:{getattr(field, 'type_id', None)}")
         
-        # Очищаем кеши форм, которые содержат поля с этим charset
         form_ids = FormField.objects.filter(
             field__charset_id=getattr(instance, 'pk', None)
         ).values_list('form_id', flat=True).distinct()

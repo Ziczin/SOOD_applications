@@ -12,6 +12,7 @@ export default (event) =>
         input: basic('input'),
         keydown: basic('keydown'),
         paste: basic('paste'),
+        submit: basic('submit'),
         inputTimeOut: custom(
         (time, foo) => {
             let timer = null;

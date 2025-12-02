@@ -18,7 +18,9 @@
   const buildUserTab = await imp("{% static 'deps/js/dashboard/user.js' %}")
   const buildUserAppsTab = await imp("{% static 'deps/js/dashboard/userApps.js' %}")
   
-  const qBase = make.Query('/api').via({"X-CSRFToken": csrfObj.csrfToken}).view()
+  const qBase = make.Query("/api")
+                    .via({"X-CSRFToken": csrfObj.csrfToken})
+                    .view()
   const departments = await qBase.at('departments').view().get()
   const deps = buildDepartmentNameMap(departments)
   const forms = await qBase.at('forms/visible').view().get()
@@ -36,6 +38,15 @@
   }
 
   const userApps = await buildUserAppsTab(qBase, me.id, statuses, popup, paragraphNotice)
+
+  // Глобальные функции для управления заявками
+  window.userAppsManager = userApps;
+  window.getAndDrawUserApps = userApps.getAndDraw;
+  window.addApplicationToUserList = function(newApplication) {
+    if (window.userAppsManager && window.userAppsManager.addApplication) {
+      window.userAppsManager.addApplication(newApplication);
+    }
+  }
 
   const tabs = make.Tabs({scroll: true}, make.style.height('100%'))
   .menu(
@@ -71,7 +82,7 @@
             .header(...getHeaderComponent("Мои заявки"))
             .content(
               make.it.flexColumn,
-              userApps
+              userApps.handler
             );
             tabs.tab()
             .header(...getHeaderComponent("Создать заявку"))

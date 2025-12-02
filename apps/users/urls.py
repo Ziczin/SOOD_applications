@@ -5,6 +5,7 @@ from .views import (
     login_view,
     logout_view,
     permission_denied_view,
+    wnauthorized_view
 )
 
 
@@ -17,6 +18,7 @@ urls = {
     'sandbox3/': lambda request: render(request, 'users/sandbox3.html'),
     'testbox/': lambda request: render(request, 'users/testbox.html'),
     '403/': permission_denied_view,
+    '401/': wnauthorized_view
 }
 
 urlpatterns = [path(url, urls[url], name=url[:-1]) for url in urls]

@@ -98,6 +98,7 @@ function dashboardUser(qBase, deps, forms, paragraphNotice, popup, rebuildFoo, p
                 ]
               )
             )
+            fieldComp.build()
             fieldComp.element.makeDataRequired = field.required || false
             return fieldComp
           })()
@@ -231,10 +232,20 @@ function dashboardUser(qBase, deps, forms, paragraphNotice, popup, rebuildFoo, p
               data: res,
               form: formId
             }
-            qBase.at('applications').view().with(request).post()
-            rebuildFoo()
+            
+            const newApplication = await qBase.at('applications').view().with(request).post()
+            
             modalForm.close()
+            
             paragraphNotice("Заявка отправлена!", make.color.lgreen)
+            
+            if (window.addApplicationToUserList) {
+              window.addApplicationToUserList(newApplication)
+            }
+            
+            if (typeof rebuildFoo === 'function') {
+              setTimeout(rebuildFoo, 500)
+            }
           })
         )
       )
@@ -249,6 +260,7 @@ function dashboardUser(qBase, deps, forms, paragraphNotice, popup, rebuildFoo, p
           collector,
         )
       )
+      modalForm.build()
     }
 
     scrollbox.addModifiers(

@@ -56,5 +56,8 @@ def change_role(request):
 
 def permission_denied_view(request):
     resp = render(request, 'users/403.html')
-    resp.status_code = 403
+    return resp
+
+def wnauthorized_view(request):
+    resp = render(request, 'users/401.html')
     return resp

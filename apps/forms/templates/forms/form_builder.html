@@ -23,36 +23,17 @@
 <script type="module">
   //await import("{% static 'collected/static.js' %}");
   await import("{% static 'deps/make/make.js' %}");
+  const imp = (await import("{% static 'deps/js/tools/import.js' %}")).default(make)
   const csrfObj = await make.Query('/api/csrf-token').get()
   const data = JSON.parse(document.getElementById("form-data").textContent);
   const errors = JSON.parse(document.getElementById("errors-data").textContent);
-  const otherPages = [
-    make.h1('TESTS',
-      make.on.click(() => {
-        window.location.href = '/users/testbox/'
-      })
-    ),
-    make.h1('SB-1',
-      make.on.click(() => {
-        window.location.href = '/users/sandbox/'
-      })
-    ),
-    make.h1('SB-2',
-      make.on.click(() => {
-        window.location.href = '/users/sandbox2/'
-      })
-    ),
-    make.h1('SB-3',
-      make.on.click(() => {
-        window.location.href = '/users/sandbox3/'
-      })
-    ),
-    make.h1('admin',
-      make.on.click(() => {
-        window.location.href = '/admin/'
-      })
-    )
-  ]
+  const paragraphNotice = await imp("{% static 'deps/js/prefabs/paragraph_notice.js' %}")
+  const qBase = make.Query("/api")
+                    .via({"X-CSRFToken": csrfObj.csrfToken})
+                    .on({400: () => paragraphNotice("Неверно введёт логин или пароль!", make.color.red)})
+                    .view();
+
+
   const nextUrl = new URLSearchParams(window.location.search).get('next')
   const title = make.Div(
     make.it.flexRow,

@@ -482,14 +482,17 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
     {user_id: me.id, event: "application-appear", other: me.department.id}
   ).view().repeat(
     1000, 'POST', (resp)=> {
-      if (appList.cards) {
-        appList.cards.unshift(appCard(resp))
-        setVisibilityByStatus()
+      console.log(resp)
+      if(!appList.cards.find(card => resp.id===card.id)) {
+        if (appList.cards) {
+          appList.cards.unshift(appCard(resp))
+          setVisibilityByStatus()
+        }
+        paragraphNotice(
+          [`${resp.form.label} № ${resp.id}`, `От ${resp.user.fullname}`],
+          make.color.yellow, 2500, false
+        )
       }
-      paragraphNotice(
-        [`${resp.form.label} № ${resp.id}`, `От ${resp.user.fullname}`],
-        make.color.yellow, 2500, false
-      )
     }, 401
   )
   qBase.at("events").at("check").with(

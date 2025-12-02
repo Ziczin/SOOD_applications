@@ -150,8 +150,6 @@ class ApplicationRetrieveUpdateAPIView(APIView):
                 )
             out = ApplicationSerializer(app)
             return Response(out.data)
-        else:
-            print(app)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

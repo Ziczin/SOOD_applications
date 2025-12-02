@@ -135,18 +135,20 @@
       make.with.style({flex: 1}),
       make.on.click(
         async () => {
-          let enEl = enumElem({
-            container: enumCollector,
-            makeQuery: qEnum,
-            ...(
-              await qEnum.with({
-                enum_tag: tag.id
-              }).post()
-            ),
-          })
-          enumCollector.addChild(enEl)
-          paragraphNotice("Создано!", make.color.lblue)
-          enEl.element.querySelector("input").focus()
+          const newEnum = await qEnum.with({
+            enum_tag: tag.id
+          }).post()
+          if (newEnum && !newEnum['detail']) {
+            document.activeElement.blur()
+            let enEl = enumElem({
+              container: enumCollector,
+              makeQuery: qEnum,
+              ...newEnum
+            })
+            enumCollector.addChild(enEl)
+            paragraphNotice("Создано!", make.color.lblue)
+            enEl.element.querySelector("input").focus()
+          }
         }
       )
     )
@@ -318,20 +320,34 @@
       make.with.text("Добавить элемент"),
       make.on.click(
         async () => {
+          document.activeElement?.blur()
           let tag = enumTagElem(qEnum, qEnumTag, acc, me,
             (await qEnumTag.with({
               department: me.department.id
             }).post()))
-          acc.addChild(tag)
-          paragraphNotice("Создано!", make.color.lblue)
-          tag.element.querySelector("input").focus()
+          if (tag) {
+            acc.addChild(tag)
+            paragraphNotice("Создано!", make.color.lblue)
+            tag.element.querySelector("input").focus()
+          }
         }
       )
     )
   }
 
   const csrfObj = await make.Query('/api/csrf-token').get()
-  const qBase = make.Query("/api").via({"X-CSRFToken": csrfObj.csrfToken}).view();
+  const qBase = make.Query("/api")
+                    .via({"X-CSRFToken": csrfObj.csrfToken})
+                    .on({405: () => make.Notice([500, 1500, 500],
+                      make.Div(
+                        make.it.content,
+                        make.it.flexColumn,
+                        make.style.gap(6),
+                        make.color.red,
+                        make.Paragraph("Ошибка создания! Попробуйте снова")
+                      )
+                    )})
+                    .view();
   const qCurrentUser = qBase.at("me").view();
   const qEnum = qBase.at("enums").view()
   const qEnumTag = qBase.at("enum-tags").view()

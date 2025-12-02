@@ -8,11 +8,15 @@ ALIAS_METHODS = {
     'del': 'delete',
     'all' : 'get post patch put delete head options trace',
     'read': 'get head options',
+    'g3p': 'get post patch put',
+    'r3p': 'get post patch put',
+    'gppp': 'get post patch put',
+    'rppp': 'get post patch put',
     **{a : a for a in 'get post patch put delete head options trace'.split()},
 }
 
 def _expand_method_keys(key):
-    keys = key.split(',')
+    keys = key.replace(',', ' ').split(' ')
     res = set()
     for key in keys:
         res.update(ALIAS_METHODS[key].upper().split())
@@ -47,7 +51,7 @@ def make_permission_class(*roles):
 def permissions(*rules):
     rules = ';'.join(rules)
     rules = re.sub(r';+', ';', rules)
-    normalized = re.sub(r'\s+', '', rules).rstrip(';') # Убираем пробельные символы
+    normalized = re.sub(r'\s+', '', rules).rstrip(';')
     parsed_rules = parse(normalized)
     permission_factories = {}
     for method_key, role_list in parsed_rules.items():

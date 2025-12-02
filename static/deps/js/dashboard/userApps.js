@@ -1,5 +1,8 @@
 export default (make) =>
 async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice) {
+  const Row = (...args) => make.Div(make.it.flexRow, make.style.gap(6), ...args)
+  const Column = (...args) => make.Div(make.it.flexColumn, make.style.gap(6), ...args)
+
   const appList = make.Scrollbox(
     make.it.flexColumn,
     make.style.height("100%"),
@@ -20,7 +23,51 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
     }
   }
 
+  function redrawTabs(cards) {
+    cards.forEach(card => card.parent?.detachChild(card))
+    appList.children.forEach(child => appList.detachChild(child))
+
+    const tabs = make.Tabs(
+      {scroll: true, noAnimation: true, squareTabs: true},
+      make.style.margin(8),
+      make.it.flexColumn,
+    ).menu(
+      make.style.padding(8),
+      make.style.rounded(12),
+      make.it.flexRow,
+      make.with.style({flex: "0 0 auto"}),
+      make.style.gap(8)
+    ).content(
+      make.it.flexColumn
+    )
+    let pageCounter = 0
+    let pageCards = []
+    cards.forEach((card, index) => {
+      pageCards.push(card)
+      if (pageCards.length >= 20 || cards.length === index + 1) {
+        pageCounter++
+        tabs.tab()
+        .header(
+          make.style.rounded(12),
+          make.style.padding(8),
+          make.it.centered,
+          make.it.textCentered,
+          make.Paragraph(`${pageCounter}`)
+        ).content(
+          make.it.flexColumn,
+          make.with.style({flex: "1 1 auto"}),
+          make.style.gap(6),
+          ...pageCards
+        )
+        pageCards = []
+      }
+    })
+    appList.addChild(tabs)
+    appList.build()
+  }
+
   async function fillApps(dateFrom, dateTo) {
+    paragraphNotice(["Заявки загружаются", "Это может занять некоторое время"], make.color.yellow, 2500)
     appList.children.forEach(child => child.parent?.detachChild(child))
     appList.children = []
     const apps = await qBase.at("applications").where({
@@ -29,22 +76,23 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
       created_before: dateTo
     }).view().get()
     
-    apps.forEach(app => {
-      const card = appCard(app)
-      appList.addChild(card)
-    })
+    paragraphNotice(["Заявки загружены!", "Браузер занят отрисовкой, ожидайте"], make.color.green, 1000)
+    appList.cards = apps.map(app => appCard(app))
+    redrawTabs(appList.cards)
   }
 
   function setVisibilityByStatus() {
-    appList.children.forEach(card => {
+    let cards = []
+    appList.cards.forEach(card => {
       if (statusSort.element.value && card.status === statusSort.element.value || !statusSort.element.value) {
+        cards.push(card)
         card.element.style.display = "block"
       }
       else {
         card.element.style.display = "none"
       }
     })
-    appList.build()
+    redrawTabs(cards)
   }
 
   const statusSort = make.Select(
@@ -90,25 +138,29 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
     ])
   )
 
-  const sortElement = make.Div(
-    make.it.flexRow,
-    make.style.gap(6),
+  const sortElement = Row(
     make.with.style({flex: 0}),
-    make.Div(
-      make.it.flexRow,
-      make.style.gap(6),
-      make.Paragraph("Статус: ", make.with.style({alignSelf: "center"})),
-      statusSort,
-      make.Paragraph(" с", make.with.style({alignSelf: "center"})),
-      inputDateFrom,
-      make.Paragraph("по", make.with.style({alignSelf: "center"})),
-      inputDateTo
+    Row(
+      Column(
+        Row(
+          make.Paragraph("Статус: ", make.with.style({alignSelf: "center"})),
+          statusSort
+        )
+      ),
+      Column(
+        Row(
+          make.Paragraph("от", make.with.style({alignSelf: "center"})),
+          inputDateFrom
+        ),
+        Row(
+          make.Paragraph("по ", make.with.style({alignSelf: "center"})),
+          inputDateTo
+        ),
+      ),
     )
   )
   
-  const handler = make.Div(
-    make.it.flexColumn,
-    make.style.gap(6),
+  const handler = Column(
     make.style.minHeight(0),
     make.with.style({flex: 1}),
     sortElement,
@@ -117,11 +169,52 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
   
   window.getAndDrawUserApps = getAndDraw
 
-  function timeFormat(iso) {//.${d.getFullYear()}
+  function timeFormat(iso) {
     const d = new Date(iso);
     const pad = n => String(n).padStart(2, '0');
     return `${pad(d.getDate())}.${pad(d.getMonth() + 1)} `+
             `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  function formatYearMonth(input) {
+    const [year, month] = input.split('-');
+    const months = [
+      'Январь','Февраль','Март','Апрель','Май','Июнь',
+      'Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'
+    ];
+    return `${months[Number(month) - 1]} ${year}`;
+  }
+
+  function formatYearWeek(input) {
+    if (!input) return ""
+    const [yearPart, weekPart] = input.split('-W');
+    const year = Number(yearPart);
+    const week = Number(weekPart);
+
+    function getMondayOfISOWeek(yr, wk) {
+      const jan4 = new Date(Date.UTC(yr, 0, 4));
+      const dayOfWeek = jan4.getUTCDay() || 7;
+      const thursday = new Date(jan4);
+      thursday.setUTCDate(jan4.getUTCDate() + (4 - dayOfWeek));
+      const week1Monday = new Date(thursday);
+      week1Monday.setUTCDate(thursday.getUTCDate() - 3);
+      const targetMonday = new Date(week1Monday);
+      targetMonday.setUTCDate(week1Monday.getUTCDate() + (wk - 1) * 7);
+      return targetMonday;
+    }
+
+    function formatDateRus(date) {
+      const dd = String(date.getUTCDate()).padStart(2, '0');
+      const mm = String(date.getUTCMonth() + 1).padStart(2, '0');
+      const yyyy = date.getUTCFullYear();
+      return `${dd}.${mm}.${yyyy}`;
+    }
+
+    const monday = getMondayOfISOWeek(year, week);
+    const sunday = new Date(monday);
+    sunday.setUTCDate(monday.getUTCDate() + 6);
+
+    return `${year}  Неделя №${week} с ${formatDateRus(monday)} по ${formatDateRus(sunday)}`;
   }
 
   function appCard(app) {
@@ -130,28 +223,32 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
       make.with.style({border: "3px solid #ddd", backgroundColor: "#f5f5f5"}),
       make.style.padding(6),
       make.style.rounded(12),
-      popup(400, "Нажмите, чтобы раскрыть подробности")
     )
     card.status = app.status
     card.id = app.id
     card.executor = app.executor
     let btn2
     let cardBody
+    let fieldData
     card.header(
       make.with.css(`have-status-${app.status}`),
-      make.Div(
-        make.it.flexRow,
-        make.style.gap(6),
+      Row(
         make.Div(
           make.it.flexRow,
           make.style.gap(9),
           make.with.style({alignSelf: "center"}),
           make.Paragraph(`№ ${app.id}`, make.it.textBold, make.with.style({flex: "0 1 auto"})),
-          make.Paragraph(timeFormat(app.date), make.with.style({flex: "1 1 auto"})),
-          make.Paragraph(app.form.label, make.with.style({flex: "100 1 auto"}))
+          make.Paragraph(
+            `${timeFormat(app.date)} -`,
+            make.with.style({flex: "0 1 auto"}),
+          ),
+          make.Paragraph(app.form.label)
         ),
       ),
-      popup("Нажмите чтобы развернуть заявку"),
+      popup([
+        "Нажмите чтобы увидеть подробности заявки",
+        "Данные заявки подгружаются по клику, возможна небольшая задержка"
+      ]),
       make.color.lgray,
       make.style.margin(-8),
       make.style.padding(6),
@@ -159,31 +256,16 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
       make.with.style({border: "3px solid #ddd"}),
     ).content(
       make.style.height('100%'),
-      cardBody = make.Div(
-        make.it.flexColumn,
-        make.style.gap(6),
+      cardBody = Column(
         make.Separator(),
         ...make.callif(app.executor !== null,
-          () => make.Div(
-            make.it.flexRow,
-            make.style.gap(6),
+          () => Row(
             make.it.marginOnHover,
             make.Paragraph(`Исполнитель: ${app.executor.fullname}`),
             make.Paragraph(`(${app.executor.department.name})`, make.it.subtitleText),
           ),
         ),
-        make.Separator(4, make.style.rounded(12), make.color.lgray),
-        ...app.application_fields.map(field => 
-          make.Div(
-            make.it.flexRow,
-            make.style.gap(6),
-            make.it.marginOnHover,
-            make.Paragraph(`${field.label}: ${field.value}`),
-            ...make.if(field.tag !== null,
-              make.Paragraph(`(${field.tag})`, make.it.subtitleText),
-            )
-          )
-        ),
+        fieldData = Column(),
         ...make.if(app.msg,
           make.Paragraph(
             app.status === "REJECTED"
@@ -223,15 +305,11 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
                 e.stopPropagation();
                 const inp = make.Input()
                 make.Notice([500, Infinity, 500, "actionNotice"],
-                  make.Div(
-                    make.it.flexColumn,
-                    make.style.gap(6),
+                  Column(
                     make.it.contented,
                     make.Paragraph("Для отмены заявки укажите причину:"),
                     inp,
-                    make.Div(
-                      make.it.flexRow,
-                      make.style.gap(6),
+                    Row(
                       make.Button(
                         make.it.action,
                         make.it.act.negative,
@@ -273,17 +351,76 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
         )
       )
     )
-    card.btn2 = btn2
+    setStatusStyle(card.cardHeader.element, app.status)
     card.cardBody = cardBody
-
+    card.allowCustomEvents()
+    
+    app.application_fields.forEach(field => {
+      if (!field.value) {
+        fieldData.addChild(
+          Row(
+            make.it.marginOnHover,
+            make.Paragraph(`${field.label}: <<< не указано >>>`),
+            make.it.subtitleText
+          )
+        )
+      }
+      else {
+        if (field.type.name === "textarea") {
+          fieldData.addChild(
+            make.Card(
+              make.it.littleDarker,
+              make.style.rounded(12),
+              make.style.padding(4)
+            )
+            .header(make.Paragraph(field.label))
+            .content(make.Paragraph(field.value))
+          )
+        }
+        else {
+          let value = field.value
+          if (field.type.name === "datetime") {
+            value = field.value.replace(/T/g, ' ');
+          }
+          if (field.type.name === "month") {
+            value = formatYearMonth(field.value)
+          }
+          if (field.type.name === "week") {
+            value = formatYearWeek(field.value)
+          }
+          if (field.type.name === "checkbox") {
+            value = field.value === 'on' ? "Да" : "Нет"
+          }
+          fieldData.addChild(
+            Row(
+              make.it.marginOnHover,
+              make.Paragraph(`${field.label}: ${value}`),
+              ...make.if(field.tag !== null,
+                make.Paragraph(`(${field.tag})`, make.it.subtitleText),
+              ),
+            )
+          )
+        }
+      }
+    })
+    
+    card.btn2 = btn2
     return card
+  }
+
+  function addApplication(app) {
+    const card = appCard(app);
+    if (appList.cards) {
+      appList.cards.unshift(card);
+      setVisibilityByStatus();
+    }
   }
 
   qBase.at("events").at("check").with(
     {user_id: userId, event: "application-status-change-userboard", other: userId}
   ).view().repeat(
     1000, 'POST', (resp)=> {
-      appList.children.forEach((card) => {
+      appList.cards.forEach((card) => {
         if (card.id === resp.id) {
           card.status = resp.status
           setStatusStyle(card.cardHeader.element, card.status)
@@ -331,5 +468,10 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
       )
     }, 401
   )
-  return handler
+
+  return {
+    handler: handler,
+    addApplication: addApplication,
+    getAndDraw: getAndDraw
+  }
 }

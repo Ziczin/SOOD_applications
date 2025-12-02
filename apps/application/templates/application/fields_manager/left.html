@@ -37,7 +37,9 @@
   document.getElementById("manual-button").appendChild(basicManual(curr).build())
 
   const csrfObj = await make.Query('/api/csrf-token').get()
-  const qBase = make.Query('/api').via({"X-CSRFToken": csrfObj.csrfToken}).view();
+  const qBase = make.Query("/api")
+                    .via({"X-CSRFToken": csrfObj.csrfToken})
+                    .view();
   const mePromise = qBase.at("me").view().get()
 
   const qFields = qBase.at('fields').view()
@@ -73,9 +75,9 @@
     async function fillField() {
       const enumTags = await enumTagsPromise
       const enumTagsHistory = await enumTagsHistoryPromise
-      const exists = enumTags.some(tag => tag.id === field.tag.id)
+      const exists = enumTags.some(tag => field.tag && tag.id === field.tag.id)
       let found
-      if (!exists) { found = enumTagsHistory.find(tag => tag.id === field.tag.id) }
+      if (!exists) { found = enumTagsHistory.find(tag => field.tag && tag.id === field.tag.id) }
       select.addModifiers(
         make.OptionPlaceholder("--- выбрать перечисление ---"),
         ...make.callif(found, () => {
@@ -93,7 +95,7 @@
     }
     function setSelected() {
       select.children.forEach((ch) => {
-        if (ch.element.value == field.tag.id) {
+        if (field.tag && ch.element.value == field.tag.id) {
           select.element.value = ch.element.value
         }
       })

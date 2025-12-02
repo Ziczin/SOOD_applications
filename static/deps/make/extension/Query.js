@@ -52,20 +52,22 @@ class QueryManager extends BaseObjManager {
 }
 
 export default class Query {
-    constructor(route, query, header, body) {
+    constructor(route, query, header, body, onCode) {
         this.route = route;
         this.query = query;
         this.header = header;
         this.body = body;
+        this.onCode = onCode;
     }
     
-    static new(baseRoute=[], baseQuery={}, baseHeader={}, baseBody={}) {
+    static new(baseRoute=[], baseQuery={}, baseHeader={}, baseBody={}, baseonCode={}) {
         if (!Array.isArray(baseRoute)) {baseRoute = [baseRoute]}
         return new Query(
             new RouteManager(baseRoute),
             new QueryManager(baseQuery),
             new BaseObjManager(baseHeader),
             new BaseObjManager(baseBody),
+            new BaseObjManager(baseonCode),
         );
     }
 
@@ -75,6 +77,7 @@ export default class Query {
             this.query.view(),
             this.header.view(),
             this.body.view(),
+            this.onCode.view(),
         );
     }
 
@@ -82,7 +85,8 @@ export default class Query {
         this.route.flush(),
         this.query.flush(),
         this.header.flush(),
-        this.body.flush()
+        this.body.flush(),
+        this.onCode.flush()
         return this
     }
 
@@ -90,20 +94,21 @@ export default class Query {
     via(elem) { this.header.add(elem); return this; }
     with(elem) { this.body.add(elem); return this; }
     where(elem) { this.query.add(elem); return this; }
+    on(map) { this.onCode.add(map); return this; }
 
+    get(withStatusCode = false) { return this.fetch('GET', withStatusCode) }
+    post(withStatusCode = false) { return this.fetch('POST', withStatusCode) }
+    patch(withStatusCode = false) { return this.fetch('PATCH', withStatusCode) }
+    delete(withStatusCode = false) { return this.fetch('DELETE', withStatusCode) }
+    put(withStatusCode = false) { return this.fetch('PUT', withStatusCode) }
 
-    get() { return this.fetch('GET') }
-    post() { return this.fetch('POST') }
-    patch() { return this.fetch('PATCH') }
-    delete() { return this.fetch('DELETE') }
-    put() { return this.fetch('PUT') }
-
-    async fetch(method=null) {
+    async fetch(method=null, withStatusCode=false) {
         const route = this.route.build();
         const query = this.query.build();
         const url = route + query;
         const headers = this.header.get();
         const body = this.body.get();
+        const onCode = this.onCode.get();
         
         const options = {
             method: method,
@@ -131,6 +136,15 @@ export default class Query {
         })();
         data = parsed === null ? text : parsed;
 
+        if (Object.prototype.hasOwnProperty.call(onCode, response.status)) {
+            onCode[response.status]();
+        }
+        if (withStatusCode) {
+            data = {
+                status: response.status,
+                data: data,
+            };
+        }
         return data;
     }
 
@@ -163,9 +177,6 @@ export default class Query {
                 clearInterval(intervalId);
                 intervalId = null;
             }
-        };
+        }
     }
-
-
-
 }
