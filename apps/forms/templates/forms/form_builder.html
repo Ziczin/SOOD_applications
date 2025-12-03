@@ -3,7 +3,7 @@
 {{ errors|json_script:"errors-data" }}
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,135 +17,196 @@
 <body>
   <div class='container p-1p content w-40p' id="form-template">
   </div>
-</body>
-</html>
 
-<script type="module">
-  //await import("{% static 'collected/static.js' %}");
-  await import("{% static 'deps/make/make.js' %}");
-  const imp = (await import("{% static 'deps/js/tools/import.js' %}")).default(make)
-  const csrfObj = await make.Query('/api/csrf-token').get()
-  const data = JSON.parse(document.getElementById("form-data").textContent);
-  const errors = JSON.parse(document.getElementById("errors-data").textContent);
-  const paragraphNotice = await imp("{% static 'deps/js/prefabs/paragraph_notice.js' %}")
-  const qBase = make.Query("/api")
-                    .via({"X-CSRFToken": csrfObj.csrfToken})
-                    .on({400: () => paragraphNotice("Неверно введёт логин или пароль!", make.color.red)})
-                    .view();
+  <script type="module">
+    await import("{% static 'deps/make/make.js' %}");
+    const imp = (await import("{% static 'deps/js/tools/import.js' %}")).default(make)
+    const csrfObj = await make.Query('/api/csrf-token').get()
+    const data = JSON.parse(document.getElementById("form-data").textContent);
+    const errors = JSON.parse(document.getElementById("errors-data").textContent);
+    const paragraphNotice = await imp("{% static 'deps/js/prefabs/paragraph_notice.js' %}")
+    const nextUrlParam = new URLSearchParams(window.location.search).get('next')
+    const title = make.Div(
+      make.it.flexRow,
+      make.it.centered,
+      make.style.gap(10),
+      make.h1(data.title),
+    );
 
-
-  const nextUrl = new URLSearchParams(window.location.search).get('next')
-  const title = make.Div(
-    make.it.flexRow,
-    make.it.centered,
-    make.style.gap(10),
-    make.h1(data.title),
-    //...otherPages
-  );
-  const fields = make.Form(
-    make.it.flexColumn,
-    make.it.gap10px,
-    make.with.attr({
-      method: 'post',
-      action: data.action,
-    }),
-    ...make.callif(nextUrl, () => make.Input(
+    const fields = make.Form(
+      make.it.flexColumn,
+      make.it.gap10px,
       make.with.attr({
-        type: 'hidden',
-        value: nextUrl
-      })
-    )),
-    make.with.csrf(csrfObj.csrfToken),
-    ...data.fields.map(el =>
+        method: 'post',
+        action: data.action,
+      }),
+      ...make.callif(nextUrlParam, () => make.Input(
+        make.with.attr({
+          type: 'hidden',
+          value: nextUrlParam,
+          name: 'next'
+        })
+      )),
+      make.with.csrf(csrfObj.csrfToken),
+      ...data.fields.map(el =>
+        make.Div(
+          make.it.flexColumn,
+          ...(el.type === 'enum' ? [] : [make.it.delayedMarginOnHover]),
+          make.Paragraph(el.label, make.it.subtitleText, make.with.style({textAlign: 'left'})),
+          el.type !== 'enum' ?
+          make.Input(
+            make.style.padding(6),
+            make.with.attr({
+              id: el.id,
+              name: el.id,
+              type: el.type,
+              placeholder: el.placeholder
+            }),
+            make.with.attrs(...el.attrs)) :
+            make.Select(
+              make.with.attr({ name: el.id, id: el.id }),
+              make.with.attrs(...el.attrs),
+              make.OptionPlaceholder(el.placeholder),
+              ...el.enum.map(elEnum =>
+                make.Option(elEnum.text, elEnum.value)
+            )
+          )
+        )
+      ),
+      make.Button(
+        make.it.onConfirmationMargin,
+        make.it.primary,
+        make.with.text(data.btn_confirm),
+        make.with.attr({type: 'submit'})
+      )
+    );
+
+    const bottomStuff = make.Div(
+      make.Separator(),
+      make.Link(
+        make.it.simpleLink,
+        make.with.text(data.sub_btn_link_text),
+        make.with.attr({ href: data.sub_btn_link }),
+      ),
+      make.Separator(),
       make.Div(
-        make.it.formGroup,
-        ...(el.type === 'enum' ? [] : [make.it.delayedMarginOnHover]),
-        make.Label(
-          make.with.text(el.label),
-          make.with.attr({ for: el.id })
-        ),
-        el.type !== 'enum' ?
-        make.Input(
-          make.style.padding(6),
-          make.with.attr({
-            id: el.id,
-            name: el.id,
-            type: el.type,
-            placeholder: el.placeholder
-          }),
-          make.with.attrs(...el.attrs)) :
-          make.Select(
-            make.with.attr({ name: el.id, id: el.id }),
-            make.with.attrs(...el.attrs),
-            make.OptionPlaceholder(el.placeholder),
-            ...el.enum.map(elEnum =>
-              make.Option(elEnum.text, elEnum.value)
+        make.it.flexColumn,
+        make.it.gap6px,
+        ...data._errors.map(err =>
+          make.Paragraph(
+            make.it.delayedMarginOnHover,
+            make.it.leftAlign,
+            make.it.textItalic,
+            make.color.error,
+            make.with.text(err.text),
+            make.with.attr({ description: err.desc }),
+            make.on.click(async e => {
+              const el = e.target;
+              const desc = el.getAttribute('description');
+              if (!desc) return;
+              const isToggled = el.dataset.toggled === 'true';
+              const targetText = isToggled ? el.dataset.orig : desc;
+              const isInAction = el.dataset.isInAction === 'true';
+              if (!isInAction) {
+                el.dataset.isInAction = 'true';
+                if (!isToggled) {
+                  el.dataset.orig = el.textContent;
+                  el.dataset.toggled = 'true';
+                } else {
+                  el.dataset.toggled = 'false';
+                }
+                while (el.textContent) {
+                  el.textContent = el.textContent.slice(0, -1);
+                  await new Promise(r => setTimeout(r, 5));
+                }
+                for (let ch of targetText) {
+                  el.textContent += ch;
+                  await new Promise(r => setTimeout(r, 15));
+                }
+                el.dataset.isInAction = 'false';
+              }
+            })
           )
         )
       )
-    ),
-    make.Button(
-      make.it.onConfirmationMargin,
-      make.it.primary,
-      make.with.text(data.btn_confirm),
-      make.with.attr({type: 'submit'})
-    )
-  );
+    );
 
-  const bottomStuff = make.Div(
-    make.Separator(),
-    make.Link(
-      make.it.simpleLink,
-      make.with.text(data.sub_btn_link_text),
-      make.with.attr({ href: data.sub_btn_link }),
-    ),
-    make.Separator(),
-    make.Div(
-      make.it.flexColumn,
-      make.it.gap6px,
-      ...data._errors.map(err =>
-        make.Paragraph(
-          make.it.delayedMarginOnHover,
-          make.it.leftAlign,
-          make.it.textItalic,
-          make.color.error,
-          make.with.text(err.text),
-          make.with.attr({ description: err.desc }),
-          make.on.click(async e => {
-            const el = e.target;
-            const desc = el.getAttribute('description');
-            if (!desc) return;
+    const container = document.getElementById("form-template");
+    container.appendChild(title.build());
+    container.appendChild(fields.build());
+    container.appendChild(bottomStuff.build());
 
-            const isToggled = el.dataset.toggled === 'true';
-            const targetText = isToggled ? el.dataset.orig : desc;
-            const isInAction = el.dataset.isInAction === 'true';
+    const formEl = container.querySelector('form');
 
-            if (!isInAction) {
-              el.dataset.isInAction = 'true';
-              if (!isToggled) {
-                el.dataset.orig = el.textContent;
-                el.dataset.toggled = 'true';
-              } else {
-                el.dataset.toggled = 'false';
-              }
-              while (el.textContent) {
-                el.textContent = el.textContent.slice(0, -1);
-                await new Promise(r => setTimeout(r, 5));
-              }
-              for (let ch of targetText) {
-                el.textContent += ch;
-                await new Promise(r => setTimeout(r, 15));
-              }
-              el.dataset.isInAction = 'false';
-            }
-          })
-        )
-      )
-    )
-  );
+    formEl.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
 
-  const container = document.getElementById("form-template");
-  container.appendChild(title.build());
-  container.appendChild(fields.build());
-  container.appendChild(bottomStuff.build());
-</script>
+      if (data.name === "Registration") {
+        const formDataCheck = new FormData(formEl);
+        const p1 = formDataCheck.get('password1') || formDataCheck.get('password') || '';
+        const p2 = formDataCheck.get('password2') || '';
+        if ((p1 && p1.length < 8) || (p2 && p2.length < 8)) {
+          paragraphNotice("Пароль и его повтор должны содержать не менее 8 символов.", make.color.error, 2500);
+          return;
+        }
+      }
+
+      const formData = new FormData(formEl);
+      const url = formEl.getAttribute('action') || window.location.href;
+      const resp = await fetch(url, {
+        method: 'POST',
+        body: formData,
+        headers: { "X-CSRFToken": csrfObj.csrfToken },
+        credentials: 'same-origin'
+      });
+
+      if (resp.status === 400) {
+        let text = "Ошибка";
+        try {
+          const j = await resp.json();
+          const firstKey = Object.keys(j)[0];
+          const val = j[firstKey];
+          if (Array.isArray(val) && val.length) {
+            text = String(val[0]);
+          } else if (typeof val === 'string') {
+            text = val;
+          } else {
+            text = JSON.stringify(j);
+          }
+          if (text.trim() === "A user with that username already exists.") {
+            text = "Пользователь с таким логином уже существует.";
+          }
+        } catch (e) {}
+        paragraphNotice(text, make.color.error, 2500);
+        return;
+      }
+
+      if (resp.redirected) {
+        window.location.href = resp.url;
+        return;
+      }
+
+      if (resp.status === 302 || resp.status === 303) {
+        const loc = resp.headers.get('Location') || '/applications/dashboard/';
+        window.location.href = loc;
+        return;
+      }
+
+      if (resp.status >= 200 && resp.status < 300) {
+        try {
+          const j = await resp.json();
+          if (j && j.next) {
+            window.location.href = j.next;
+            return;
+          }
+        } catch (e) {}
+        window.location.href = '/applications/dashboard/';
+        return;
+      }
+
+      const bodyText = await resp.text();
+      paragraphNotice(bodyText, make.color.error, 2500);
+    });
+  </script>
+</body>
+</html>

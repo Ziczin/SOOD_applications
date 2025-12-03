@@ -376,12 +376,13 @@ p, form, h1, h2, h3, h4, h5, h6 {
 }
 
 .make-text-subtitle {
-    color: #888;
-    transition: color var(--transition-slow) ease;
+  color: #888;
+  transition: color var(--transition-slow) ease;
 }
 
-.make-text-subtitle:hover {
-    color: #555;
+:where(*) :has(> .make-text-subtitle:hover) > .make-text-subtitle,
+:where(*) :has(> .make-text-subtitle):hover > .make-text-subtitle {
+  color: #555;
 }
 
 .make-text-bold {

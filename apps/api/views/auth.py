@@ -5,6 +5,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import redirect
 from django.middleware.csrf import get_token
 from django.http import JsonResponse
+from rest_framework.exceptions import ValidationError
 
 from apps.users.models import UserRole
 from apps.api.core.get_permissions import get_permissions
@@ -26,7 +27,23 @@ def role_representation(role_value):
 class RegisterView(APIView):
     def post(self, request):
         serializer = UserRegistrationSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except ValidationError as exc:
+            errors = exc.detail
+            friendly = {}
+            for field, msgs in errors.items():
+                if isinstance(msgs, (list, tuple)):
+                    first = str(msgs[0]) if msgs else ''
+                else:
+                    first = str(msgs)
+                if field == 'username' and 'unique' in first.lower():
+                    friendly[field] = ['Пользователь с таким логином уже существует.']
+                elif field == 'password' or field == 'password1' or field == 'password2':
+                    friendly[field] = ['Неверный пароль.']
+                else:
+                    friendly[field] = [first]
+            return Response(friendly, status=status.HTTP_400_BAD_REQUEST)
         user = serializer.save()
         login(request, user)
         return redirect('dashboard')
@@ -36,15 +53,16 @@ class LoginView(APIView):
         username = request.data.get('username')
         password = request.data.get('password')
         next_url = request.data.get('next')
-        print("+"*1231, request.data)
         user = authenticate(username=username, password=password)
         
         if user:
             login(request, user)
-            if next_url: return redirect(next_url)
-            else: return redirect('dashboard')
+            if next_url:
+                return redirect(next_url)
+            else:
+                return redirect('dashboard')
                 
-        return Response({"error": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "Неверный логин или пароль"}, status=status.HTTP_400_BAD_REQUEST)
 
 class LogoutView(APIView):
     def post(self, request):

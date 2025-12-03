@@ -482,7 +482,6 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
     {user_id: me.id, event: "application-appear", other: me.department.id}
   ).view().repeat(
     1000, 'POST', (resp)=> {
-      console.log(resp)
       if(!appList.cards.find(card => resp.id===card.id)) {
         if (appList.cards) {
           appList.cards.unshift(appCard(resp))
@@ -526,7 +525,6 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
         }
       })
       setVisibilityByStatus()
-      console.log(resp)
 
       paragraphNotice(
         ["Изменён статус по заявке",
