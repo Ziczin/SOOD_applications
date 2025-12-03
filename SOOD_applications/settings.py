@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 ##################
 
 SECRET_KEY = get_random_secret_key()
-DEBUG = True
+DEBUG = False
 SITE_ID = 1
 ALLOWED_HOSTS = [
     'localhost',
@@ -86,6 +86,7 @@ LOGGING = {
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -93,6 +94,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+WHITENOISE_MAX_AGE = 31536000
+WHITENOISE_USE_FINDERS = True
 
 DATABASES = db_config
 

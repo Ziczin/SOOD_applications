@@ -6,6 +6,8 @@ from django.core.management import execute_from_command_line
 from django.db import connection
 from django.conf import settings
 
+from setup import create_field_types
+
 def setup_django():
     """Настраивает окружение Django."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'SOOD_applications.settings')
@@ -56,6 +58,7 @@ def main():
     parser.add_argument('--model-recover', action='store_true', help='Полный сброс миграций и БД')
     parser.add_argument('--run', action='store_true', help='Запустить сервер разработки')
     parser.add_argument('--apps-10000', action='store_true', help='Вбить в сервис 10000 заявок')
+    parser.add_argument('--flush', action='store_true', help='Только создать суперюзера и выйти')
     args = parser.parse_args()
 
     if not any(vars(args).values()):
@@ -65,13 +68,18 @@ def main():
     setup_django()
 
     from setup import on_test_setup, create_superuser
-    if args.reset or args.model_recover:
+
+    from setup import on_test_setup, create_superuser
+    if args.reset or args.model_recover or args.flush:
         print("\n=== ПОЧИНКА БАЗЫ ===")
         remove_migrations()
         reset_database()
         execute_from_command_line(['manage.py', 'makemigrations'])
         execute_from_command_line(['manage.py', 'migrate'])
         create_superuser()
+        create_field_types()
+        if args.flush: return
+
         if args.reset:
             print("Загрузка предустановленных значений...")
             on_test_setup(args.apps_10000)

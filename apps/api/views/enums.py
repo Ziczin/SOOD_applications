@@ -16,7 +16,7 @@ from apps.api.cache_tools.forms_cache import (
 
 enums_by_tag_cache = CacheHelper("enums:by_tag")
 
-@permissions('ppp : admin, proxy', 'get : user')
+@permissions('r: user; 3p: admin, proxy')
 class EnumTagViewSet(viewsets.ModelViewSet):
     queryset = EnumTag.objects.all()
     serializer_class = EnumTagSerializer
@@ -79,7 +79,7 @@ class EnumTagViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-@permissions('ppp : admin, proxy', 'get : user')
+@permissions('r: user; 3p: admin, proxy')
 class EnumViewSet(viewsets.ModelViewSet):
     queryset = Enum.objects.all()
     serializer_class = EnumSerializer

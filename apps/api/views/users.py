@@ -17,13 +17,11 @@ from apps.api.serializers.users import (
 user_cache = CacheHelper("users:user")
 users_list_cache = CacheHelper("users:list")
 
-
 def role_representation(role_value):
     return {
         'id': dict((choice.value, choice.label) for choice in UserRole).get(role_value, ''),
         'name': role_value
     }
-
 
 @permissions("pppd : admin, proxy")
 class UsersViewSet(
@@ -112,7 +110,7 @@ class UsersViewSet(
         serializer_instance = serializer_class(user_instance, data=request.data, partial=True)
         pre_change_pk = user_instance.pk
         response = self.save_and_refresh_cache(user_instance, serializer_instance)
-        user_cache.clear(pre_change_pk)
+        user_cache.clear(str(pre_change_pk))
         users_list_cache.clear()
         return response
 

@@ -41,6 +41,19 @@ class CacheHelper:
             cache.delete(k)
             self._unregister_key(k)
 
+    def clear(self, key: Optional[str] = None):
+        all_keys = self.keys()
+        if not all_keys:
+            return
+        if key is None:
+            to_delete = [k for k in all_keys if k.startswith(f"{self.prefix}:") or k == self.prefix or k == self._index_key]
+        else:
+            candidate = key if key.startswith(self.prefix) else (self.key(key) if ":" in str(key) else f"{self.prefix}:{key}")
+            to_delete = [k for k in all_keys if k == candidate or k.startswith(candidate + ":") or k.startswith(candidate)]
+        for k in to_delete:
+            cache.delete(k)
+            self._unregister_key(k)
+
     def _register_key(self, key: str):
         keys = self.keys()
         if key not in keys:

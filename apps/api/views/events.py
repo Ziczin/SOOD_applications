@@ -20,4 +20,4 @@ class EventCheckView(APIView):
         event = request.data.get('event')
         other = request.data.get('other')
         result = check_event(user_id, event, other)
-        return Response({'response': result, 'delay': 10000})
+        return Response({'response': result, 'delay': 60000})

@@ -5,8 +5,10 @@ from openpyxl import Workbook
 from openpyxl.styles import Border, Side, Font, Alignment
 from openpyxl.utils import get_column_letter
 from django.utils.encoding import iri_to_uri
+from apps.api.core.permissions import permissions
 from apps.application.models import Application, ApplicationStatus, Form
 
+@permissions('r: user; 3p: admin, proxy')
 class ReportXlsxView(APIView):
     def get(self, request):
         dept_obj = getattr(request.user, 'department', None)

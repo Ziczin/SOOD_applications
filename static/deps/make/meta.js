@@ -1,5 +1,5 @@
 let meta = {
-    version: `0.4.1`,
+    version: `0.4.2`,
     greetings: `Powered by make.js`,
     subgreetings: 'Call window.make.meta.help() for more info',
     help: () => console.log(`
@@ -14,6 +14,13 @@ window.make.meta.<...>
 }
 
 let changelog = {
+    '0.4.2': `
+v0.4.2-alpha
+[2025.12.03]
+- Added option 'on' to the 'Query' component, which allows executing a function after receiving a specific status/code
+- Added 'submit' handler to the 'on' section for the corresponding event
+- Minor style fixes
+`,
     '0.4.1': `
 v0.4.1-alpha
 [2025.11.24]

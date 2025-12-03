@@ -7,7 +7,9 @@ from apps.api.cache_tools.helper import CacheHelper
 department_list_cache = CacheHelper("departments:list")
 department_cache = CacheHelper("departments:item")
 
+from apps.api.core.permissions import permissions
 
+@permissions('r: user; 3p: admin')
 class DepartmentViewSet(viewsets.ModelViewSet):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer

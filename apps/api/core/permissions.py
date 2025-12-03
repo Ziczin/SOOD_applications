@@ -3,6 +3,8 @@ from apps.api.core.get_permissions import get_permissions
 import re
 
 ALIAS_METHODS = {
+    'r': 'get',
+    '3p': 'post patch put',
     'pppd': 'post patch put delete',
     'ppp': 'post patch put',
     'del': 'delete',

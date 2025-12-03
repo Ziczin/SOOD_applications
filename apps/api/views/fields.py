@@ -1,4 +1,5 @@
 from django.db.models import Q
+from apps.api.core.permissions import permissions
 from apps.api.serializers.fields import FieldCharSetSerializer, FieldSerializer, FieldTypeSerializer
 from apps.forms.models import Field, FieldCharSet, FieldType, FormField
 from rest_framework import viewsets
@@ -11,9 +12,11 @@ from apps.api.cache_tools.forms_cache import (
     forms_list_cache,
     cache_key_for_form
 )
+field_charsets_cache = CacheHelper("field_charsets")
 field_types_cache = CacheHelper("field_types")
 fields_cache = CacheHelper("fields")
 
+@permissions('r: user; 3p: admin, proxy')
 class FieldTypeViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = FieldType.objects.all()
     serializer_class = FieldTypeSerializer
@@ -70,7 +73,7 @@ class FieldTypeViewSet(viewsets.ReadOnlyModelViewSet):
             forms_data_cache.delete(cache_key_for_form(form_id))
         forms_list_cache.delete_pattern()
 
-
+@permissions('r: user; 3p: admin, proxy')
 class FieldViewSet(viewsets.ModelViewSet):
     queryset = Field.objects.select_related('type', 'tag', 'charset').all()
     serializer_class = FieldSerializer
@@ -129,14 +132,7 @@ class FieldViewSet(viewsets.ModelViewSet):
         request._full_data = data
         return super().update(request, *args, **kwargs)
 
-
-from django.db.models import Q
-from rest_framework import viewsets
-from rest_framework.decorators import action
-from rest_framework.response import Response
-
-field_charsets_cache = CacheHelper("field_charsets")
-
+@permissions('r: user; 3p: admin, proxy')
 class FieldCharSetViewSet(viewsets.ModelViewSet):
     queryset = FieldCharSet.objects.all()
     serializer_class = FieldCharSetSerializer

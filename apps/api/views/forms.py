@@ -4,6 +4,7 @@ from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
 from django.db import transaction
 
+from apps.api.core.permissions import permissions
 from apps.forms.models import FormField, Form, Enum, Field
 from apps.api.serializers.forms import (
     FormFieldSerializer,
@@ -17,6 +18,7 @@ from apps.api.cache_tools.forms_cache import (
     cache_key_for_forms_list
 )
 
+@permissions('r: user; 3p: admin, proxy')
 class FormFieldViewSet(viewsets.ModelViewSet):
     queryset = FormField.objects.select_related('field', 'field__type', 'field__tag').filter(available=True)
     serializer_class = FormFieldSerializer
@@ -62,7 +64,7 @@ class FormFieldViewSet(viewsets.ModelViewSet):
         forms_data_cache.delete(cache_key_for_form(form_id))
         forms_list_cache.delete_pattern()
 
-
+@permissions('r: user; 3p: admin, proxy')
 class FormViewSet(viewsets.ModelViewSet):
     queryset = Form.objects.filter(available=True).select_related('department')
     serializer_class = FormSerializer
