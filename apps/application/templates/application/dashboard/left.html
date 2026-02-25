@@ -23,7 +23,7 @@
   const popup = await imp("{% static 'deps/js/prefabs/popup.js' %}")
   const picButton = await imp("{% static 'deps/js/prefabs/pic_button.js' %}", popup, "{{ MEDIA_URL }}");
   const basicManual = await imp("{% static 'deps/js/manual/basic_manual.js' %}", popup, picButton);
-  const mainManual = await imp("{% static 'deps/js/manual/main_manual.js' %}", me.permissions)
+  const mainManual = await imp("{% static 'deps/js/manual/main_manual.js' %}", me.permissions, qBase)
   
   if (me.permissions.includes('user')) {
     document.getElementById('manual-button').appendChild(basicManual(mainManual).build())

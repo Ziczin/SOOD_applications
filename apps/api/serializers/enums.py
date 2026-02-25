@@ -1,7 +1,5 @@
 from rest_framework import serializers
-from apps.forms.models import EnumTag
-from apps.api.serializers.enums import EnumTagSerializer as BaseEnumTagSerializer
-from apps.forms.models import Enum
+from apps.forms.models import EnumTag, Enum
 
 
 class EnumSerializer(serializers.ModelSerializer):
@@ -62,6 +60,11 @@ class EnumTagSerializer(serializers.ModelSerializer):
         validated_data.setdefault("visible", instance.visible)
         validated_data.setdefault("available", instance.available)
         return super().update(instance, validated_data)
+
+
+from rest_framework import serializers  # noqa
+from apps.forms.models import EnumTag  # noqa
+from apps.api.serializers.enums import EnumTagSerializer as BaseEnumTagSerializer  # noqa
 
 
 class EnumTagHistorySerializer(BaseEnumTagSerializer):

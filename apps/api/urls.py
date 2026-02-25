@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
-from apps.api.views.docs import DocAdminView, DocModeratorView, DocUserView
+from apps.api.views.docs import DocAdminView, DocModeratorView, DocOtherView, DocUserView
 from apps.api.views.users import UsersViewSet
 from apps.api.views.roles import RoleListView
 from apps.api.views.enums import EnumTagViewSet, EnumViewSet
@@ -108,6 +108,7 @@ urlpatterns = [
         "docs/moderator/<str:key>/", DocModeratorView.as_view(), name="docs-moderator"
     ),
     path("docs/admin/<str:key>/", DocAdminView.as_view(), name="docs-admin"),
+    path("docs/other/<str:key>/", DocOtherView.as_view(), name="docs-other"),
     # Router URLs (должен быть последним)
     path("", include(router.urls)),
 ]

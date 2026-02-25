@@ -1,11 +1,13 @@
 import os
 import django
 
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "SOOD_applications.settings")
+django.setup()
 
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model  # noqa
 
-from apps.users.models import Department, UserRole
-from apps.forms.models import (
+from apps.users.models import Department, UserRole  # noqa
+from apps.forms.models import (  # noqa
     Enum,
     EnumTag,
     FieldType,
@@ -13,19 +15,16 @@ from apps.forms.models import (
     FormField,
     Field,
     FieldCharSet,
-)
-from apps.application.models import Application, ApplicationFormField
+)  # noqa
+from apps.application.models import Application, ApplicationFormField  # noqa
 
-from itertools import product
-import uuid
+from itertools import product  # noqa
+import uuid  # noqa
 
-import random
-from datetime import datetime, timedelta
-from django.utils import timezone
-from django.db import transaction
-
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "SOOD_applications.settings")
-django.setup()
+import random  # noqa
+from datetime import datetime, timedelta  # noqa
+from django.utils import timezone  # noqa
+from django.db import transaction  # noqa
 
 
 def create_superuser():

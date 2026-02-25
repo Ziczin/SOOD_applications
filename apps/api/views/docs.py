@@ -1,31 +1,50 @@
 import os
-from django.conf import settings
 from django.http import Http404, FileResponse, HttpResponseForbidden
 from django.utils.http import http_date
-from rest_framework.views import APIView
+from rest_framework.views import APIView, settings
 
-from apps.api.core.permissions import permissions
 
 FILES_DIR = os.path.join(settings.BASE_DIR, "files")
 
-FILE_MAPPING_USER = {
-    "public_manual": "user_manual.docx",
-    "terms": "terms.docx",
-}
 
-FILE_MAPPING_MODERATOR = {
-    "mod_guideline": "mod_guideline.docx",
-    "report_template": "report_template.docx",
-}
+def build_mapping(dir_name, items, ext=".docx"):
+    if dir_name:
+        prefix = dir_name.rstrip("/\\") + os.sep
+    else:
+        prefix = ""
+    mapping = {}
+    if isinstance(items, dict):
+        for key, fname in items.items():
+            mapping[key] = prefix + fname + ext
+        return mapping
+    for it in items:
+        if isinstance(it, (list, tuple)) and len(it) == 2:
+            key, fname = it
+        else:
+            key = it
+            fname = it
+        mapping[key] = prefix + fname + ext
+    return mapping
 
-FILE_MAPPING_ADMIN = {
-    "staff_policy": "staff_policy.docx",
-    "financial_report": "financial_report.docx",
-}
 
-
-def _abs_path_from_mapping(rel_path):
-    return os.path.join(FILES_DIR, rel_path)
+FILE_MAPPING_OTHER = build_mapping(
+    "", {"register_login": "Вход и регистрация", "termins": "Словарь терминов"}
+)
+FILE_MAPPING_USER = build_mapping("Пользователю", {"create_app": "Создание заявки"})
+FILE_MAPPING_MODERATOR = build_mapping(
+    "Исполнителю", {"process_app": "Обработка заявки"}
+)
+FILE_MAPPING_ADMIN = build_mapping(
+    "Руководителю",
+    {
+        "charsets": "Управление наборами символов",
+        "enums": "Управление перечислениями",
+        "users": "Управление сотрудниками",
+        "forms": "Управление формами",
+        "fields": "Управление шаблонами полей",
+        "report": "Формирование отчёта и пояснение результатов",
+    },
+)
 
 
 class DocServeBase(APIView):
@@ -33,7 +52,7 @@ class DocServeBase(APIView):
         if key not in mapping:
             raise Http404("File key not found")
         rel_path = mapping[key]
-        filepath = _abs_path_from_mapping(rel_path)
+        filepath = os.path.join(FILES_DIR, rel_path)
         if not os.path.exists(filepath) or not os.path.isfile(filepath):
             raise Http404("File not found")
         lower = filepath.lower()
@@ -47,19 +66,24 @@ class DocServeBase(APIView):
         return response
 
 
-@permissions("r: user")
+class DocOtherView(DocServeBase):
+    def get(self, request, key, format=None):
+        return self.get_file_response(key, FILE_MAPPING_OTHER)
+
+
+# @permissions("r: user")
 class DocUserView(DocServeBase):
     def get(self, request, key, format=None):
         return self.get_file_response(key, FILE_MAPPING_USER)
 
 
-@permissions("r: moderator")
+# @permissions("r: moderator")
 class DocModeratorView(DocServeBase):
     def get(self, request, key, format=None):
         return self.get_file_response(key, FILE_MAPPING_MODERATOR)
 
 
-@permissions("r: admin")
+# @permissions("r: admin")
 class DocAdminView(DocServeBase):
     def get(self, request, key, format=None):
         return self.get_file_response(key, FILE_MAPPING_ADMIN)
