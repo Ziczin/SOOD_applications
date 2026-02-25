@@ -3,8 +3,8 @@
 <div id="center-content"></div>
 
 <script type="module">
-  await import("{% static 'collected/static.js' %}");
-  //await import("{% static 'deps/make/make.js' %}");
+  //await import("{% static 'collected/static.js' %}");
+  await import("{% static 'deps/make/make.js' %}");
 
   const csrfObj = await make.Query('/api/csrf-token').get()
   const imp = (await import("{% static 'deps/js/tools/import.js' %}")).default(make)

@@ -5,90 +5,154 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Enum',
+            name="Enum",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('value', models.CharField(blank=True, default='', max_length=50)),
-                ('available', models.BooleanField(default=True)),
-                ('visible', models.BooleanField(default=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("value", models.CharField(blank=True, default="", max_length=50)),
+                ("available", models.BooleanField(default=True)),
+                ("visible", models.BooleanField(default=True)),
             ],
         ),
         migrations.CreateModel(
-            name='EnumTag',
+            name="EnumTag",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(blank=True, default='', max_length=50)),
-                ('shared', models.BooleanField(default=False)),
-                ('available', models.BooleanField(default=True)),
-                ('visible', models.BooleanField(default=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(blank=True, default="", max_length=50)),
+                ("shared", models.BooleanField(default=False)),
+                ("available", models.BooleanField(default=True)),
+                ("visible", models.BooleanField(default=True)),
             ],
         ),
         migrations.CreateModel(
-            name='Field',
+            name="Field",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('label', models.CharField(max_length=50)),
-                ('placeholder', models.CharField(blank=True, default='', max_length=100)),
-                ('decimals', models.PositiveIntegerField(blank=True, null=True)),
-                ('minimum', models.PositiveIntegerField(blank=True, null=True)),
-                ('maximum', models.PositiveIntegerField(blank=True, null=True)),
-                ('is_multienum', models.BooleanField(default=False)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("label", models.CharField(max_length=50)),
+                (
+                    "placeholder",
+                    models.CharField(blank=True, default="", max_length=100),
+                ),
+                ("decimals", models.PositiveIntegerField(blank=True, null=True)),
+                ("minimum", models.PositiveIntegerField(blank=True, null=True)),
+                ("maximum", models.PositiveIntegerField(blank=True, null=True)),
+                ("is_multienum", models.BooleanField(default=False)),
             ],
         ),
         migrations.CreateModel(
-            name='FieldCharSet',
+            name="FieldCharSet",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('label', models.CharField(blank=True, max_length=200)),
-                ('cyrillic_lower', models.BooleanField(default=False)),
-                ('cyrillic_upper', models.BooleanField(default=False)),
-                ('latin_lower', models.BooleanField(default=False)),
-                ('latin_upper', models.BooleanField(default=False)),
-                ('space', models.BooleanField(default=False)),
-                ('digits', models.BooleanField(default=False)),
-                ('special', models.BooleanField(default=False)),
-                ('included', models.TextField(blank=True)),
-                ('excluded', models.TextField(blank=True)),
-                ('min_length', models.PositiveIntegerField(blank=True, null=True)),
-                ('max_length', models.PositiveIntegerField(blank=True, null=True)),
-                ('available', models.BooleanField(default=True)),
-                ('visible', models.BooleanField(default=False)),
-                ('shared', models.BooleanField(default=False)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("label", models.CharField(blank=True, max_length=200)),
+                ("cyrillic_lower", models.BooleanField(default=False)),
+                ("cyrillic_upper", models.BooleanField(default=False)),
+                ("latin_lower", models.BooleanField(default=False)),
+                ("latin_upper", models.BooleanField(default=False)),
+                ("space", models.BooleanField(default=False)),
+                ("digits", models.BooleanField(default=False)),
+                ("special", models.BooleanField(default=False)),
+                ("included", models.TextField(blank=True)),
+                ("excluded", models.TextField(blank=True)),
+                ("min_length", models.PositiveIntegerField(blank=True, null=True)),
+                ("max_length", models.PositiveIntegerField(blank=True, null=True)),
+                ("available", models.BooleanField(default=True)),
+                ("visible", models.BooleanField(default=False)),
+                ("shared", models.BooleanField(default=False)),
             ],
         ),
         migrations.CreateModel(
-            name='FieldType',
+            name="FieldType",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=50)),
-                ('label', models.CharField(max_length=100)),
-                ('type', models.CharField(blank=True, max_length=10)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=50)),
+                ("label", models.CharField(max_length=100)),
+                ("type", models.CharField(blank=True, max_length=10)),
             ],
         ),
         migrations.CreateModel(
-            name='Form',
+            name="Form",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('label', models.CharField(blank=True, default='', max_length=100)),
-                ('available', models.BooleanField(default=True)),
-                ('visible', models.BooleanField(default=False)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("label", models.CharField(blank=True, default="", max_length=100)),
+                ("available", models.BooleanField(default=True)),
+                ("visible", models.BooleanField(default=False)),
             ],
         ),
         migrations.CreateModel(
-            name='FormField',
+            name="FormField",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('order', models.PositiveIntegerField(blank=True, null=True, validators=[django.core.validators.MinValueValidator(1)])),
-                ('required', models.BooleanField(default=True)),
-                ('available', models.BooleanField(default=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "order",
+                    models.PositiveIntegerField(
+                        blank=True,
+                        null=True,
+                        validators=[django.core.validators.MinValueValidator(1)],
+                    ),
+                ),
+                ("required", models.BooleanField(default=True)),
+                ("available", models.BooleanField(default=True)),
             ],
         ),
     ]

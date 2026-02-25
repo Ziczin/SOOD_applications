@@ -247,13 +247,14 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
       make.style.height('100%'),
       cardBody = Column(
         make.Separator(),
-        Row(
-          make.it.marginOnHover,
-          make.Paragraph(`От: ${app.user.fullname}`),
-          make.callif(app.user.department,
-            () => make.Paragraph(`(${app.user.department.name})`, make.it.subtitleText),
-          ),
+        make.Paragraph(`От: ${app.user.fullname}`, make.it.marginOnHover,),
+        ...make.callif(app.user.department && app.user.role.name,
+          () => make.Paragraph(`Из: ${app.user.department.name} (${app.user.role.name})`, make.it.subtitleText, make.it.marginOnHover,),
         ),
+		make.Separator(2,
+		  make.style.rounded(6),
+		  make.it.littleDarker,
+	    ), 
         ...make.callif(app.executor !== null,
           () => make.Paragraph(`Исполнитель: ${app.executor.fullname}`,
             make.it.marginOnHover
@@ -320,51 +321,60 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
               ]),
               make.on.click(async (e) => {
                 e.stopPropagation();
-                const inp = make.Input()
+                const inp = make.TextArea(
+					make.with.style({
+						resize: "vertical"
+					})
+				)
                 make.Notice([500, Infinity, 500, "actionNotice"],
-                  Column(
-                    make.it.contented,
-                    make.Paragraph("Для того чтобы отказать в заявке укажите причину отказа:"),
-                    inp,
-                    Row(
-                      make.Button(
-                        make.it.action,
-                        make.it.act.negative,
-                        make.with.text("Отказать"),
-                        make.with.style({flex: 1}),
-                        make.on.click(async () => {
-                          if (inp.element.value) {
-                            qBase.at("applications").at(app.id).with({
-                              status: "REJECTED",
-                              msg: inp.element.value,
-                              executor: me.id
-                            }).view().patch()
-                            card.status = "REJECTED"
-                            card.executor = me
-                            setStatusStyle(card.cardHeader.element, card.status)
-                            setVisibilityByStatus()
-                            card.btnProc.destroy()
-                            card.btnCanc.destroy()
-                            card.btnHolder.destroy()
-                            cardBody.addChild(
-                              make.Paragraph(
-                                `Причина отказа: ${inp.element.value}`,
-                                make.it.marginOnHover
+                  Row(
+                    make.it.littleDarker,
+                    make.style.padding(2),
+                    make.style.rounded(12),
+                    Column(
+                      make.it.contented,
+                      make.Paragraph("Для того чтобы отказать в заявке укажите причину отказа:"),
+                      inp,
+                      Row(
+                        make.Button(
+                          make.it.action,
+                          make.it.act.negative,
+                          make.with.text("Отказать"),
+                          make.with.style({flex: 1}),
+                          make.on.click(async () => {
+                            if (inp.element.value) {
+                              qBase.at("applications").at(app.id).with({
+                                status: "REJECTED",
+                                msg: inp.element.value,
+                                executor: me.id
+                              }).view().patch()
+                              card.status = "REJECTED"
+                              card.executor = me
+                              setStatusStyle(card.cardHeader.element, card.status)
+                              setVisibilityByStatus()
+                              card.btnProc.destroy()
+                              card.btnCanc.destroy()
+                              card.btnHolder.destroy()
+                              cardBody.addChild(
+                                make.Paragraph(
+                                  `Причина отказа: ${inp.element.value}`,
+                                  make.it.marginOnHover
+                                )
                               )
-                            )
+                              make.other.closeCurrentNotice()
+                            }
+                          })
+                        ),
+                        make.Button(
+                          make.it.action,
+                          make.it.act.alternative,
+                          make.with.text("Отмена"),
+                          make.with.style({flex: 1}),
+                          make.on.click(() => {
                             make.other.closeCurrentNotice()
-                          }
-                        })
-                      ),
-                      make.Button(
-                        make.it.action,
-                        make.it.act.alternative,
-                        make.with.text("Отмена"),
-                        make.with.style({flex: 1}),
-                        make.on.click(() => {
-                          make.other.closeCurrentNotice()
-                        })
-                      ),
+                          })
+                        ),
+                      )
                     )
                   )
                 )

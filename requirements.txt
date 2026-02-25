@@ -7,3 +7,4 @@ openpyxl==3.1.5
 whitenoise==6.11.0
 bcrypt==5.0.0
 waitress==3.0.2
+psutil==7.1.3

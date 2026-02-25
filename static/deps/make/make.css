@@ -225,6 +225,7 @@ p, form, h1, h2, h3, h4, h5, h6 {
     transition:background .12s, border-color .12s;
     font-size:14px;
     line-height:1;
+	align-self: center;
 }
 .make-checkbox::after{
     content:"✔";

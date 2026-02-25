@@ -3,13 +3,13 @@ from rest_framework.response import Response
 from apps.users.models import Department
 from apps.api.serializers.users import DepartmentSerializer
 from apps.api.cache_tools.helper import CacheHelper
+from apps.api.core.permissions import permissions
 
 department_list_cache = CacheHelper("departments:list")
 department_cache = CacheHelper("departments:item")
 
-from apps.api.core.permissions import permissions
 
-@permissions('r: user; 3p: admin')
+@permissions("r: user; 3p: admin")
 class DepartmentViewSet(viewsets.ModelViewSet):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer

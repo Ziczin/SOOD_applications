@@ -162,6 +162,7 @@ label {
     font-size: 20px;}
 input, select, textarea {
     font-size: 20px;
+    font-family: Arial, sans-serif;
     width: 100%;
     padding: 4px;
     padding-bottom: 0;

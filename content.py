@@ -6,6 +6,7 @@ import sys
 
 EXCLUDE_DIRS = {"sandbox", "test"}
 
+
 def collect_js_contents(root: Path) -> str:
     parts = []
     for dirpath, dirnames, filenames in os.walk(root):
@@ -23,14 +24,20 @@ def collect_js_contents(root: Path) -> str:
                 parts.append(f"{rel}\n{content}\n")
     return "\n".join(parts)
 
+
 def write_txt_with_bom(path: Path, text: str):
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "wb") as f:
         f.write(text.encode("utf-8-sig"))
 
+
 def copy_to_clipboard_windows(text: str):
-    p = subprocess.Popen(["powershell", "-NoProfile", "-Command", "Set-Clipboard -Value $input"], stdin=subprocess.PIPE)
+    p = subprocess.Popen(
+        ["powershell", "-NoProfile", "-Command", "Set-Clipboard -Value $input"],
+        stdin=subprocess.PIPE,
+    )
     p.communicate(input=text.encode("utf-8"))
+
 
 if __name__ == "__main__":
     root = Path(".").resolve()
@@ -38,4 +45,6 @@ if __name__ == "__main__":
     out = Path("collected.txt")
     write_txt_with_bom(out, result)
     copy_to_clipboard_windows(result)
-    sys.stdout.write(f"Скопировано {len(result.encode('utf-8'))} байт в буфер обмена и записано в {out}\n")
+    sys.stdout.write(
+        f"Скопировано {len(result.encode('utf-8'))} байт в буфер обмена и записано в {out}\n"
+    )

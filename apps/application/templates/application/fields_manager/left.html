@@ -6,8 +6,8 @@
 <div class="content" id="left-content"></div>
 
 <script type="module">
-  await import("{% static 'collected/static.js' %}");
-  //await import("{% static 'deps/make/make.js' %}");
+  //await import("{% static 'collected/static.js' %}");
+  await import("{% static 'deps/make/make.js' %}");
   const imp = (await import("{% static 'deps/js/tools/import.js' %}")).default(make)
   const paragraphNotice = await imp("{% static 'deps/js/prefabs/paragraph_notice.js' %}")
   const backButton = await imp("{% static 'deps/js/prefabs/exit_button.js' %}")
@@ -107,7 +107,7 @@
     return select
   }
 
-  function charsetField(field, inpField) {
+  function charsetField(field, inpField, placeholderField) {
     const select = make.Select(
       popup("Доступные наборы символов")
     )
@@ -122,6 +122,8 @@
         make.OptionPlaceholder("--- выбрать набор символов ---"),
         ...make.callif(found, () => {
           inpField.addModifiers(make.with.attrs("disabled"))
+          placeholderField.addModifiers(make.with.attrs("disabled"))
+          console.log("HERE")
           return [make.Option(found.label, found.id), make.with.attrs("disabled")]
         }),
         ...charsets.map(set => make.Option(set.label, set.id)),
@@ -148,16 +150,16 @@
   }
 
   function labelField(field, row) {
-    const input = make.Input(
+    const input = make.TextArea(
       popup("Название поля на форме"),
       make.with.attr({
-        value: field.label,
         placeholder: field.label || "Название"
       }),
       make.with.style({
         height: "fit-content",
         display: "flex",
         flexDirection: "row",
+		resize: "vertical",
       }),
     )
     input.addModifiers(
@@ -168,20 +170,24 @@
         paragraphNotice("Изменено!", make.color.green)
       })
     )
+	
+	input.allowEvents()
+	input.onBuild.once(() => input.element.value = field.label )
     return input
   }
 
   function placeholderField(field, row) {
-    const input = make.Input(
+    const input = make.TextArea(
       popup("Подсказка для поля на форме", "Будет показываться серым цветом и не влияет на значение"),
       make.with.attr({
-        value: field.placeholder,
-        placeholder: "Плейсхолдер"
+        value: field.placeholder || '',
+        placeholder: field.placeholder || "Плейсхолдер",
       }),
       make.with.style({
-        height: "fit-content",
+        height: "auto",
         display: "flex",
         flexDirection: "row",
+		resize: "vertical",
       }),
     )
     input.addModifiers(
@@ -192,6 +198,8 @@
         paragraphNotice("Изменено!", make.color.green)
       })
     )
+	input.allowEvents()
+	input.onBuild.once(() => input.element.value = field.placeholder)
     return input
   }
 
@@ -245,11 +253,15 @@
       make.with.style({flex: "0 0 auto"})
     )
     const inpField = labelField(field, row)
+    let placeholderFieldElem = null
+    if (doPlaceholder.includes(type)) {
+      placeholderFieldElem = placeholderField(field, row)
+    }
     row.addModifiers(
       inpField,
-      ...make.callif(doPlaceholder.includes(type), () => placeholderField(field, row)),
+      ...make.if(placeholderFieldElem, placeholderFieldElem),
       ...make.callif(type === "enum", () => enumField(field, inpField)),
-      ...make.callif(type === "charset", () => charsetField(field, inpField)),
+      ...make.callif(type === "charset", () => charsetField(field, inpField, placeholderFieldElem)),
       ...make.callif(type === "number", () => decimalsField(field, inpField)),
     )
     return row
@@ -293,6 +305,8 @@
     active.click();
     active.blur();
   });
+  
+  const boldText = (txt) => make.Paragraph(txt, make.it.textBold)
 
   const fieldTypes = await fieldTypesPromise
   document.getElementById('left-content').appendChild(
@@ -302,7 +316,47 @@
           make.it.action,
           make.it.act.neutral,
           make.with.text(fieldType.label),
-          make.on.click(() => fillCenter(fieldType))
+          make.on.click(() => fillCenter(fieldType)),
+          popup(
+            ...make.switch(fieldType.name,
+              make.case("text", boldText("Это просто строковое поле"), "Пользователь может ввести всё, что угодно", "Например: название, адрес"),
+              make.case("textarea", boldText("Это текстовое поле"), "Пользователь может ввести некоторый объёмный текст", "Например: описание проблемы"),
+              make.case("number", boldText("Это числовое поле"), "Пользователь может ввести число с точностью до указанной", "Например: 123.45"),
+              make.case("date", boldText("Это просто дата"), "Например: дата отсутствия"),
+              make.case("time", boldText("Это просто время"), "Например: Часы работы"),
+              make.case("datetime", boldText("Это время и дата вместе"), "Например: дата и время встречи, дата и время приёма"),
+              make.case("month", boldText("Это только месяц"), "Например: Август"),
+              make.case("week", boldText("Это только неделя"), "Например: 34 неделя для отпуска"),
+              make.case(
+                "checkbox",
+                boldText("Это чек-поле"),
+                "Такое поле имеет всего два значения и не может быть обязательным",
+                "Например: Работаете ли вы на свежем воздухе"
+              ),
+              make.case(
+                "enum",
+                boldText("Это перечисление"),
+                "Для этого поля выбирается группа перечеслений",
+                "Пользователь сможет выбрать перечисление из указанной группы",
+                'Например, для группы перечеслений "Отделы" могут быть предложены варианты:',
+                "• Отдел программирования",
+                "• Абдоминальное отделение №1",
+                "• Бухгалтерия",
+                "... и другие"
+              ),
+              make.case(
+                "charset",
+                boldText("Это ограниченный символьный набор"),
+                "Для таких полей могут быть разрешены к использованию лишь некоторые символы",
+                "Например, если для такого набора разрешены только кириллические символы:",
+                "• Разрешено: Иван Иванович",
+                "• Запрещено: Иван123 Иванович456",
+                "• Запрещено: Ivan Ivanovich",
+                "Данное поле не показывает ошибку, а просто запрещает ввод неподходящих символов"
+              ),
+              make.endcase("Это эндкейс. Если вы его видите - это косяк разработчика")
+            )
+          )
         )
       )
     ).build()

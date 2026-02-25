@@ -6,8 +6,8 @@
 <div class="content-strange" id="left-content"></div>
 
 <script type="module">
-  await import("{% static 'collected/static.js' %}");
-  //await import("{% static 'deps/make/make.js' %}");
+  //await import("{% static 'collected/static.js' %}");
+  await import("{% static 'deps/make/make.js' %}");
   const imp = (await import("{% static 'deps/js/tools/import.js' %}")).default(make)
   const paragraphNoticePromise = imp("{% static 'deps/js/prefabs/paragraph_notice.js' %}")
   const backButtonPromise = imp("{% static 'deps/js/prefabs/exit_button.js' %}")

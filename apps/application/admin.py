@@ -3,7 +3,8 @@ from .models import Application, ApplicationFormField
 
 
 models_list = [
-    Application, ApplicationFormField,
+    Application,
+    ApplicationFormField,
 ]
 
 admin.site.register(models_list)

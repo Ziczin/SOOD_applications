@@ -2,12 +2,13 @@
 
 <div style="max-height: 98vh; display: flex; flex-direction: column; gap: 6px; flex: 0">
   <div id="logout-btn"></div>
-
+  <div id="manual-button"></div>
   <div class="content" id="left-content" style="height: 100%; overflow-y: hidden"></div>
 </div>
+
 <script type="module">
-  await import("{% static 'collected/static.js' %}");
-  //await import("{% static 'deps/make/make.js' %}");
+  //await import("{% static 'collected/static.js' %}");
+  await import("{% static 'deps/make/make.js' %}");
   const imp = (await import("{% static 'deps/js/tools/import.js' %}")).default(make)
   const csrfObj = await make.Query('/api/csrf-token').get()
 
@@ -19,6 +20,15 @@
   const statuses = await qBase.at('application-statuses').view().get()
   const me = await qCurrentUser.get();
 
+  const popup = await imp("{% static 'deps/js/prefabs/popup.js' %}")
+  const picButton = await imp("{% static 'deps/js/prefabs/pic_button.js' %}", popup, "{{ MEDIA_URL }}");
+  const basicManual = await imp("{% static 'deps/js/manual/basic_manual.js' %}", popup, picButton);
+  const mainManual = await imp("{% static 'deps/js/manual/main_manual.js' %}", me.permissions)
+  
+  if (me.permissions.includes('user')) {
+    document.getElementById('manual-button').appendChild(basicManual(mainManual).build())
+  }
+
   document.getElementById('logout-btn').appendChild(
     make.Button(
       make.with.css('content', 'exit', 'flex'),
@@ -29,6 +39,7 @@
       })
     ).build()
   )
+
   document.getElementById('left-content').appendChild(
     make.Div(
       make.it.flexColumn,
@@ -62,13 +73,25 @@
           make.Span('прокси',
             make.on.click(
               createNoiseCycler(2000, 1000, [
-                "суперюзер", "агент", "знание",
-                "a͢b̨a͢͟͠d̶o̕͝͞n͢͏n̨͝҉e̢d", "p̴̡͞r͟o̵x̨̡͠y̨͢͡", "</>", "dev", "ℵ",
-                "прокси", "мимик", "???", "призрак", "ордо",
-                "кто?", "образ", me.username, "наблюдатель",
-                me.role.name, "тень", "...", "42", "герой",
-                "(()=>{})()", "лямбда", "виртуальный",
-                "π", "α", "ξ", "Ω", "null", "undefined",
+				"суперюзер", "агент", "знание", "a͢b̨a͢͟͠d̶o̕͝͞n͢͏n̨͝҉e̢͏d", 
+				"p̴̡͞r͟o̵x̨̡͠y̨͢͡", "</>", "dev", 
+				"ℵ", "прокси", "мимик", "???", 
+				"призрак", "ордо", "кто?", "образ", 
+				"me.username", "наблюдатель", "me.role.name", "тень", 
+				"...", "42", "герой", "(()=>{})()", 
+				"лямбда", "виртуальный", "π", "α", 
+				"ξ", "Ω", "null", "undefined", 
+				"система", "интерфейс", "пространство",
+				"гибрид", "404", "протокол", 
+				"поток", "модуль", "шаблон", "сигнал", 
+				"мир", "сущность", "система", "вход", "выход",
+				"реальность", "алгоритм", "идентичность",
+				"потенциал", "состояние", "парадигма", "переменная",
+				"мышление", "принятие", "особенность", "реакция",
+				"проблема", "контекст", "изменение", "метод",
+				"структура", "ценность", "восприятие", "установка",
+				"измерение", "дихотомия", "оптимизация", "аспект",
+				"правило", "подход", "феномен", 
               ])
             )
           )
@@ -104,7 +127,7 @@ function createNoiseCycler(animDuration = 1000, displayDuration = 1000, list = [
         idx = randIdx()
       }
       prev.push(idx)
-      prev = prev.slice(-6)
+      prev = prev.slice(-16)
       const target = String(list[idx]);
       const len = target.length;
       const noiseTicks = Math.max(0, totalTicks - len);

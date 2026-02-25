@@ -1,6 +1,7 @@
 from django.core.cache import cache
 from typing import Optional, List
 
+
 class CacheHelper:
     def __init__(self, prefix: str, ttl: int = 3600):
         self.prefix = prefix
@@ -35,7 +36,11 @@ class CacheHelper:
         if starts_with is None:
             to_delete = [k for k in all_keys if k.startswith(f"{self.prefix}:")]
         else:
-            prefix = f"{self.prefix}:{starts_with}" if not starts_with.startswith(":") else f"{self.prefix}{starts_with}"
+            prefix = (
+                f"{self.prefix}:{starts_with}"
+                if not starts_with.startswith(":")
+                else f"{self.prefix}{starts_with}"
+            )
             to_delete = [k for k in all_keys if k.startswith(prefix)]
         for k in to_delete:
             cache.delete(k)
@@ -46,10 +51,26 @@ class CacheHelper:
         if not all_keys:
             return
         if key is None:
-            to_delete = [k for k in all_keys if k.startswith(f"{self.prefix}:") or k == self.prefix or k == self._index_key]
+            to_delete = [
+                k
+                for k in all_keys
+                if k.startswith(f"{self.prefix}:")
+                or k == self.prefix
+                or k == self._index_key
+            ]
         else:
-            candidate = key if key.startswith(self.prefix) else (self.key(key) if ":" in str(key) else f"{self.prefix}:{key}")
-            to_delete = [k for k in all_keys if k == candidate or k.startswith(candidate + ":") or k.startswith(candidate)]
+            candidate = (
+                key
+                if key.startswith(self.prefix)
+                else (self.key(key) if ":" in str(key) else f"{self.prefix}:{key}")
+            )
+            to_delete = [
+                k
+                for k in all_keys
+                if k == candidate
+                or k.startswith(candidate + ":")
+                or k.startswith(candidate)
+            ]
         for k in to_delete:
             cache.delete(k)
             self._unregister_key(k)

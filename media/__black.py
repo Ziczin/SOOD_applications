@@ -1,5 +1,6 @@
 from PIL import Image
 
+
 def make_opaque_pixels_black(input_path: str, output_path: str):
     img = Image.open(input_path).convert("RGBA")
     pixels = img.load()
@@ -11,6 +12,7 @@ def make_opaque_pixels_black(input_path: str, output_path: str):
                 # устанавливаем RGB в чёрный, сохраняем альфу
                 pixels[x, y] = (0, 0, 0, a)
     img.save(output_path)
+
 
 if __name__ == "__main__":
     # пример использования

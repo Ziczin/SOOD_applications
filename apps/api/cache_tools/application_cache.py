@@ -1,23 +1,39 @@
-from django.utils.dateparse import parse_date
 from apps.application.models import Application
 from .helper import CacheHelper
 
-application_cache = CacheHelper('applications', ttl=3600)
+application_cache = CacheHelper("applications", ttl=3600)
+
 
 def invalidate_application_caches(application: Application):
-    application_cache.delete_pattern('list')
-    application_cache.delete('detail', application.id)
+    application_cache.delete_pattern("list")
+    application_cache.delete("detail", application.id)
 
-def get_application_cache_key(dept: str = None, created_after: str = None, 
-                            created_before: str = None, user: str = None) -> list:
-    return ['list', dept, created_after, created_before, user]
 
-def cache_application_list(data, dept: str = None, created_after: str = None,
-                          created_before: str = None, user: str = None):
+def get_application_cache_key(
+    dept: str = None,
+    created_after: str = None,
+    created_before: str = None,
+    user: str = None,
+) -> list:
+    return ["list", dept, created_after, created_before, user]
+
+
+def cache_application_list(
+    data,
+    dept: str = None,
+    created_after: str = None,
+    created_before: str = None,
+    user: str = None,
+):
     cache_key = get_application_cache_key(dept, created_after, created_before, user)
     application_cache.set(data, *cache_key)
 
-def get_cached_application_list(dept: str = None, created_after: str = None,
-                               created_before: str = None, user: str = None):
+
+def get_cached_application_list(
+    dept: str = None,
+    created_after: str = None,
+    created_before: str = None,
+    user: str = None,
+):
     cache_key = get_application_cache_key(dept, created_after, created_before, user)
     return application_cache.get(*cache_key)

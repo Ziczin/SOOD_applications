@@ -66,7 +66,7 @@ function dashboardUser(qBase, deps, forms, paragraphNotice, popup, rebuildFoo, p
           (() => {
             const map = {
               text: () => textFieldElem(field),
-              textarea: () => make.TextArea(),
+              textarea: () => textareaFieldElem(field),
               number: () => numberFieldElem(field),
               date: () => dateFieldElem("date"),
               time: () => dateFieldElem("time"),
@@ -124,6 +124,17 @@ function dashboardUser(qBase, deps, forms, paragraphNotice, popup, rebuildFoo, p
     function textFieldElem(field) {
       return make.Input(
         make.with.attr({placeholder: field.placeholder || ''})
+      )
+    }
+
+    function textareaFieldElem(field) {
+      return make.TextArea(
+        make.with.attr({
+			placeholder: field.placeholder || ''
+		}),
+		make.with.style({
+			resize: "vertical"
+		})
       )
     }
 

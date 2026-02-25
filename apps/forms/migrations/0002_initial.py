@@ -5,119 +5,195 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('forms', '0001_initial'),
-        ('users', '0001_initial'),
+        ("forms", "0001_initial"),
+        ("users", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='enumtag',
-            name='department',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='enum_tags', to='users.department'),
+            model_name="enumtag",
+            name="department",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="enum_tags",
+                to="users.department",
+            ),
         ),
         migrations.AddField(
-            model_name='enum',
-            name='enum_tag',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='forms.enumtag'),
+            model_name="enum",
+            name="enum_tag",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="forms.enumtag",
+            ),
         ),
         migrations.AddField(
-            model_name='field',
-            name='department',
-            field=models.ForeignKey(default=None, null=True, on_delete=django.db.models.deletion.SET_NULL, to='users.department'),
+            model_name="field",
+            name="department",
+            field=models.ForeignKey(
+                default=None,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="users.department",
+            ),
         ),
         migrations.AddField(
-            model_name='field',
-            name='tag',
-            field=models.ForeignKey(default=None, null=True, on_delete=django.db.models.deletion.SET_NULL, to='forms.enumtag'),
+            model_name="field",
+            name="tag",
+            field=models.ForeignKey(
+                default=None,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="forms.enumtag",
+            ),
         ),
         migrations.AddField(
-            model_name='fieldcharset',
-            name='department',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='field_charsets', to='users.department'),
+            model_name="fieldcharset",
+            name="department",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="field_charsets",
+                to="users.department",
+            ),
         ),
         migrations.AddField(
-            model_name='field',
-            name='charset',
-            field=models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='fields', to='forms.fieldcharset'),
+            model_name="field",
+            name="charset",
+            field=models.ForeignKey(
+                blank=True,
+                default=None,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="fields",
+                to="forms.fieldcharset",
+            ),
         ),
         migrations.AddField(
-            model_name='field',
-            name='type',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='forms.fieldtype'),
+            model_name="field",
+            name="type",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="forms.fieldtype",
+            ),
         ),
         migrations.AddField(
-            model_name='form',
-            name='department',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='users.department'),
+            model_name="form",
+            name="department",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="users.department",
+            ),
         ),
         migrations.AddField(
-            model_name='formfield',
-            name='field',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='field_forms', to='forms.field'),
+            model_name="formfield",
+            name="field",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="field_forms",
+                to="forms.field",
+            ),
         ),
         migrations.AddField(
-            model_name='formfield',
-            name='form',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='form_fields', to='forms.form'),
+            model_name="formfield",
+            name="form",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="form_fields",
+                to="forms.form",
+            ),
         ),
         migrations.AddIndex(
-            model_name='enumtag',
-            index=models.Index(fields=['department', 'available'], name='forms_enumt_departm_a0cba1_idx'),
+            model_name="enumtag",
+            index=models.Index(
+                fields=["department", "available"],
+                name="forms_enumt_departm_a0cba1_idx",
+            ),
         ),
         migrations.AddIndex(
-            model_name='enumtag',
-            index=models.Index(fields=['available', 'visible'], name='forms_enumt_availab_f10cf0_idx'),
+            model_name="enumtag",
+            index=models.Index(
+                fields=["available", "visible"], name="forms_enumt_availab_f10cf0_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='enum',
-            index=models.Index(fields=['enum_tag', 'available'], name='forms_enum_enum_ta_472335_idx'),
+            model_name="enum",
+            index=models.Index(
+                fields=["enum_tag", "available"], name="forms_enum_enum_ta_472335_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='enum',
-            index=models.Index(fields=['available', 'visible'], name='forms_enum_availab_f3b7c6_idx'),
+            model_name="enum",
+            index=models.Index(
+                fields=["available", "visible"], name="forms_enum_availab_f3b7c6_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='fieldcharset',
-            index=models.Index(fields=['department', 'available'], name='forms_field_departm_e77301_idx'),
+            model_name="fieldcharset",
+            index=models.Index(
+                fields=["department", "available"],
+                name="forms_field_departm_e77301_idx",
+            ),
         ),
         migrations.AddIndex(
-            model_name='fieldcharset',
-            index=models.Index(fields=['available', 'visible'], name='forms_field_availab_ed40ab_idx'),
+            model_name="fieldcharset",
+            index=models.Index(
+                fields=["available", "visible"], name="forms_field_availab_ed40ab_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='fieldcharset',
-            index=models.Index(fields=['shared', 'available'], name='forms_field_shared_c1ee6c_idx'),
+            model_name="fieldcharset",
+            index=models.Index(
+                fields=["shared", "available"], name="forms_field_shared_c1ee6c_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='field',
-            index=models.Index(fields=['department'], name='forms_field_departm_994363_idx'),
+            model_name="field",
+            index=models.Index(
+                fields=["department"], name="forms_field_departm_994363_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='field',
-            index=models.Index(fields=['type'], name='forms_field_type_id_594668_idx'),
+            model_name="field",
+            index=models.Index(fields=["type"], name="forms_field_type_id_594668_idx"),
         ),
         migrations.AddIndex(
-            model_name='form',
-            index=models.Index(fields=['department'], name='forms_form_departm_8d3db2_idx'),
+            model_name="form",
+            index=models.Index(
+                fields=["department"], name="forms_form_departm_8d3db2_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='form',
-            index=models.Index(fields=['department', 'available'], name='forms_form_departm_13f7a2_idx'),
+            model_name="form",
+            index=models.Index(
+                fields=["department", "available"], name="forms_form_departm_13f7a2_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='form',
-            index=models.Index(fields=['available', 'visible'], name='forms_form_availab_fb4693_idx'),
+            model_name="form",
+            index=models.Index(
+                fields=["available", "visible"], name="forms_form_availab_fb4693_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='formfield',
-            index=models.Index(fields=['form', '-order'], name='forms_formf_form_id_055138_idx'),
+            model_name="formfield",
+            index=models.Index(
+                fields=["form", "-order"], name="forms_formf_form_id_055138_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='formfield',
-            index=models.Index(fields=['field', 'form'], name='forms_formf_field_i_4a4b6d_idx'),
+            model_name="formfield",
+            index=models.Index(
+                fields=["field", "form"], name="forms_formf_field_i_4a4b6d_idx"
+            ),
         ),
     ]

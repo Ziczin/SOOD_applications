@@ -7,7 +7,7 @@ function popup (...text) {
     time,
     make.Div(
       make.it.popup,
-      ...text.map(txt => make.Paragraph(txt))
+      ...text.map(txt => typeof txt === 'string' ? make.Paragraph(txt) : txt)
     )
   )
 }

@@ -14,15 +14,20 @@ from apps.api.cache_tools.helper import CacheHelper
 
 user_cache = CacheHelper("users:user")
 
+
 def csrf_token_view(request):
     token = get_token(request)
-    return JsonResponse({'csrfToken': token})
+    return JsonResponse({"csrfToken": token})
+
 
 def role_representation(role_value):
     return {
-        'id': dict((choice.value, choice.label) for choice in UserRole).get(role_value, ''),
-        'name': role_value
+        "id": dict((choice.value, choice.label) for choice in UserRole).get(
+            role_value, ""
+        ),
+        "name": role_value,
     }
+
 
 class RegisterView(APIView):
     def post(self, request):
@@ -34,40 +39,47 @@ class RegisterView(APIView):
             friendly = {}
             for field, msgs in errors.items():
                 if isinstance(msgs, (list, tuple)):
-                    first = str(msgs[0]) if msgs else ''
+                    first = str(msgs[0]) if msgs else ""
                 else:
                     first = str(msgs)
-                if field == 'username' and 'unique' in first.lower():
-                    friendly[field] = ['Пользователь с таким логином уже существует.']
-                elif field == 'password' or field == 'password1' or field == 'password2':
-                    friendly[field] = ['Неверный пароль.']
+                if field == "username" and "unique" in first.lower():
+                    friendly[field] = ["Пользователь с таким логином уже существует."]
+                elif (
+                    field == "password" or field == "password1" or field == "password2"
+                ):
+                    friendly[field] = ["Неверный пароль."]
                 else:
                     friendly[field] = [first]
             return Response(friendly, status=status.HTTP_400_BAD_REQUEST)
         user = serializer.save()
         login(request, user)
-        return redirect('dashboard')
+        return redirect("dashboard")
+
 
 class LoginView(APIView):
     def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
-        next_url = request.data.get('next')
+        username = request.data.get("username")
+        password = request.data.get("password")
+        next_url = request.data.get("next")
         user = authenticate(username=username, password=password)
-        
+
         if user:
             login(request, user)
             if next_url:
                 return redirect(next_url)
             else:
-                return redirect('dashboard')
-                
-        return Response({"error": "Неверный логин или пароль"}, status=status.HTTP_400_BAD_REQUEST)
+                return redirect("dashboard")
+
+        return Response(
+            {"error": "Неверный логин или пароль"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
 
 class LogoutView(APIView):
     def post(self, request):
         logout(request)
-        return redirect('/')
+        return redirect("/")
+
 
 class CurrentUserAPIView(APIView):
     def get(self, request):
@@ -76,7 +88,7 @@ class CurrentUserAPIView(APIView):
         if cached is not None:
             return Response(cached)
         serialized = UserDetailSerializer(user_instance).data
-        serialized['permissions'] = get_permissions(user_instance)
-        serialized['role'] = role_representation(user_instance.role)
+        serialized["permissions"] = get_permissions(user_instance)
+        serialized["role"] = role_representation(user_instance.role)
         user_cache.set(serialized, user_instance.pk)
         return Response(serialized, status=status.HTTP_200_OK)

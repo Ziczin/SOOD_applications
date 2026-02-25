@@ -303,7 +303,11 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
             ...make.if(card.status === "IN_PROGRESS",
               make.on.click(async (e) => {
                 e.stopPropagation();
-                const inp = make.Input()
+                const inp = make.TextArea(
+					make.with.style({
+						resize: "vertical"
+					})
+				)
                 make.Notice([500, Infinity, 500, "actionNotice"],
                   Column(
                     make.it.contented,

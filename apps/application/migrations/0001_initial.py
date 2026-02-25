@@ -4,37 +4,98 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Application',
+            name="Application",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date', models.DateTimeField(auto_now_add=True)),
-                ('status', models.CharField(choices=[('SENDED', 'Отправлена'), ('IN_PROGRESS', 'В работе'), ('COMPLETED', 'Выполнена'), ('CANCELLED', 'Отменена отправителем'), ('REJECTED', 'Отклонена исполнителем')], default='SENDED', max_length=32)),
-                ('last_status_change', models.DateTimeField(auto_now_add=True)),
-                ('msg', models.CharField(blank=True, default='', max_length=600)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("date", models.DateTimeField(auto_now_add=True)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("SENDED", "Отправлена"),
+                            ("IN_PROGRESS", "В работе"),
+                            ("COMPLETED", "Выполнена"),
+                            ("CANCELLED", "Отменена отправителем"),
+                            ("REJECTED", "Отклонена исполнителем"),
+                        ],
+                        default="SENDED",
+                        max_length=32,
+                    ),
+                ),
+                ("last_status_change", models.DateTimeField(auto_now_add=True)),
+                ("msg", models.CharField(blank=True, default="", max_length=600)),
             ],
         ),
         migrations.CreateModel(
-            name='ApplicationFormField',
+            name="ApplicationFormField",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('value', models.TextField(blank=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("value", models.TextField(blank=True)),
             ],
         ),
         migrations.CreateModel(
-            name='ApplicationStatusLog',
+            name="ApplicationStatusLog",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('previous_status', models.CharField(choices=[('SENDED', 'Отправлена'), ('IN_PROGRESS', 'В работе'), ('COMPLETED', 'Выполнена'), ('CANCELLED', 'Отменена отправителем'), ('REJECTED', 'Отклонена исполнителем')], default='SENDED', max_length=32)),
-                ('status', models.CharField(choices=[('SENDED', 'Отправлена'), ('IN_PROGRESS', 'В работе'), ('COMPLETED', 'Выполнена'), ('CANCELLED', 'Отменена отправителем'), ('REJECTED', 'Отклонена исполнителем')], default='SENDED', max_length=32)),
-                ('date', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "previous_status",
+                    models.CharField(
+                        choices=[
+                            ("SENDED", "Отправлена"),
+                            ("IN_PROGRESS", "В работе"),
+                            ("COMPLETED", "Выполнена"),
+                            ("CANCELLED", "Отменена отправителем"),
+                            ("REJECTED", "Отклонена исполнителем"),
+                        ],
+                        default="SENDED",
+                        max_length=32,
+                    ),
+                ),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("SENDED", "Отправлена"),
+                            ("IN_PROGRESS", "В работе"),
+                            ("COMPLETED", "Выполнена"),
+                            ("CANCELLED", "Отменена отправителем"),
+                            ("REJECTED", "Отклонена исполнителем"),
+                        ],
+                        default="SENDED",
+                        max_length=32,
+                    ),
+                ),
+                ("date", models.DateTimeField(auto_now_add=True)),
             ],
         ),
     ]

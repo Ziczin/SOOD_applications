@@ -6,77 +6,118 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('application', '0001_initial'),
-        ('forms', '0001_initial'),
+        ("application", "0001_initial"),
+        ("forms", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='application',
-            name='executor',
-            field=models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='executor', to=settings.AUTH_USER_MODEL),
+            model_name="application",
+            name="executor",
+            field=models.ForeignKey(
+                blank=True,
+                default=None,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="executor",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='application',
-            name='form',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='forms.form'),
+            model_name="application",
+            name="form",
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.SET_NULL, to="forms.form"
+            ),
         ),
         migrations.AddField(
-            model_name='application',
-            name='user',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL),
+            model_name="application",
+            name="user",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='applicationformfield',
-            name='application',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='application_fields', to='application.application'),
+            model_name="applicationformfield",
+            name="application",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="application_fields",
+                to="application.application",
+            ),
         ),
         migrations.AddField(
-            model_name='applicationformfield',
-            name='form_field',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='forms.formfield'),
+            model_name="applicationformfield",
+            name="form_field",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="forms.formfield",
+            ),
         ),
         migrations.AddField(
-            model_name='applicationstatuslog',
-            name='application',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='application_status_log', to='application.application'),
+            model_name="applicationstatuslog",
+            name="application",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="application_status_log",
+                to="application.application",
+            ),
         ),
         migrations.AddField(
-            model_name='applicationstatuslog',
-            name='who',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL),
+            model_name="applicationstatuslog",
+            name="who",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddIndex(
-            model_name='application',
-            index=models.Index(fields=['status'], name='application_status_034738_idx'),
+            model_name="application",
+            index=models.Index(fields=["status"], name="application_status_034738_idx"),
         ),
         migrations.AddIndex(
-            model_name='application',
-            index=models.Index(fields=['-date'], name='application_date_abe12a_idx'),
+            model_name="application",
+            index=models.Index(fields=["-date"], name="application_date_abe12a_idx"),
         ),
         migrations.AddIndex(
-            model_name='application',
-            index=models.Index(fields=['user', '-date'], name='application_user_id_bd5e6b_idx'),
+            model_name="application",
+            index=models.Index(
+                fields=["user", "-date"], name="application_user_id_bd5e6b_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='application',
-            index=models.Index(fields=['executor', 'status'], name='application_executo_d4abb8_idx'),
+            model_name="application",
+            index=models.Index(
+                fields=["executor", "status"], name="application_executo_d4abb8_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='application',
-            index=models.Index(fields=['form', '-date'], name='application_form_id_09250a_idx'),
+            model_name="application",
+            index=models.Index(
+                fields=["form", "-date"], name="application_form_id_09250a_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='applicationformfield',
-            index=models.Index(fields=['application'], name='application_applica_319ef5_idx'),
+            model_name="applicationformfield",
+            index=models.Index(
+                fields=["application"], name="application_applica_319ef5_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='applicationformfield',
-            index=models.Index(fields=['application', 'form_field'], name='application_applica_a1d8ca_idx'),
+            model_name="applicationformfield",
+            index=models.Index(
+                fields=["application", "form_field"],
+                name="application_applica_a1d8ca_idx",
+            ),
         ),
     ]

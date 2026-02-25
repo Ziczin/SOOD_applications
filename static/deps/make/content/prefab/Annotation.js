@@ -84,7 +84,7 @@ export default function createAnnotationFactory(core, Component) {
       popup.style.pointerEvents = 'none';
       popup.style.opacity = '0';
       popup.style.transition = 'opacity 200ms ease';
-      popup.style.zIndex = '4000';
+      popup.style.zIndex = '10000';
       for (const child of this.children) {
         if (!child.destroyed) popup.appendChild(child.build(true));
       }

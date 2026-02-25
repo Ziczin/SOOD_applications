@@ -6,16 +6,16 @@
 <div class="content-strange" id="left-content"></div>
 
 <script type="module">
-  await import("{% static 'collected/static.js' %}");
-  //await import("{% static 'deps/make/make.js' %}");
+  //await import("{% static 'collected/static.js' %}");
+  await import("{% static 'deps/make/make.js' %}");
   const imp = (await import("{% static 'deps/js/tools/import.js' %}")).default(make)
   const paragraphNotice = await imp("{% static 'deps/js/prefabs/paragraph_notice.js' %}")
   const backButton = await imp("{% static 'deps/js/prefabs/exit_button.js' %}")
   const actionNotice = await imp("{% static 'deps/js/prefabs/action_notice.js' %}")
   const popup = await imp("{% static 'deps/js/prefabs/popup.js' %}")
   const picButton = await imp("{% static 'deps/js/prefabs/pic_button.js' %}", popup, "{{ MEDIA_URL }}");
-
   const basicManual = await imp("{% static 'deps/js/manual/basic_manual.js' %}", popup, picButton);
+
   const leftBtns = make.Card(
     make.style.rounded(12),
     make.style.padding(6),
@@ -317,7 +317,7 @@
       make.it.action,
       make.it.act.neutral,
       make.style.maxHeight("fit-content"),
-      make.with.text("Добавить элемент"),
+      make.with.text("Добавить группу"),
       make.on.click(
         async () => {
           document.activeElement?.blur()
