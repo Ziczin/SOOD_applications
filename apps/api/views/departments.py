@@ -9,7 +9,7 @@ department_list_cache = CacheHelper("departments:list")
 department_cache = CacheHelper("departments:item")
 
 
-@permissions("r: user; 3p: admin")
+@permissions("r: user; 3p: proxy")
 class DepartmentViewSet(viewsets.ModelViewSet):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer

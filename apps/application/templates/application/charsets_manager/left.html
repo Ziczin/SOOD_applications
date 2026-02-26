@@ -18,7 +18,16 @@
   )
   const picButton = await imp("{% static 'deps/js/prefabs/pic_button.js' %}", popup, "{{ MEDIA_URL }}");
 
+  const csrfObj = await make.Query('/api/csrf-token').get()
+  const qBase = make.Query("/api").via({"X-CSRFToken": csrfObj.csrfToken}).view();
+  const me = await qBase.at("me").view().get()
+  const qFieldCharSet = qBase.at('field-charsets').view()
+  
   const basicManual = await imp("{% static 'deps/js/manual/basic_manual.js' %}", popup, picButton);
+  const mainManual = await imp("{% static 'deps/js/manual/main_manual.js' %}", me.permissions, qBase)
+  
+  document.getElementById('manual-button').appendChild(basicManual(mainManual).build())
+
   const leftBtns = make.Card(
     make.style.rounded(12),
     make.style.padding(6),
@@ -36,13 +45,6 @@
   )
   document.getElementById("left-btns").appendChild(leftBtns.build());
 
-  const curr = make.h1('test')
-  document.getElementById("manual-button").appendChild(basicManual(curr).build())
-
-  const csrfObj = await make.Query('/api/csrf-token').get()
-  const qBase = make.Query("/api").via({"X-CSRFToken": csrfObj.csrfToken}).view();
-  const me = await qBase.at("me").view().get()
-  const qFieldCharSet = qBase.at('field-charsets').view()
 
   const Row = (...args) => make.Div(make.it.flexRow, make.style.gap(6), ...args)
   const Column = (...args) => make.Div(make.it.flexColumn, make.style.gap(6), ...args)

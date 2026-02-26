@@ -57,3 +57,11 @@ class UsersManagerView(Mixed):
 class FieldsManagerView(Mixed):
     required_role = "admin"
     extra_context = {"variant": "fields_manager"}
+
+@permissions("get:proxy")
+class DepartmentsManagerView(Mixed):
+    extra_context = {"variant": "departments_manager"}
+
+@permissions("get:proxy")
+class StuffManagerView(Mixed):
+    extra_context = {"variant": "stuff_manager"}

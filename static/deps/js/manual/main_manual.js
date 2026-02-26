@@ -36,7 +36,7 @@ export default (make, permissions, qBase) => {
     )
   }
 
-  return make.Div(
+  return () => make.Div(
     make.it.flexColumn,
     make.style.gap(6),
     make.Separator(),

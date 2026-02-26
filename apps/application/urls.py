@@ -6,6 +6,8 @@ from .views import (
     UsersManagerView,
     FieldsManagerView,
     CharsetManagerView,
+    DepartmentsManagerView,
+    StuffManagerView,
 )
 
 urlpatterns = [
@@ -15,4 +17,6 @@ urlpatterns = [
     path("charsets-manager/", CharsetManagerView.as_view(), name="charsets-manager"),
     path("users-manager/", UsersManagerView.as_view(), name="users-manager"),
     path("fields-manager/", FieldsManagerView.as_view(), name="fields-manager"),
+    path("departments-manager/", DepartmentsManagerView.as_view(), name="deaprtments-manager"),
+    path("stuff-manager/", StuffManagerView.as_view(), name="stuff-manager"),
 ]

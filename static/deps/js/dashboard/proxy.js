@@ -7,6 +7,13 @@ async function dashboardProxy(me) {
   const qChangeRole = qBase.at('users').at(me.id).at("change_role").view()
   const qChangeDepartment = qBase.at('users').at(me.id).at("change_department").view()
 
+  const btns = [
+    {
+      text: 'Управление отделами',
+      loc: '/applications/departments-manager/',
+    },
+  ]
+
   const [roles, departments] = await Promise.all([rolesProm, departmentsProm])
   return [
     make.it.flexColumn,
@@ -68,6 +75,18 @@ async function dashboardProxy(me) {
           });
         })
       )
-    )
+    ),
+    ...btns.map(btn =>
+      make.Div(
+        make.it.marginOnHover,
+        make.Button(
+          make.it.redir,
+          make.with.text(btn.text),
+          make.on.click(() => {
+            window.location.href = btn.loc
+          })
+        )
+      ),
+    ),
   ]
 }

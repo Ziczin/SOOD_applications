@@ -14,33 +14,39 @@ function actionNotice({
   }
   make.Notice([500, Infinity, 500, "actionNotice"],
     make.Div(
-      make.it.flexColumn,
-      make.style.gap(6),
-      make.it.contented,
-      ...question,
+      make.with.style({display: 'flex'}),
+      make.style.padding(4),
+      make.style.rounded(12),
+      make.color.sgray,
       make.Div(
-        make.it.flexRow,
+        make.it.flexColumn,
         make.style.gap(6),
-        make.Button(
-          make.it.action,
-          make.it.act.negative,
-          make.with.text(confirmText),
-          make.with.style({flex: 1}),
-          make.on.click(() => {
-            action()
-            make.other.closeCurrentNotice()
-          })
-        ),
-        make.Button(
-          make.it.action,
-          make.it.act.alternative,
-          make.with.text(cancelText),
-          make.with.style({flex: 1}),
-          make.on.click(() => {
-            cancel()
-            make.other.closeCurrentNotice()
-          })
-        ),
+        make.it.contented,
+        ...question,
+        make.Div(
+          make.it.flexRow,
+          make.style.gap(6),
+          make.Button(
+            make.it.action,
+            make.it.act.negative,
+            make.with.text(confirmText),
+            make.with.style({flex: 1}),
+            make.on.click(() => {
+              action()
+              make.other.closeCurrentNotice()
+            })
+          ),
+          make.Button(
+            make.it.action,
+            make.it.act.alternative,
+            make.with.text(cancelText),
+            make.with.style({flex: 1}),
+            make.on.click(() => {
+              cancel()
+              make.other.closeCurrentNotice()
+            })
+          ),
+        )
       )
     )
   )

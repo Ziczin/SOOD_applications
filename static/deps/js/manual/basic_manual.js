@@ -1,4 +1,4 @@
-export default (make, popup, picButton) => (additionalContent) => {
+export default (make, popup, picButton) => (additionalContentBuilder) => {
   function manualHeader() {
     let styleTab = [make.style.padding(4), make.style.rounded(4)]
     return [
@@ -8,16 +8,16 @@ export default (make, popup, picButton) => (additionalContent) => {
         make.h1("Руководство"),
       ),
       make.Separator(6),
-      ...make.if(additionalContent,
-        make.Tabs()
+      ...make.callif(additionalContentBuilder,
+        () => make.Tabs()
         .menu(make.style.gap(6), make.style.rounded(8), make.style.padding(4))
         .content(make.style.maxHeight("auto"), make.style.padding(0), make.Separator(6))
         .tab().header(...styleTab, make.Paragraph("Общие положения"))
         .content(manualBaseTabs(true))
-        .tab().header(...styleTab, make.Paragraph("О странице"))
-        .content(additionalContent)
+        .tab().header(...styleTab, make.Paragraph("Доступные руководства"))
+        .content(additionalContentBuilder())
       ),
-      ...make.if(!additionalContent,
+      ...make.callif(!additionalContentBuilder,
         manualBaseTabs(false)
       )
     ]
@@ -364,7 +364,7 @@ export default (make, popup, picButton) => (additionalContent) => {
   }
 
   function manualNotice() {
-    make.Notice([1000, Infinity, 1000, "manual"],
+    make.Notice([1000, Infinity, 500, "manual"],
       make.Div(
         make.style.width("100%"),
         make.style.height("100%"),

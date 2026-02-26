@@ -12,6 +12,7 @@ export default (withCss) =>
         green: withCss('make-color-green'),
         lgreen: withCss('make-color-l-green'),
         lgray: withCss('make-color-l-gray'),
+        sgray: withCss('make-color-s-gray'),
         mgray: withCss('make-color-m-gray'),
         dgray: withCss('make-color-d-gray'),
         vgray: withCss('make-color-v-gray'),

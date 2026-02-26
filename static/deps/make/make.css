@@ -24,6 +24,7 @@
     --v-gray: #333333;
     --d-gray: #666666;
     --m-gray: #a0a0a0;
+    --s-gray: #dcdcdc;
     --l-gray: #ececec;
 
     --error: #b57585;
@@ -398,6 +399,9 @@ p, form, h1, h2, h3, h4, h5, h6 {
 
 .make-color-l-gray {
     background-color: var(--l-gray);
+}
+.make-color-s-gray {
+    background-color: var(--s-gray);
 }
 .make-color-m-gray {
     background-color: var(--m-gray);
