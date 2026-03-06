@@ -10,7 +10,7 @@ from setup import create_field_types
 
 
 def setup_django():
-    """Настраивает окружение Django."""
+    """Настраивает окружение Django"""
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "SOOD_applications.settings")
     sys.path.insert(0, os.getcwd())
     try:
@@ -24,7 +24,7 @@ def setup_django():
 
 
 def remove_migrations():
-    """Удаляет все файлы миграций, кроме __init__.py."""
+    """Удаляет все файлы миграций, кроме __init__.py"""
     for migrations_dir in glob.glob("**/migrations", recursive=True):
         for file in glob.glob(os.path.join(migrations_dir, "*.py")):
             if os.path.basename(file) != "__init__.py":
@@ -33,7 +33,7 @@ def remove_migrations():
 
 
 def reset_database():
-    """Сбрасывает базу данных в зависимости от типа."""
+    """Сбрасывает базу данных в зависимости от типа"""
     if not settings.configured:
         setup_django()
 

@@ -4,21 +4,5 @@
 <div id="manual-button"></div>
 
 <script type="module">
-  //await import("{% static 'collected/static.js' %}");
-  await import("{% static 'deps/make/make.js' %}");
-  const imp = (await import("{% static 'deps/js/tools/import.js' %}")).default(make)
-  const backButton = await imp("{% static 'deps/js/prefabs/exit_button.js' %}")
-  const popup = await imp("{% static 'deps/js/prefabs/popup.js' %}")
-  const picButton = await imp("{% static 'deps/js/prefabs/pic_button.js' %}", popup, "{{ MEDIA_URL }}");
-
-  const csrfObj = await make.Query('/api/csrf-token').get()
-  const qBase = make.Query("/api").via({"X-CSRFToken": csrfObj.csrfToken}).view();
-  const me = await qBase.at("me").view().get()
-  
-  const basicManual = await imp("{% static 'deps/js/manual/basic_manual.js' %}", popup, picButton);
-  const mainManual = await imp("{% static 'deps/js/manual/main_manual.js' %}", ["user", "moderator", "admin"], qBase)
-  
-  document.getElementById('manual-button').appendChild(basicManual(mainManual).build())
-  document.getElementById("left-exit-button").appendChild(backButton().build())
-
+  (await import(`${window.pages_url}/users_manager/left.js`)).default()
 </script>

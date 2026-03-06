@@ -150,6 +150,9 @@ STATICFILES_DIRS = [
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+COLLECTED_URL = "/collected/"
+COLLECTED_ROOT = BASE_DIR / "collected"
+
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",

@@ -1,7 +1,12 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
-from apps.api.views.docs import DocAdminView, DocModeratorView, DocOtherView, DocUserView
+from apps.api.views.docs import (
+    DocAdminView,
+    DocModeratorView,
+    DocOtherView,
+    DocUserView,
+)
 from apps.api.views.users import UsersViewSet
 from apps.api.views.roles import RoleListView
 from apps.api.views.enums import EnumTagViewSet, EnumViewSet

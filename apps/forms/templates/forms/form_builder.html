@@ -19,12 +19,14 @@
   </div>
 
   <script type="module">
-    await import("{% static 'deps/make/make.js' %}");
-    const imp = (await import("{% static 'deps/js/tools/import.js' %}")).default(make)
+    window.make_url = "{% static 'deps/make/' %}"
+    window.prefab_url = "{% static 'deps/js/prefabs/' %}"
+    await import(`${window.make_url}/make.js`);
+    const imp = (await import(`${window.prefab_url}/import.js`)).default(make)
     const csrfObj = await make.Query('/api/csrf-token').get()
     const data = JSON.parse(document.getElementById("form-data").textContent);
     const errors = JSON.parse(document.getElementById("errors-data").textContent);
-    const paragraphNotice = await imp("{% static 'deps/js/prefabs/paragraph_notice.js' %}")
+    const paragraphNotice = await imp(`${window.prefab_url}/paragraph_notice.js`)
     const nextUrlParam = new URLSearchParams(window.location.search).get('next')
     const title = make.Div(
       make.it.flexRow,

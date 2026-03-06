@@ -3,8 +3,8 @@
 <html>
 <head>
   <meta charset="utf-8"><title>Нет доступа</title>
-  <link rel="stylesheet" href="{% static 'deps/css/bright.css' %}">
-  <link rel="stylesheet" href="{% static 'deps/make/make.css' %}">
+  <link rel="stylesheet" href="{% static 'deps/css/bright.css`>
+  <link rel="stylesheet" href=`${window.make_url}/make.css`>
 </head>
 
 <body>
@@ -15,7 +15,7 @@
 </html>
 
 <script type="module">
-  await import("{% static 'collected/static.js' %}");
+  await import("{% static 'collected/static.js`);
   const content = document.getElementById("content").appendChild(
     make.Div(
       make.it.flexColumn,
@@ -41,7 +41,7 @@
               make.style.margin(12),
               make.with.style({overflow: "hidden"}),
               make.Image(
-                "{{ MEDIA_URL }}not_allowed.png",
+                "{{ window.media_url }}not_allowed.png",
                 make.it.flex,
                 make.with.style({width: "100%"}),
               )

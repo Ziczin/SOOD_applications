@@ -15,7 +15,7 @@ function picButton(pic, txt, style=[], onClick=()=>{}, outerStyle=[]) {
       ...style,
       make.style.padding(6),
       make.Image(
-        `${media_url}${pic}.png`,
+        `${window.media_url}${pic}.png`,
         make.it.flex,
         make.with.style({width: "24px", height: "24px"}),
       ),

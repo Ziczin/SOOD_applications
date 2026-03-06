@@ -22,3 +22,12 @@
     </div>
 </body>
 </html>
+<script>
+  window.make_url = "{% static 'deps/make/' %}"
+  window.dashboard_url = "{% static 'deps/js/dashboard/' %}"
+  window.manual_url = "{% static 'deps/js/manual/' %}"
+  window.pages_url = "{% static 'deps/js/pages/' %}"
+  window.prefab_url = "{% static 'deps/js/prefabs/' %}"
+  window.media_url = "{{ MEDIA_URL }}"
+  console.log(window.media_url)
+</script>

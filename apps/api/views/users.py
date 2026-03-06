@@ -11,6 +11,8 @@ from apps.api.serializers.users import (
     UserDetailSerializer,
     ChangeRoleSerializer,
     ChangeDepartmentSerializer,
+    ChangeUsernameSerializer,
+    ChangePasswordSerializer,
 )
 
 
@@ -19,6 +21,7 @@ users_list_cache = CacheHelper("users:list")
 
 
 def role_representation(role_value):
+    """Возвращает словарь с id (label) и name (value) для роли"""
     return {
         "id": dict((choice.value, choice.label) for choice in UserRole).get(
             role_value, ""
@@ -34,11 +37,14 @@ class UsersViewSet(
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
 ):
+    """ViewSet для работы с пользователями: список, детали, обновление, дополнительные действия"""
+
     queryset = CustomUser.objects.all()
     serializer_class = UserDetailSerializer
     lookup_field = "pk"
 
     def filter_queryset_by_permission(self, queryset, permission: str):
+        """Фильтрует queryset по наличию указанного разрешения у пользователя"""
         if not permission:
             return queryset
         perm = permission.strip()
@@ -56,11 +62,13 @@ class UsersViewSet(
         return queryset.filter(pk__in=filtered_pks)
 
     def enrich_user_data(self, user_instance, serialized_data):
+        """Добавляет в сериализованные данные дополнительные поля (разрешения и роль)"""
         serialized_data["permissions"] = get_permissions(user_instance)
         serialized_data["role"] = role_representation(user_instance.role)
         return serialized_data
 
     def get_queryset(self):
+        """Возвращает queryset с учётом фильтрации по department и permissions из GET-параметров"""
         base_queryset = super().get_queryset()
         department_param = self.request.GET.get("department")
         if department_param:
@@ -77,6 +85,7 @@ class UsersViewSet(
         return base_queryset
 
     def list(self, request, *args, **kwargs):
+        """Возвращает список пользователей с кешированием и обогащением данных"""
         department_param = request.GET.get("department")
         permission_param = request.GET.get("permissions")
         cache_key_part = (
@@ -95,6 +104,7 @@ class UsersViewSet(
         return response
 
     def retrieve(self, request, *args, **kwargs):
+        """Возвращает детальную информацию о пользователе с кешированием"""
         user_instance = self.get_object()
         cached_response = user_cache.get(user_instance.pk)
         if cached_response is not None:
@@ -109,6 +119,7 @@ class UsersViewSet(
     def save_and_refresh_cache(
         self, user_instance, serializer_instance, clear_related=True
     ):
+        """Сохраняет изменения пользователя, обновляет кеш и при необходимости сбрасывает кеш списков"""
         serializer_instance.is_valid(raise_exception=True)
         serializer_instance.save()
         serialized_data = self.get_serializer(user_instance).data
@@ -119,6 +130,7 @@ class UsersViewSet(
         return Response(enriched_data, status=status.HTTP_200_OK)
 
     def partial_update(self, request, *args, **kwargs):
+        """Частичное обновление пользователя через стандартный сериализатор"""
         user_instance = self.get_object()
         serializer_instance = self.get_serializer(
             user_instance, data=request.data, partial=True
@@ -126,6 +138,7 @@ class UsersViewSet(
         return self.save_and_refresh_cache(user_instance, serializer_instance)
 
     def perform_custom_action(self, request, serializer_class):
+        """Общий метод для выполнения кастомных действий (change_role, change_department и т.д.) с очисткой кеша"""
         user_instance = self.get_object()
         serializer_instance = serializer_class(
             user_instance, data=request.data, partial=True
@@ -138,8 +151,20 @@ class UsersViewSet(
 
     @action(detail=True, methods=["patch"], url_path="change_role")
     def change_role(self, request, pk=None):
+        """Изменяет роль пользователя. Принимает role в теле запроса"""
         return self.perform_custom_action(request, ChangeRoleSerializer)
 
     @action(detail=True, methods=["patch"], url_path="change_department")
     def change_department(self, request, pk=None):
+        """Изменяет отдел пользователя. Принимает department (id) в теле запроса"""
         return self.perform_custom_action(request, ChangeDepartmentSerializer)
+
+    @action(detail=True, methods=["patch"], url_path="change_username")
+    def change_username(self, request, pk=None):
+        """Изменяет имя пользователя. Принимает username в теле запроса, проверяет уникальность"""
+        return self.perform_custom_action(request, ChangeUsernameSerializer)
+
+    @action(detail=True, methods=["patch"], url_path="change_password")
+    def change_password(self, request, pk=None):
+        """Изменяет пароль пользователя. Принимает password (минимум 8 символов), хеширует и сохраняет"""
+        return self.perform_custom_action(request, ChangePasswordSerializer)

@@ -3,18 +3,5 @@
 <div id="right-content"></div>
 
 <script type="module">
-	//await import("{% static 'collected/static.js' %}");
-  await import("{% static 'deps/make/make.js' %}");
-		
-	const buildProxyTab = (await import("{% static 'deps/js/dashboard/proxy.js' %}")).default(make);
-	const me = await make.Query('/api/me').get();
-
-	if (me.permissions.includes('proxy'))
-		document.getElementById("right-content").appendChild(
-			make.Div(
-				make.it.content,
-				make.style.padding(12),
-				...(await buildProxyTab(me))
-			).build()
-		)
+  (await import(`${window.pages_url}/dashboard/right.js`)).default()
 </script>

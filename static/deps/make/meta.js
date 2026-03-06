@@ -1,8 +1,8 @@
 let meta = {
-    version: `0.4.2`,
-    greetings: `Powered by make.js`,
-    subgreetings: 'Call window.make.meta.help() for more info',
-    help: () => console.log(`
+  version: `0.4.3`,
+  greetings: `Powered by make.js`,
+  subgreetings: 'Call window.make.meta.help() for more info',
+  help: () => console.log(`
 window.make.meta.<...>
 - help() - this message
 - last() - last changelog
@@ -14,14 +14,21 @@ window.make.meta.<...>
 }
 
 let changelog = {
-    '0.4.2': `
+  '0.4.3': `
+v0.4.3-alpha
+[2026.03.06]
+- Added unconditional call to the condition list (for lazy build)
+- Added edge case 'endcase' to the condition list
+- Slightly adjusted values for Annotation and Modal components
+`,
+  '0.4.2': `
 v0.4.2-alpha
 [2025.12.03]
 - Added option 'on' to the 'Query' component, which allows executing a function after receiving a specific status/code
 - Added 'submit' handler to the 'on' section for the corresponding event
 - Minor style fixes
 `,
-    '0.4.1': `
+  '0.4.1': `
 v0.4.1-alpha
 [2025.11.24]
 - Added 'once()' method to 'Event': allows subscribing only once with auto-unsubscribe
@@ -35,7 +42,7 @@ v0.4.1-alpha
 - Removed 'view' method from 'Component' as unnecessary
 
 `,
-    '0.4.0': `
+  '0.4.0': `
 v0.4.0-alpha
 [2025.11.14]
 - Added new 'limit' section for applying constraints to components
@@ -50,7 +57,7 @@ v0.4.0-alpha
 - Several style fixes
 
 `,
-    '0.3.1': `
+  '0.3.1': `
 v0.3.1-alpha
 [2025.10.09]
 - Added 'callif' for conditional function execution: fixes bug where normal if would build components that shouldn't be built
@@ -60,7 +67,7 @@ v0.3.1-alpha
 - Colors fixed
 
 `,
-    '0.3.0': `
+  '0.3.0': `
 v0.3.0-alpha
 [2025.09.29]
 - Renamed 'Event' factory to 'Handler'
@@ -76,7 +83,7 @@ v0.3.0-alpha
 - Fixed several minor bugs
 
 `,
-    '0.2.2': `
+  '0.2.2': `
 v0.2.2-dev
 - Rewrote 'Event' factory: can now pass factory returning multiple handlers and types
 - Added 'SideSeparator' as analog of Separator
@@ -86,23 +93,23 @@ v0.2.2-dev
 - Minor style tweaks
 
 `,
-    '0.2.1': `
+  '0.2.1': `
 v0.2.1-dev
 - Fixed broken styles: 'make.style' now accepts string or number as pixel value
 
 `,
-    '0.2.0': `
+  '0.2.0': `
 v0.2.0-dev
 - Added 'Annotation(time, ...components)' component: appears after hovering over attached component
 
 `,
-    '0.1.2': `
+  '0.1.2': `
 v0.1.2-dev
 - Changed 'Query' component operation logic: now restores state to last checkpoint received via view()
 - Improved meta.js file!
 
 `,
-    '0.1.0': `
+  '0.1.0': `
 v0.1.0-dev
 - Added 'Collector' component: collects data from input fields by calling collect() method
 - Added 'TextArea' component wrapping <textarea> tag
@@ -110,7 +117,7 @@ v0.1.0-dev
 - Made file structure changes
 
 `,
-    '0.0.6': `
+  '0.0.6': `
 v0.0.6-dev
 - Reworked 'Notice': separated animations into open, idle, and close states
 - Added 'closeCurrentNotice()' function: finds closest 'Notice' and closes it
@@ -118,7 +125,7 @@ v0.0.6-dev
 - Separated changelog, version, and greetings from 'make.js' file
 
 `,
-    '0.0.5': `
+  '0.0.5': `
 v0.0.5-dev
 - Fixed 'Query' component to support 5 basic REST methods
 - 'Card' now generates its own div component
@@ -129,9 +136,19 @@ v0.0.5-dev
 `
 }
 
-meta.changes = (v) => {console.log(changelog[v]); return `...`}
-meta.changelog = (v) => {console.log(Object.values(changelog).join('\n')); return `...`}
+meta.changes = (v) => {
+  const txt = changelog[v]
+  console.log(txt)
+  return txt ?? ''
+}
+
+meta.changelog = () => {
+  const txt = Object.values(changelog).join('\n')
+  console.log(txt)
+  return txt
+}
+
 meta.versions = Object.keys(changelog)
-meta.last = changelog[meta.version]
+meta.last = changelog[meta.version] ?? ''
 
 export default meta
