@@ -1,9 +1,10 @@
 {% load static %}
+{% load js_loader %}
 
 <div id='left-btns'></div>
 
 <div class="content-strange" id="left-content"></div>
 
 <script type="module">
-  (await import(`${window.pages_url}/departments_manager/left.js`)).default()
+  (await import("{% js_file 'pages/departments_manager/left.js' %}")).default()
 </script>

@@ -1,4 +1,5 @@
 {% load static %}
+{% load js_loader %}
 
 <div style="max-height: 98vh; display: flex; flex-direction: column; gap: 6px; flex: 0">
   <div id="logout-btn"></div>
@@ -7,5 +8,5 @@
 </div>
 
 <script type="module">
-  (await import(`${window.pages_url}/dashboard/left.js`)).default()
+  (await import("{% js_file 'pages/dashboard/left.js' %}")).default()
 </script>

@@ -1,7 +1,8 @@
 {% load static %}
+{% load js_loader %}
 
 <div id="center-content"></div>
 
 <script type="module">
-  (await import(`${window.pages_url}/users_manager/center.js`)).default()
+  (await import("{% js_file 'pages/users_manager/center.js' %}")).default()
 </script>

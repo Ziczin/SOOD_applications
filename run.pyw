@@ -6,6 +6,14 @@ import os
 import threading
 import time
 import psutil
+import signal
+
+# Скрываем консоль на Windows
+if sys.platform == "win32":
+    import ctypes
+    wh = ctypes.windll.kernel32.GetConsoleWindow()
+    if wh:
+        ctypes.windll.user32.ShowWindow(wh, 0)  # 0 = SW_HIDE
 
 img = Image.new('RGB', (64, 64), 'green')
 draw = ImageDraw.Draw(img)
@@ -20,110 +28,108 @@ except:
 
 draw.text((10, 5), 'D', fill='white', font=font)
 
-# Глобальная переменная для хранения процесса
+# Глобальные переменные
 proc = None
 
-def is_process_alive(pid):
-    """Проверяет, существует ли процесс с заданным PID"""
+def kill_process_tree(pid):
+    """Убивает процесс и все его дочерние процессы"""
     try:
-        process = psutil.Process(pid)
-        return process.is_running()
-    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-        return False
+        parent = psutil.Process(pid)
+        children = parent.children(recursive=True)
+        
+        # Сначала завершаем дочерние процессы
+        for child in children:
+            try:
+                child.terminate()
+            except:
+                pass
+        
+        # Ждем завершения дочерних процессов
+        gone, alive = psutil.wait_procs(children, timeout=3)
+        
+        # Принудительно завершаем оставшиеся
+        for p in alive:
+            try:
+                p.kill()
+            except:
+                pass
+        
+        # Завершаем родительский процесс
+        try:
+            parent.terminate()
+            parent.wait(timeout=3)
+        except:
+            try:
+                parent.kill()
+            except:
+                pass
+    except:
+        pass
+
+def find_waitress_processes():
+    """Находит все процессы waitress-serve"""
+    waitress_processes = []
+    for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+        try:
+            if proc.info['name'] and 'python' in proc.info['name'].lower():
+                cmdline = proc.cmdline()
+                if any('waitress-serve' in cmd for cmd in cmdline):
+                    waitress_processes.append(proc)
+        except:
+            pass
+    return waitress_processes
 
 def start_process():
     """Запуск процесса waitress-serve"""
     global proc
     try:
-        # Используем subprocess.Popen без shell=True для лучшего контроля
+        # Запускаем процесс с подавлением вывода
+        startupinfo = None
+        if sys.platform == "win32":
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            startupinfo.wShowWindow = 0  # SW_HIDE
+        
         proc = subprocess.Popen(
             ['waitress-serve', '--listen=0.0.0.0:5051', 'SOOD_applications.wsgi:application'],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            shell=True,
-            creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if sys.platform == "win32" else 0
+            stdout=subprocess.DEVNULL,   # Подавляем stdout
+            stderr=subprocess.DEVNULL,   # Подавляем stderr
+            stdin=subprocess.DEVNULL,    # Подавляем stdin
+            startupinfo=startupinfo,
+            creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0,
+            # Не используем shell=True
         )
-        print(f"Сервис запущен с PID: {proc.pid}")
-        # Запускаем поток для отслеживания вывода
-        threading.Thread(target=monitor_output, args=(proc,), daemon=True).start()
     except Exception as e:
-        print(f"Ошибка при запуске сервиса: {e}")
-
-def monitor_output(process):
-    """Мониторинг вывода процесса"""
-    try:
-        while True:
-            output = process.stdout.readline()
-            if output == '' and process.poll() is not None:
-                break
-            if output:
-                print(output.strip())
-        # Проверяем stderr после завершения stdout
-        stderr_output = process.stderr.read()
-        if stderr_output:
-            print(f"STDERR: {stderr_output}")
-    except Exception as e:
-        print(f"Ошибка при мониторинге вывода: {e}")
+        # Ничего не выводим в консоль
+        pass
 
 def stop_process():
-    """Остановка процесса waitress-serve"""
+    """Остановка процесса waitress-serve и всех его потомков"""
     global proc
+    
+    # Останавливаем основной процесс
     if proc is not None:
         try:
-            # Сначала проверяем, жив ли процесс
-            if proc.poll() is None:  # Процесс все еще работает
-                print(f"Останавливаем процесс с PID: {proc.pid}")
-                
-                # Для Windows используем специальный флаг
-                if sys.platform == "win32":
-                    import ctypes
-                    ctypes.windll.kernel32.GenerateConsoleCtrlEvent(0, proc.pid)
-                else:
-                    proc.terminate()  # SIGTERM для Unix
-                
-                # Ждем завершения
-                try:
-                    proc.wait(timeout=5)
-                    print("Процесс корректно завершен")
-                except subprocess.TimeoutExpired:
-                    print("Процесс не завершился вовремя, принудительная остановка...")
-                    proc.kill()  # SIGKILL для Unix
-                    proc.wait()
-                    print("Процесс принудительно завершен")
-                
-                # Дополнительная проверка через psutil
-                try:
-                    if is_process_alive(proc.pid):
-                        print(f"Процесс {proc.pid} все еще жив, завершаем...")
-                        parent = psutil.Process(proc.pid)
-                        # Завершаем дочерние процессы
-                        for child in parent.children(recursive=True):
-                            try:
-                                child.terminate()
-                            except:
-                                pass
-                        # Завершаем родительский процесс
-                        parent.terminate()
-                        gone, alive = psutil.wait_procs([parent], timeout=3)
-                        for p in alive:
-                            p.kill()
-                except:
-                    pass
-            else:
-                print("Процесс уже завершился самостоятельно")
-        except Exception as e:
-            print(f"Ошибка при остановке сервиса: {str(e)}")
+            if proc.poll() is None:
+                kill_process_tree(proc.pid)
+        except:
+            pass
         finally:
             proc = None
+    
+    # Ищем и завершаем все оставшиеся процессы waitress
+    waitress_processes = find_waitress_processes()
+    for wp in waitress_processes:
+        try:
+            kill_process_tree(wp.pid)
+        except:
+            pass
 
 def restart_action(icon, item):
     """Действие при перезагрузке"""
-    print("Перезагрузка сервиса...")
     stop_process()
-    time.sleep(2)  # Увеличиваем задержку перед запуском
+    time.sleep(2)
     start_process()
-    print("Сервис перезапущен")
 
 def exit_action(icon, item):
     """Действие при выходе"""
@@ -134,6 +140,7 @@ def exit_action(icon, item):
 # Запускаем процесс при старте
 start_process()
 
+# Создаем иконку в трее
 icon = pystray.Icon(
     'SOOD Applications Service',
     img,
@@ -144,15 +151,13 @@ icon = pystray.Icon(
     )
 )
 
-# Запускаем иконку в трее в отдельном потоке
+# Запускаем без консоли
 if __name__ == '__main__':
     try:
-        print("Сервис запущен. Иконка в трее активна.")
-        print("Для выхода используйте меню иконки в трее.")
         icon.run()
-    except KeyboardInterrupt:
-        print("\nПолучен сигнал прерывания...")
-        exit_action(None, None)
-    except Exception as e:
-        print(f"Неожиданная ошибка: {e}")
-        exit_action(None, None)
+    except:
+        try:
+            stop_process()
+        except:
+            pass
+        sys.exit(0)

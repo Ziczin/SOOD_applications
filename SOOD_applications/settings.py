@@ -13,14 +13,6 @@ SECRET_KEY = get_random_secret_key()
 DEBUG = True
 SITE_ID = 1
 
-"""
-ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-    '[::1]',
-    '192.168.200.16'
-]
-"""
 ALLOWED_HOSTS = ["*"]
 
 ####################
@@ -44,6 +36,7 @@ INSTALLED_APPS = [
     "apps.users",
     "apps.forms",
     "apps.application",
+    "apps.core",
 ]
 
 CACHES = {
@@ -55,6 +48,7 @@ CACHES = {
         },
     }
 }
+
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
 
@@ -114,12 +108,10 @@ REST_FRAMEWORK = {
 }
 
 CSRF_USE_SESSIONS = True
-# Параметры сессий (пример, можно оставить дефолтные или настроить по нуждам)
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
-SESSION_COOKIE_SECURE = False  # True на проде с HTTPS
-SESSION_COOKIE_SAMESITE = "Lax"  # или 'Strict' / None при необходимости
+SESSION_COOKIE_SECURE = False
+SESSION_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_DOMAIN = None
-
 
 AUTH_USER_MODEL = "users.CustomUser"
 AUTHENTICATION_BACKENDS = [
@@ -153,6 +145,8 @@ MEDIA_ROOT = BASE_DIR / "media"
 COLLECTED_URL = "/collected/"
 COLLECTED_ROOT = BASE_DIR / "collected"
 
+SEND_MINIFIED_JS = True
+
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -160,10 +154,12 @@ TEMPLATES = [
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
+                "django.template.context_processors.debug",
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "django.template.context_processors.media",
+                "apps.core.context_processors.minified_js",
             ],
         },
     },

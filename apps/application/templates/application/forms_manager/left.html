@@ -1,4 +1,5 @@
 {% load static %}
+{% load js_loader %}
 
 <div id='left-btns'></div>
 <div id="manual-button"></div>
@@ -6,5 +7,5 @@
 <div class="content-strange" id="left-content"></div>
 
 <script type="module">
-  (await import(`${window.pages_url}/forms_manager/left.js`)).default()
+  (await import("{% js_file 'pages/forms_manager/left.js' %}")).default()
 </script>

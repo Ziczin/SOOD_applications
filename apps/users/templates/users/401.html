@@ -1,12 +1,12 @@
 {% load static %}
+{% load js_loader %}
 <!doctype html>
 <html>
 <head>
   <meta charset="utf-8"><title>Нет доступа</title>
-  <link rel="stylesheet" href="{% static 'deps/css/bright.css`>
-  <link rel="stylesheet" href=`${window.make_url}/make.css`>
+  <link rel="stylesheet" href="{% static 'deps/css/bright.css' %}">
+  <link rel="stylesheet" href="{% static 'deps/js/make/make.css' %}">
 </head>
-
 <body>
   <div class="side-container"></div>
   <div class="center-container" id="content"></div>
@@ -15,7 +15,7 @@
 </html>
 
 <script type="module">
-  await import("{% static 'collected/static.js`);
+  await import("{% js_file 'collected/static.js' %}");
   const content = document.getElementById("content").appendChild(
     make.Div(
       make.it.flexColumn,
@@ -24,7 +24,8 @@
       make.it.content,
       make.Paragraph("Сервер был перезагружен и ваш авторизационный токен истёк."),
       make.Paragraph(
-        "Попробуйте вернуться на страницу входа и снова зайти на сервис"),
+        "Попробуйте вернуться на страницу входа и снова зайти на сервис"
+      ),
       make.Button(
         make.it.redir,
         make.with.text("Вернуться на главную"),
@@ -41,7 +42,7 @@
               make.style.margin(12),
               make.with.style({overflow: "hidden"}),
               make.Image(
-                "{{ window.media_url }}not_allowed.png",
+                "{{ MEDIA_URL }}not_allowed.png",
                 make.it.flex,
                 make.with.style({width: "100%"}),
               )
@@ -51,7 +52,4 @@
       )
     ).build()
   )
-
-  
 </script>
-

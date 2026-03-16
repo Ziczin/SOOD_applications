@@ -1,8 +1,9 @@
 {% load static %}
+{% load js_loader %}
 
 <div id="left-exit-button"></div>
 <div id="manual-button"></div>
 
 <script type="module">
-  (await import(`${window.pages_url}/users_manager/left.js`)).default()
+  (await import("{% js_file 'pages/users_manager/left.js' %}")).default()
 </script>

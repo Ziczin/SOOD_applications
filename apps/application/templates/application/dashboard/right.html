@@ -1,7 +1,8 @@
 {% load static %}
+{% load js_loader %}
 
 <div id="right-content"></div>
 
 <script type="module">
-  (await import(`${window.pages_url}/dashboard/right.js`)).default()
+  (await import("{% js_file 'pages/dashboard/right.js' %}")).default()
 </script>

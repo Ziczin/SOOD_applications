@@ -15,8 +15,6 @@ urlpatterns = [
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-urlpatterns += static(settings.COLLECTED_URL, document_root=settings.COLLECTED_URL)
-
 
 if settings.DEBUG is False:
     urlpatterns += [

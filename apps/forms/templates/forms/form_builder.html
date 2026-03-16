@@ -1,4 +1,6 @@
 {% load static %}
+{% load js_loader %}
+
 {{ form_data|json_script:"form-data" }}
 {{ errors|json_script:"errors-data" }}
 
@@ -7,34 +9,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <link rel="stylesheet" href="{% static 'deps/make/make.css' %}">
+  <link rel="stylesheet" href="{% static 'deps/js/make/make.css' %}">
   <link rel="stylesheet" href="{% static 'deps/css/bright.css' %}">
-
   <title>Сервис заявок</title>
 </head>
-
 <body>
-  <div class='container p-1p content w-40p' id="form-template">
-  </div>
-
+  <div class='container p-1p content w-40p' id="form-template"></div>
+  
   <script type="module">
     window.make_url = "{% static 'deps/make/' %}"
     window.prefab_url = "{% static 'deps/js/prefabs/' %}"
-    await import(`${window.make_url}/make.js`);
-    const imp = (await import(`${window.prefab_url}/import.js`)).default(make)
+    await import("{% js_file 'make/make.js' %}"); ///HERE
+    const imp = (await import("{% js_file 'prefabs/import.js' %}")).default(make)
     const csrfObj = await make.Query('/api/csrf-token').get()
     const data = JSON.parse(document.getElementById("form-data").textContent);
     const errors = JSON.parse(document.getElementById("errors-data").textContent);
-    const paragraphNotice = await imp(`${window.prefab_url}/paragraph_notice.js`)
+    const paragraphNotice = await imp("{% js_file 'prefabs/paragraph_notice.js' %}")
     const nextUrlParam = new URLSearchParams(window.location.search).get('next')
+    
     const title = make.Div(
       make.it.flexRow,
       make.it.centered,
       make.style.gap(10),
       make.h1(data.title),
     );
-
+    
     const fields = make.Form(
       make.it.flexColumn,
       make.it.gap10px,
@@ -82,7 +81,7 @@
         make.with.attr({type: 'submit'})
       )
     );
-
+    
     const bottomStuff = make.Div(
       make.Separator(),
       make.Link(
@@ -132,17 +131,17 @@
         )
       )
     );
-
+    
     const container = document.getElementById("form-template");
     container.appendChild(title.build());
     container.appendChild(fields.build());
     container.appendChild(bottomStuff.build());
-
+    
     const formEl = container.querySelector('form');
-
+    
     formEl.addEventListener('submit', async (ev) => {
       ev.preventDefault();
-
+      
       if (data.name === "Registration") {
         const formDataCheck = new FormData(formEl);
         const p1 = formDataCheck.get('password1') || formDataCheck.get('password') || '';
@@ -152,7 +151,7 @@
           return;
         }
       }
-
+      
       const formData = new FormData(formEl);
       const url = formEl.getAttribute('action') || window.location.href;
       const resp = await fetch(url, {
@@ -161,7 +160,7 @@
         headers: { "X-CSRFToken": csrfObj.csrfToken },
         credentials: 'same-origin'
       });
-
+      
       if (resp.status === 400) {
         let text = "Ошибка";
         try {
@@ -182,18 +181,18 @@
         paragraphNotice(text, make.color.error, 2500);
         return;
       }
-
+      
       if (resp.redirected) {
         window.location.href = resp.url;
         return;
       }
-
+      
       if (resp.status === 302 || resp.status === 303) {
         const loc = resp.headers.get('Location') || '/applications/dashboard/';
         window.location.href = loc;
         return;
       }
-
+      
       if (resp.status >= 200 && resp.status < 300) {
         try {
           const j = await resp.json();
@@ -205,7 +204,7 @@
         window.location.href = '/applications/dashboard/';
         return;
       }
-
+      
       const bodyText = await resp.text();
       paragraphNotice(bodyText, make.color.error, 2500);
     });

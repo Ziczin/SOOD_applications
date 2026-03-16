@@ -4,7 +4,7 @@ from pathlib import Path
 import subprocess
 import sys
 
-EXCLUDE_DIRS = {"sandbox", "test"}
+EXCLUDE_DIRS = {"sandbox", "test", "node_modules", "staticfiles"}
 
 
 def collect_js_contents(root: Path) -> str:

@@ -21,6 +21,8 @@
   },
   "homepage": "https://github.com/Ziczin/SOOD_applications#readme",
   "devDependencies": {
+    "@swc/cli": "^0.8.0",
+    "@swc/core": "^1.15.18",
     "esbuild": "^0.25.12"
   }
 }
