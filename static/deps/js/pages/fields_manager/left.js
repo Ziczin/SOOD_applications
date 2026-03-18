@@ -1,10 +1,15 @@
 export default async () =>
 {
   await import(`${window.make_url}/make.js`);
+
+  const Style = make.style
+  const makeIt = make.it
+  const Paragraph = make.Paragraph
+  const With = make.with
+
   const imp = (await import(`${window.prefab_url}/import.js`)).default(make)
   const paragraphNotice = await imp(`${window.prefab_url}/paragraph_notice.js`)
   const backButton = await imp(`${window.prefab_url}/exit_button.js`)
-  const actionNotice = await imp(`${window.prefab_url}/action_notice.js`)
   const popup = await imp(`${window.prefab_url}/popup.js`)
   const picButton = await imp(`${window.prefab_url}/pic_button.js`, popup, window.media_url);
 
@@ -20,14 +25,14 @@ export default async () =>
   document.getElementById('manual-button').appendChild(basicManual(mainManual).build())
 
   const leftBtns = make.Card(
-    make.style.rounded(12),
-    make.style.padding(6),
-    make.it.content
+    Style.rounded(12),
+    Style.padding(6),
+    makeIt.content
   )
-  .header(make.it.marginOnHover, make.h3("Перейти", make.it.subtitleText))
+  .header(makeIt.marginOnHover, make.h3("Перейти", makeIt.subtitleText))
   .content(
-    make.it.flexColumn,
-    make.style.gap(6),
+    makeIt.flexColumn,
+    Style.gap(6),
     make.Separator(),
     backButton(),
     backButton("Формы", '/applications/forms-manager/'),
@@ -50,7 +55,6 @@ export default async () =>
   const qFieldCharsetsHistory = qFieldCharsets.at('history').view()
 
   const fieldTypesPromise = qFieldTypes.get()
-  const fieldTypesHistoryPromise = qFieldCharsetsHistory.get()
   
   const enumTagsPromise = qEnumTags.get()
   const enumTagsHistoryPromise = qEnumTagsHistory.get()
@@ -58,13 +62,11 @@ export default async () =>
   const fieldCharsetsPromise = qFieldCharsets.get()
   const fieldCharsetsHistoryPromise = qFieldCharsetsHistory.get()
 
-  let currentFieldType
-  let fieldTemplateContainer
 
   const center = document.getElementById('center-container')
 
-  const Row = (...mods) => make.Div(make.it.flexRow, make.style.gap(6), ...mods)
-  const Column = (...mods) => make.Div(make.it.flexColumn, make.style.gap(6), ...mods)
+  const Row = (...mods) => make.Div(makeIt.flexRow, Style.gap(6), ...mods)
+  const Column = (...mods) => make.Div(makeIt.flexColumn, Style.gap(6), ...mods)
 
   function enumField(field, inpField) {
     const select = make.Select(
@@ -79,8 +81,8 @@ export default async () =>
       select.addModifiers(
         make.OptionPlaceholder("--- выбрать перечисление ---"),
         ...make.callif(found, () => {
-          inpField.addModifiers(make.with.attrs("disabled"))
-          return [make.Option(found.name, found.id), make.with.attrs("disabled")]
+          inpField.addModifiers(With.attrs("disabled"))
+          return [make.Option(found.name, found.id), With.attrs("disabled")]
         }),
         ...enumTags.map(tag => make.Option(tag.name, tag.id)),
         make.on.change((e) => {
@@ -119,10 +121,10 @@ export default async () =>
       select.addModifiers(
         make.OptionPlaceholder("--- выбрать набор символов ---"),
         ...make.callif(found, () => {
-          inpField.addModifiers(make.with.attrs("disabled"))
-          placeholderField.addModifiers(make.with.attrs("disabled"))
+          inpField.addModifiers(With.attrs("disabled"))
+          placeholderField.addModifiers(With.attrs("disabled"))
           console.log("HERE")
-          return [make.Option(found.label, found.id), make.with.attrs("disabled")]
+          return [make.Option(found.label, found.id), With.attrs("disabled")]
         }),
         ...charsets.map(set => make.Option(set.label, set.id)),
         make.on.change((e) => {
@@ -150,10 +152,10 @@ export default async () =>
   function labelField(field, row) {
     const input = make.TextArea(
       popup("Название поля на форме"),
-      make.with.attr({
+      With.attr({
         placeholder: field.label || "Название"
       }),
-      make.with.style({
+      With.style({
         height: "fit-content",
         display: "flex",
         flexDirection: "row",
@@ -177,11 +179,11 @@ export default async () =>
   function placeholderField(field, row) {
     const input = make.TextArea(
       popup("Подсказка для поля на форме", "Будет показываться серым цветом и не влияет на значение"),
-      make.with.attr({
+      With.attr({
         value: field.placeholder || '',
         placeholder: field.placeholder || "Плейсхолдер",
       }),
-      make.with.style({
+      With.style({
         height: "auto",
         display: "flex",
         flexDirection: "row",
@@ -205,12 +207,12 @@ export default async () =>
     function elemDecimalFields(isPositive, queryArgument, popupText, placeholderText) { 
       const input = make.Input(
         popup(200, popupText),
-        make.with.attr({
+        With.attr({
           type: "number",
           value: field[queryArgument],
           placeholder: placeholderText
         }),
-        ...make.callif(isPositive, () => make.with.attr({min: 0})),
+        ...make.callif(isPositive, () => With.attr({min: 0})),
       )
       input.addModifiers(
         make.on.input(() => row.element.classList.add("make-mark-changed")),
@@ -224,17 +226,17 @@ export default async () =>
     }
     
     return make.Card(
-      make.it.littleDarker,
-      make.style.rounded(12),
-      make.style.padding(6)
+      makeIt.littleDarker,
+      Style.rounded(12),
+      Style.padding(6)
     )
     .header(
       popup("Нажмите чтобы скрыть или показать дополнительные параметры"),
-      make.Paragraph("Дополнительно")
+      Paragraph("Дополнительно")
     )
     .content(
-      make.it.flexColumn,
-      make.style.gap(6),
+      makeIt.flexColumn,
+      Style.gap(6),
       make.Separator(),
       elemDecimalFields(true, "decimals", "Количество знаков после запятой", "Точность"),
       elemDecimalFields(false, "minimum", "Минимальное допустимое значение", "Минимум"),
@@ -247,8 +249,8 @@ export default async () =>
   ]
   function fieldFactory(field, type) {
     const row = Row(
-      make.it.marginOnHover,
-      make.with.style({flex: "0 0 auto"})
+      makeIt.marginOnHover,
+      With.style({flex: "0 0 auto"})
     )
     const inpField = labelField(field, row)
     let placeholderFieldElem = null
@@ -269,16 +271,16 @@ export default async () =>
     center.innerHTML = ``
     const fields = await qFields.where({type: fieldType.id}).view().get()
     const me = await mePromise
-    const scrollbox = make.Scrollbox(make.it.flexColumn, make.style.gap(6))
+    const scrollbox = make.Scrollbox(makeIt.flexColumn, Style.gap(6))
     center.appendChild(
       Column(
         scrollbox.addModifiers(
           ...fields.map(field => fieldFactory(field, fieldType.type))
         ),
         make.Button(
-          make.with.text("Добавить новый шаблон"),
-          make.it.action,
-          make.it.act.neutral,
+          With.text("Добавить новый шаблон"),
+          makeIt.action,
+          makeIt.act.neutral,
           make.on.click(async () => {
             const newField = await qFields.with({
               type: fieldType.id,
@@ -304,16 +306,16 @@ export default async () =>
     active.blur();
   });
   
-  const boldText = (txt) => make.Paragraph(txt, make.it.textBold)
+  const boldText = (txt) => Paragraph(txt, makeIt.textBold)
 
   const fieldTypes = await fieldTypesPromise
   document.getElementById('left-content').appendChild(
     Column(
       ...fieldTypes.map(fieldType => 
         make.Button(
-          make.it.action,
-          make.it.act.neutral,
-          make.with.text(fieldType.label),
+          makeIt.action,
+          makeIt.act.neutral,
+          With.text(fieldType.label),
           make.on.click(() => fillCenter(fieldType)),
           popup(
             ...make.switch(fieldType.name,

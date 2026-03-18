@@ -1,20 +1,25 @@
 export default (make, popup, picButton) => (additionalContentBuilder) => {
+  const Style = make.style
+  const Paragraph = make.Paragraph
+  const With = make.with
+  const makeIt = make.it
+  const Separator = make.Separator
   function manualHeader() {
-    let styleTab = [make.style.padding(4), make.style.rounded(4)]
+    let styleTab = [Style.padding(4), Style.rounded(4)]
     return [
       make.Div(
-        make.it.flexRow, make.style.gap(6), make.style.maxHeight("10%"),
+        makeIt.flexRow, Style.gap(6), Style.maxHeight("10%"),
         manualCloseText(),
         make.h1("Руководство"),
       ),
-      make.Separator(6),
+      Separator(6),
       ...make.callif(additionalContentBuilder,
         () => make.Tabs()
-        .menu(make.style.gap(6), make.style.rounded(8), make.style.padding(4))
-        .content(make.style.maxHeight("auto"), make.style.padding(0), make.Separator(6))
-        .tab().header(...styleTab, make.Paragraph("Общие положения"))
+        .menu(Style.gap(6), Style.rounded(8), Style.padding(4))
+        .content(Style.maxHeight("auto"), Style.padding(0), Separator(6))
+        .tab().header(...styleTab, Paragraph("Общие положения"))
         .content(manualBaseTabs(true))
-        .tab().header(...styleTab, make.Paragraph("Доступные руководства"))
+        .tab().header(...styleTab, Paragraph("Доступные руководства"))
         .content(additionalContentBuilder())
       ),
       ...make.callif(!additionalContentBuilder,
@@ -24,21 +29,21 @@ export default (make, popup, picButton) => (additionalContentBuilder) => {
   }
   let clickCount = 0
   function manualBaseTabs(isAddit) {
-    let styleTab = [make.style.padding(4), make.style.rounded(4)]
+    let styleTab = [Style.padding(4), Style.rounded(4)]
     return make.Tabs(
-      make.style.width("100%"),
-      make.style.height("100%"),
+      Style.width("100%"),
+      Style.height("100%"),
     )
-    .menu(make.style.gap(6), make.style.rounded(8), make.style.padding(4))
-    .content(make.style.maxHeight("auto"))
+    .menu(Style.gap(6), Style.rounded(8), Style.padding(4))
+    .content(Style.maxHeight("auto"))
     .tab()
-    .header(...styleTab, make.Paragraph("Главная"))
+    .header(...styleTab, Paragraph("Главная"))
     .content(
-      make.style.maxHeight("100%"),
-      make.it.flexColumn, make.style.gap(6),
-      make.Paragraph("• Это руководство подскажет вам как пользоваться сервисом заявок"),
-      make.Separator(6),
-      make.Paragraph("• О сервисе:", make.it.textBold),
+      Style.maxHeight("100%"),
+      makeIt.flexColumn, Style.gap(6),
+      Paragraph("• Это руководство подскажет вам как пользоваться сервисом заявок"),
+      Separator(6),
+      Paragraph("• О сервисе:", makeIt.textBold),
       sideParagraphWithMargin(
         "Этот сервис реализован в рамках технического задания по замене ITIL для обработки поступающих заявок и их учёта"
       ),
@@ -46,21 +51,21 @@ export default (make, popup, picButton) => (additionalContentBuilder) => {
       sideParagraphWithMargin("Если после ознакомления с руководством у вас останутся вопросы по использованию сервиса или вы нашли " +
         "функционал, который не был описан в руководстве - обратитесь в отдел программирования."
       ),
-      make.Separator(6),
-      make.Paragraph(`Можете перейти на вкладку "Подсказки"`),
+      Separator(6),
+      Paragraph(`Можете перейти на вкладку "Подсказки"`),
       sideParagraphWithMargin(
         "Если вас не устраивает размер текста, то вы можете изменить его сами, используя " +
         "страндартные инструменты браузера: CTRL + \"+\" для увеличения размера элементов, " +
         "CTRL + \"-\" для уменьшения размера элементов",
-        make.it.subtitleText
+        makeIt.subtitleText
       ),
     )
     .tab()
-    .header(...styleTab, make.Paragraph("Подсказки"))
+    .header(...styleTab, Paragraph("Подсказки"))
     .content(
-      make.it.flexColumn, make.style.gap(6),
-      make.Paragraph("• Большая часть элементов при наведении выведет вам подсказку через 0.5 секунды"),
-      make.Paragraph("Наведитесь на эту строку и подождите", make.with.style({textDecoration: "underline"}),
+      makeIt.flexColumn, Style.gap(6),
+      Paragraph("• Большая часть элементов при наведении выведет вам подсказку через 0.5 секунды"),
+      Paragraph("Наведитесь на эту строку и подождите", With.style({textDecoration: "underline"}),
       popup(
         "Так будет выглядить подсказка",
         "Зачастую, в подсказках будут прояснены некоторые моменты",
@@ -69,32 +74,32 @@ export default (make, popup, picButton) => (additionalContentBuilder) => {
       make.on.click((e) => {
         e.target.textContent = "НЕ НУЖНО НАЖИМАТЬ, ПРОСТО НАВЕДИТЕСЬ";
       })),
-      make.Separator(6),
-      make.Paragraph("• Подсказки могут быть не только для текста, но и для элементов"),
-      make.Paragraph("• Ниже находятся различные элементы. Наведитесь на любой из них и подождите несколько секунд"),
+      Separator(6),
+      Paragraph("• Подсказки могут быть не только для текста, но и для элементов"),
+      Paragraph("• Ниже находятся различные элементы. Наведитесь на любой из них и подождите несколько секунд"),
       make.Div(
-        make.it.flexColumn,
-        make.with.style({flex: 0}),
-        make.style.gap(6),
+        makeIt.flexColumn,
+        With.style({flex: 0}),
+        Style.gap(6),
         make.Div(
-          make.it.flexRow,
-          make.with.style({flex: 0}),
-          make.style.gap(6),  
-          make.Input(make.with.attr({placeholder: "Это поле ввода"}),
-            popup(800, "Это подсказка на поле ввода"), make.style.maxWidth("20%"),
+          makeIt.flexRow,
+          With.style({flex: 0}),
+          Style.gap(6),  
+          make.Input(With.attr({placeholder: "Это поле ввода"}),
+            popup(800, "Это подсказка на поле ввода"), Style.maxWidth("20%"),
           ),
-          make.Input(make.with.attr({placeholder: "Это поле ввода отключено", disabled: ""}),
+          make.Input(With.attr({placeholder: "Это поле ввода отключено", disabled: ""}),
             popup(800, "Это подсказка на поле ввода",
               "подсказки могут находиться на элементах, даже если те отключены"
             )
           ),
         ),
         make.Div(
-          make.it.flexRow,
-          make.with.style({flex: 0}),
-          make.style.gap(6),
-          make.Button(make.it.redir, make.with.text("это кнопка"),
-            popup(800, "Это подсказка на кнопке"), make.with.style({whiteSpace: "nowrap"}),
+          makeIt.flexRow,
+          With.style({flex: 0}),
+          Style.gap(6),
+          make.Button(makeIt.redir, With.text("это кнопка"),
+            popup(800, "Это подсказка на кнопке"), With.style({whiteSpace: "nowrap"}),
             make.on.click((e) => {
               const textLines = [
                 "",
@@ -238,9 +243,9 @@ export default (make, popup, picButton) => (additionalContentBuilder) => {
             })
           ),
           make.Div(
-            make.it.flexRow,
-            make.style.gap(6),
-            make.style.minWidth("24%"),
+            makeIt.flexRow,
+            Style.gap(6),
+            Style.minWidth("24%"),
             picButton("save", `Это подсказка на кнопке "Сохранить"`),
             picButton("verify", `Это подсказка на кнопке "Верифицировать"`),
             picButton("hide", `Это подсказка на кнопке "Скрыть/Показать"`),
@@ -250,61 +255,61 @@ export default (make, popup, picButton) => (additionalContentBuilder) => {
           )
         ),
       ),
-      make.Separator(),
-      make.Paragraph("• Список элементов не ограничивается кнопками и полями ввода"),
-      make.Separator(),
-      make.Paragraph(`Можете перейти на вкладку "Контакты"`)
+      Separator(),
+      Paragraph("• Список элементов не ограничивается кнопками и полями ввода"),
+      Separator(),
+      Paragraph(`Можете перейти на вкладку "Контакты"`)
     )
     .tab()
-    .header(...styleTab, make.Paragraph("Кнопки управления"))
+    .header(...styleTab, Paragraph("Кнопки управления"))
     .content(
-      make.it.flexColumn, make.style.gap(6),
-      make.Paragraph("• Кнопки управления позволяют взаимодействовать с ближайшим элементом"),
-      make.Paragraph("• Если на одной строке содержатся кнопки и поле ввода, то все кнопки относятся к этому полю ввода"),
-      make.Paragraph("• Кнопки имеют смысл в контексте того, где они находятся, наведитесь на них чтобы увидеть описание их действий"),
-      make.Separator(0),
-      make.Paragraph("• Разберём что из себя представляют кнопки управления в общем случае:"),
+      makeIt.flexColumn, Style.gap(6),
+      Paragraph("• Кнопки управления позволяют взаимодействовать с ближайшим элементом"),
+      Paragraph("• Если на одной строке содержатся кнопки и поле ввода, то все кнопки относятся к этому полю ввода"),
+      Paragraph("• Кнопки имеют смысл в контексте того, где они находятся, наведитесь на них чтобы увидеть описание их действий"),
+      Separator(0),
+      Paragraph("• Разберём что из себя представляют кнопки управления в общем случае:"),
       make.Div(
-        make.it.flexColumn, make.style.gap(6),
+        makeIt.flexColumn, Style.gap(6),
         manualFunctionalButtonElement(
-          "save", [`"Дискета"`, "Сохранить"], make.it.act.positive,
+          "save", [`"Дискета"`, "Сохранить"], makeIt.act.positive,
           "Кнопки с изображением дискеты обычно сохраняют данные или фиксируют изменения",
         ),
         manualFunctionalButtonElement(
-          "verify", [`"Галочка"`, "Подтвердить"], make.it.act.positive,
+          "verify", [`"Галочка"`, "Подтвердить"], makeIt.act.positive,
           "Кнопки с изображением галочки обычно подтвержают или разрешают что-то",
         ),
         manualFunctionalButtonElement(
-          "hide", [`"Глаз"`, "Скрыть/показать"], make.it.act.alternative,
+          "hide", [`"Глаз"`, "Скрыть/показать"], makeIt.act.alternative,
           "Кнопки с изображением глаза обычно скрывают или раскрывают данные"
         ),
         manualFunctionalButtonElement(
-          "share", [`"Граф"`, "Поделиться"], make.it.act.neutral,
+          "share", [`"Граф"`, "Поделиться"], makeIt.act.neutral,
           "Кнопки с изображением графа обычно означают что этим элементом можно поделиться",
         ),
         manualFunctionalButtonElement(
-          "trash", [`"Корзина"`, "Удалить"], make.it.act.negative,
+          "trash", [`"Корзина"`, "Удалить"], makeIt.act.negative,
           "Кнопки с изображением корзины обычно удаляют данные",
         ),
         manualFunctionalButtonElement(
-          "close", [`"Крестик"`, "Закрыть"], make.it.act.negative,
+          "close", [`"Крестик"`, "Закрыть"], makeIt.act.negative,
           "Кнопки с изображением крестика обычно закрывают текущее окно",
         ),
       ),
-      make.Paragraph("Можете перейти на вкладку \"Быстрая навигация\"")
+      Paragraph("Можете перейти на вкладку \"Быстрая навигация\"")
     )
     .tab()
-    .header(...styleTab, make.Paragraph("Быстрая навигация"))
+    .header(...styleTab, Paragraph("Быстрая навигация"))
     .content(
-      make.it.flexColumn, make.style.gap(6),
-      make.Paragraph(
+      makeIt.flexColumn, Style.gap(6),
+      Paragraph(
         "• Менеждер перечислений построент так, чтобы добавление " + 
         "новых элементов не занимало много времени"),
-      make.Paragraph(
+      Paragraph(
         "• При добавлении нового элемента, менеджер перечислений автоматически " +
         "переключается на него и вы можете не выбирать его вручную каждый раз"),
-      make.Separator(),
-      make.Paragraph("Почему это сделано именно так:"),
+      Separator(),
+      Paragraph("Почему это сделано именно так:"),
       sideParagraphWithMargin(
         "Клавиша TAB на вашей клавиатуре позволяет выбрать следующий элемент на странице"),
       sideParagraphWithMargin("Сочетание клавиш SHIFT + TAB возвращает выделение на предыдущий элемент"),
@@ -312,53 +317,53 @@ export default (make, popup, picButton) => (additionalContentBuilder) => {
           "для элементов, которые были выбраны при помощи TAB"),
       sideParagraphWithMargin("Сочетание клавиш SHIFT + ПРОБЕЛ, так же работает как клик мышкой, " +
           "поэтому можно не отпускать SHIFT, если пролистываете выделеные элементы в обратную сторону"),
-      make.Separator(),
-      make.Paragraph("• Попробуйте отключить видимость у всех полей, " +
+      Separator(),
+      Paragraph("• Попробуйте отключить видимость у всех полей, " +
         "не нажимая мышкой по кнопке \"Скрыть/показать\""),
       ...[1,2,3,4].map((i)=>
         inputFull({id: 0, value: `Поле №${i}`, visible: true, test: true}),
       ),
-      make.Paragraph("Нажмите на первое поле ввода и нажимайте TAB, " +
-        "пока не окажитесь на нужной кнопке, после чего нажмите ПРОБЕЛ", make.it.subtitleText),
+      Paragraph("Нажмите на первое поле ввода и нажимайте TAB, " +
+        "пока не окажитесь на нужной кнопке, после чего нажмите ПРОБЕЛ", makeIt.subtitleText),
     )
   }
 
   function manualFunctionalButtonElement(pic, popup, styles, t1, t2) {
     return make.Div(
-      make.with.style({flex: 0}),
-      make.it.flexRow,
-      make.style.gap(6),
-      make.style.padding(6),
-      make.it.marginOnHover,
-      make.SideSeparator(4, make.it.littleDarker),
+      With.style({flex: 0}),
+      makeIt.flexRow,
+      Style.gap(6),
+      Style.padding(6),
+      makeIt.marginOnHover,
+      make.SideSeparator(4, makeIt.littleDarker),
       make.Div(
-        make.it.leftAlign,
-        make.Div(make.it.flexRow, make.style.gap(6),
-          make.with.style({alignItems: "flex-end"}),
+        makeIt.leftAlign,
+        make.Div(makeIt.flexRow, Style.gap(6),
+          With.style({alignItems: "flex-end"}),
           picButton(pic, popup, styles),
-          make.Paragraph(t1)
+          Paragraph(t1)
         ),
-        make.Paragraph(t2)
+        Paragraph(t2)
       )
     )
   }
 
   function sideParagraphWithMargin(text, ...mods) {
     return make.Div(...mods,
-      make.with.style({flex: 0}),
-      make.it.marginOnHover,
-      make.it.flexRow,
-      make.style.gap(6),
-      make.SideSeparator(4, make.it.littleDarker),
+      With.style({flex: 0}),
+      makeIt.marginOnHover,
+      makeIt.flexRow,
+      Style.gap(6),
+      make.SideSeparator(4, makeIt.littleDarker),
       make.Div(
-        make.it.flexColumn, make.style.gap(6),
-        make.Paragraph(text)
+        makeIt.flexColumn, Style.gap(6),
+        Paragraph(text)
       ),
     )
   }
 
   function manualCloseText() {
-    return picButton("close", "Закрыть", make.it.act.negative,
+    return picButton("close", "Закрыть", makeIt.act.negative,
       () => make.other.closeCurrentNotice(),
     )
   }
@@ -366,15 +371,15 @@ export default (make, popup, picButton) => (additionalContentBuilder) => {
   function manualNotice() {
     make.Notice([1000, Infinity, 500, "manual"],
       make.Div(
-        make.style.width("100%"),
-        make.style.height("100%"),
-        make.it.contented,
+        Style.width("100%"),
+        Style.height("100%"),
+        makeIt.contented,
         make.color.lblue,
         make.Div(
-          make.it.contented,
-          make.style.minWidth("50vw"),
-          make.style.maxWidth("60vw"),
-          make.style.height("80vh"),
+          makeIt.contented,
+          Style.minWidth("50vw"),
+          Style.maxWidth("60vw"),
+          Style.height("80vh"),
           ...manualHeader()
         )
       )
@@ -383,36 +388,36 @@ export default (make, popup, picButton) => (additionalContentBuilder) => {
 
   function inputFull() {
     let acc;
-    let out = make.Div(make.it.marginOnHover)
+    let out = make.Div(makeIt.marginOnHover)
     let inp
     inp = make.Input(
-      make.with.attr({placeholder: "Поле ввода"}),
+      With.attr({placeholder: "Поле ввода"}),
       make.on.input((e) => out.element.classList.add("make-mark-changed")),
       make.on.inputTimeOut(3000, () => {
         out.element.classList.remove("make-mark-changed")
       }),
       make.Annotation(1500, 
         make.Div(
-          make.it.popup,
-          make.Paragraph("Нажмите на поле ввода для редактирования"),
-          make.Paragraph("Если элемент подсвечен, то он сохранится через некоторое время"),
-          make.Paragraph("Если вы перейдёте на другой элемент, то этот так же сохранится автоматически"),
+          makeIt.popup,
+          Paragraph("Нажмите на поле ввода для редактирования"),
+          Paragraph("Если элемент подсвечен, то он сохранится через некоторое время"),
+          Paragraph("Если вы перейдёте на другой элемент, то этот так же сохранится автоматически"),
         )
       )
     )
 
     acc = make.Div(
-      make.with.css("make-mark-filtered"),
-      make.it.flexRow,
-      make.style.gap(6),
+      With.css("make-mark-filtered"),
+      makeIt.flexRow,
+      Style.gap(6),
       inp,
-      picButton("save", "Сохранить", make.it.act.positive),
-      picButton("verify", "Подтвердить", make.it.act.positive),
-      picButton("hide", "Скрыть", make.it.act.alternative,
+      picButton("save", "Сохранить", makeIt.act.positive),
+      picButton("verify", "Подтвердить", makeIt.act.positive),
+      picButton("hide", "Скрыть", makeIt.act.alternative,
       () => acc.element.classList.toggle("make-mark-deactivated")),
-      picButton("share", "Поделиться", make.it.act.neutral),
-      picButton("trash", "Удалить", make.it.act.negative),
-      picButton("close", "Закрыть", make.it.act.negative),
+      picButton("share", "Поделиться", makeIt.act.neutral),
+      picButton("trash", "Удалить", makeIt.act.negative),
+      picButton("close", "Закрыть", makeIt.act.negative),
     )
     out.addChild(acc)
     return out
@@ -421,9 +426,9 @@ export default (make, popup, picButton) => (additionalContentBuilder) => {
   return make.Div(
     make.Button(
       make.color.lblue,
-      make.it.action,
-      make.it.act.neutral,
-      make.with.text("Руководство"),
+      makeIt.action,
+      makeIt.act.neutral,
+      With.text("Руководство"),
       make.on.click(() => {
         manualNotice()
       })

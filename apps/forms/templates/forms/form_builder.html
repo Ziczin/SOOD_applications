@@ -19,7 +19,12 @@
   <script type="module">
     window.make_url = "{% static 'deps/make/' %}"
     window.prefab_url = "{% static 'deps/js/prefabs/' %}"
-    await import("{% js_file 'make/make.js' %}"); ///HERE
+    await import("{% js_file 'make/make.js' %}");
+
+    const makeIt = make.it
+    const Paragraph = make.Paragraph
+    const With = make.with
+
     const imp = (await import("{% js_file 'prefabs/import.js' %}")).default(make)
     const csrfObj = await make.Query('/api/csrf-token').get()
     const data = JSON.parse(document.getElementById("form-data").textContent);
@@ -28,45 +33,45 @@
     const nextUrlParam = new URLSearchParams(window.location.search).get('next')
     
     const title = make.Div(
-      make.it.flexRow,
-      make.it.centered,
+      makeIt.flexRow,
+      makeIt.centered,
       make.style.gap(10),
       make.h1(data.title),
     );
     
     const fields = make.Form(
-      make.it.flexColumn,
-      make.it.gap10px,
-      make.with.attr({
+      makeIt.flexColumn,
+      makeIt.gap10px,
+      With.attr({
         method: 'post',
         action: data.action,
       }),
       ...make.callif(nextUrlParam, () => make.Input(
-        make.with.attr({
+        With.attr({
           type: 'hidden',
           value: nextUrlParam,
           name: 'next'
         })
       )),
-      make.with.csrf(csrfObj.csrfToken),
+      With.csrf(csrfObj.csrfToken),
       ...data.fields.map(el =>
         make.Div(
-          make.it.flexColumn,
-          ...(el.type === 'enum' ? [] : [make.it.delayedMarginOnHover]),
-          make.Paragraph(el.label, make.it.subtitleText, make.with.style({textAlign: 'left'})),
+          makeIt.flexColumn,
+          ...(el.type === 'enum' ? [] : [makeIt.delayedMarginOnHover]),
+          make.Paragraph(el.label, makeIt.subtitleText, With.style({textAlign: 'left'})),
           el.type !== 'enum' ?
           make.Input(
             make.style.padding(6),
-            make.with.attr({
+            With.attr({
               id: el.id,
               name: el.id,
               type: el.type,
               placeholder: el.placeholder
             }),
-            make.with.attrs(...el.attrs)) :
+            With.attrs(...el.attrs)) :
             make.Select(
-              make.with.attr({ name: el.id, id: el.id }),
-              make.with.attrs(...el.attrs),
+              With.attr({ name: el.id, id: el.id }),
+              With.attrs(...el.attrs),
               make.OptionPlaceholder(el.placeholder),
               ...el.enum.map(elEnum =>
                 make.Option(elEnum.text, elEnum.value)
@@ -75,32 +80,32 @@
         )
       ),
       make.Button(
-        make.it.onConfirmationMargin,
-        make.it.primary,
-        make.with.text(data.btn_confirm),
-        make.with.attr({type: 'submit'})
+        makeIt.onConfirmationMargin,
+        makeIt.primary,
+        With.text(data.btn_confirm),
+        With.attr({type: 'submit'})
       )
     );
     
     const bottomStuff = make.Div(
       make.Separator(),
       make.Link(
-        make.it.simpleLink,
-        make.with.text(data.sub_btn_link_text),
-        make.with.attr({ href: data.sub_btn_link }),
+        makeIt.simpleLink,
+        With.text(data.sub_btn_link_text),
+        With.attr({ href: data.sub_btn_link }),
       ),
       make.Separator(),
       make.Div(
-        make.it.flexColumn,
-        make.it.gap6px,
+        makeIt.flexColumn,
+        makeIt.gap6px,
         ...data._errors.map(err =>
           make.Paragraph(
-            make.it.delayedMarginOnHover,
-            make.it.leftAlign,
-            make.it.textItalic,
+            makeIt.delayedMarginOnHover,
+            makeIt.leftAlign,
+            makeIt.textItalic,
             make.color.error,
-            make.with.text(err.text),
-            make.with.attr({ description: err.desc }),
+            With.text(err.text),
+            With.attr({ description: err.desc }),
             make.on.click(async e => {
               const el = e.target;
               const desc = el.getAttribute('description');

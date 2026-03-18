@@ -3,6 +3,10 @@ export default async () =>
 {
   await import(`${window.make_url}/make.js`);
   const imp = (await import(`${window.prefab_url}/import.js`)).default(make)
+  const Style = make.style
+  const makeIt = make.it
+  const Paragraph = make.Paragraph
+  const With = make.with
 
   const paragraphNoticePromise = imp(`${window.prefab_url}/paragraph_notice.js`)
   const actionNoticePromise = imp(`${window.prefab_url}/action_notice.js`)
@@ -25,14 +29,14 @@ export default async () =>
   document.getElementById('manual-button').appendChild(basicManual(mainManual).build())
 
   const leftBtns = make.Card(
-    make.style.rounded(12),
-    make.style.padding(6),
-    make.it.content
+    Style.rounded(12),
+    Style.padding(6),
+    makeIt.content
   )
-  .header(make.it.marginOnHover, make.h3("Перейти", make.it.subtitleText))
+  .header(makeIt.marginOnHover, make.h3("Перейти", makeIt.subtitleText))
   .content(
-    make.it.flexColumn,
-    make.style.gap(6),
+    makeIt.flexColumn,
+    Style.gap(6),
     make.Separator(),
     backButton(),
     backButton("Формы", '/applications/forms-manager/'),
@@ -42,23 +46,23 @@ export default async () =>
   document.getElementById("left-btns").appendChild(leftBtns.build());
 
 
-  const Row = (...args) => make.Div(make.it.flexRow, make.style.gap(6), ...args)
-  const Column = (...args) => make.Div(make.it.flexColumn, make.style.gap(6), ...args)
+  const Row = (...args) => make.Div(makeIt.flexRow, Style.gap(6), ...args)
+  const Column = (...args) => make.Div(makeIt.flexColumn, Style.gap(6), ...args)
 
   const initFieldCharSets = await qFieldCharSet.get()
   const center = document.getElementById("center-content")
 
   function Input(charset, value, label, queryparam, type="check") {
     return Row(
-      make.it.marginOnHover,
+      makeIt.marginOnHover,
       ...make.callif(type === 'check',
         () => make.Checkbox(
           ...make.callif(
             charset.department !== me.department.id,
-            () => make.with.attrs("disabled")
+            () => With.attrs("disabled")
           ),
           ...make.callif(value,
-            () => make.with.attrs('checked')
+            () => With.attrs('checked')
           ),
           make.on.change((e) => {
             qFieldCharSet.at(charset.id).with({
@@ -69,18 +73,18 @@ export default async () =>
           })
         ),
       ),
-      make.Paragraph(label, make.with.style({alignSelf: "center", flex: '0 0 auto'})),
-      ...make.callif(type !== 'check', () => make.style.padding(4)),
+      Paragraph(label, With.style({alignSelf: "center", flex: '0 0 auto'})),
+      ...make.callif(type !== 'check', () => Style.padding(4)),
       ...make.callif(type !== 'check',
         () => make.Input(
           ...make.callif(
             charset.department !== me.department.id,
-            () => make.with.attrs("disabled")
+            () => With.attrs("disabled")
           ),
           ...make.callif(['min_length', 'max_length'].includes(queryparam),
             () => make.limit.charactersWhiteList("1234567890")
           ),
-          make.with.attr({value: value ? value : ''}),
+          With.attr({value: value ? value : ''}),
           make.on.input((e) => e.target.parentNode.classList.add("make-mark-changed")),
           make.on.inputTimeOut(3000, (e) => {
             qFieldCharSet.at(charset.id).with({
@@ -116,17 +120,17 @@ export default async () =>
 
   function charSetElem(charset) {
     let picBTNS
-    const elem = Row(make.it.marginOnHover)
+    const elem = Row(makeIt.marginOnHover)
     elem.charset = charset
     elem.addModifiers(
       make.Input(
-        make.with.attr({
+        With.attr({
           value: charset.label,
           placeholder: charset.label
         }),
         ...make.callif(
             charset.department !== me.department.id,
-            () => [make.with.attrs("readonly"), make.with.css('fake-disabled')]
+            () => [With.attrs("readonly"), With.css('fake-disabled')]
           ),
         make.on.click(() => {
           charSetDataDraw(charset)
@@ -140,10 +144,10 @@ export default async () =>
           paragraphNotice("Сохранено!", make.color.green)
         })
       ),
-      ...make.callif(!charset.visible, () => make.with.css("make-mark-deactivated")),
+      ...make.callif(!charset.visible, () => With.css("make-mark-deactivated")),
       ...make.if(!charset.shared,
         picBTNS = Row(
-          picButton("hide", "Скрыть из вариантов при создании форм", make.it.act.alternative,
+          picButton("hide", "Скрыть из вариантов при создании форм", makeIt.act.alternative,
             () => {
               elem.element.classList.toggle("make-mark-deactivated")
               qFieldCharSet.at(charset.id).with({visible: !charset.visible}).patch()
@@ -151,13 +155,13 @@ export default async () =>
               paragraphNotice("Видимость изменена!", make.color.yellow)
             }
           ),
-          picButton("share", "Поделиться набором с другим отделом", make.it.act.neutral,
+          picButton("share", "Поделиться набором с другим отделом", makeIt.act.neutral,
             () => {
               actionNotice({
                 confirmText: "Поделиться", cancelText: "Отмена",
                 question: [
-                  make.Paragraph(`Поделиться ${elem.element.value || "*пустой набор*"} с другими отделами?`),
-                  make.Paragraph(`Это действие невозможно будет отменить`, make.it.textBold),
+                  Paragraph(`Поделиться ${elem.element.value || "*пустой набор*"} с другими отделами?`),
+                  Paragraph(`Это действие невозможно будет отменить`, makeIt.textBold),
                 ],
                 action: ()=>{
                   qFieldCharSet.at(charset.id).with({shared: true}).patch()
@@ -167,7 +171,7 @@ export default async () =>
               })
             }
           ),
-          picButton("trash", "Удалить элемент", make.it.act.negative,
+          picButton("trash", "Удалить элемент", makeIt.act.negative,
             () => actionNotice({
               confirmText: "Удалить", cancelText: "Отмена",
               question: `Удалить ${elem.element.value || "*пустой набор*"}?`,
@@ -187,15 +191,15 @@ export default async () =>
   let scrollbox
   document.getElementById("left-content").appendChild(
     Column(
-      make.style.height("100%"),
+      Style.height("100%"),
       scrollbox = make.Scrollbox(
-        make.style.gap(6),
+        Style.gap(6),
         ...initFieldCharSets.map((ifcs) => charSetElem(ifcs))
       ),
       make.Button(
-        make.with.text("Добавить новый набор"),
-        make.it.action,
-        make.it.act.positive,
+        With.text("Добавить новый набор"),
+        makeIt.action,
+        makeIt.act.positive,
         make.on.click(async () => {
           const newCharset = await qFieldCharSet.with({
             department: me.department.id

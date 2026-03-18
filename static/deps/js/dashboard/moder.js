@@ -1,7 +1,11 @@
 export default (make) =>
 async function dashboardModer(qBase, department, statuses, popup, onOpenFooContainer, me, paragraphNotice) {
-  const Row = (...args) => make.Div(make.it.flexRow, make.style.gap(6), ...args)
-  const Column = (...args) => make.Div(make.it.flexColumn, make.style.gap(6), ...args)
+  const Style = make.style
+  const Paragraph = make.Paragraph
+  const With = make.with
+  const makeIt = make.it
+  const Row = (...args) => make.Div(makeIt.flexRow, Style.gap(6), ...args)
+  const Column = (...args) => make.Div(makeIt.flexColumn, Style.gap(6), ...args)
 
   function setStatusStyle(element, style) {
     if (!element || typeof element.className !== 'string') return;
@@ -20,9 +24,9 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
   onOpenFooContainer.push(getAndDraw)
   const executors = await qBase.at('users').where({department: department, permissions: "moderator"}).view().get()
   const appList = make.Scrollbox(
-    make.it.flexColumn,
-    make.style.maxWidth('100%'),
-    make.style.gap(6),
+    makeIt.flexColumn,
+    Style.maxWidth('100%'),
+    Style.gap(6),
   )
 
   function redrawTabs(cards) {
@@ -31,16 +35,16 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
 
     const tabs = make.Tabs(
       {scroll: true, noAnimation: true, squareTabs: true},
-      make.style.margin(8),
-      make.it.flexColumn,
+      Style.margin(8),
+      makeIt.flexColumn,
     ).menu(
-      make.style.padding(8),
-      make.style.rounded(12),
-      make.it.flexRow,
-      make.with.style({flex: "0 0 auto"}),
-      make.style.gap(8)
+      Style.padding(8),
+      Style.rounded(12),
+      makeIt.flexRow,
+      With.style({flex: "0 0 auto"}),
+      Style.gap(8)
     ).content(
-      make.it.flexColumn
+      makeIt.flexColumn
     )
     let pageCounter = 0
     let pageCards = []
@@ -50,15 +54,15 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
         pageCounter++
         tabs.tab()
         .header(
-          make.style.rounded(12),
-          make.style.padding(8),
-          make.it.centered,
-          make.it.textCentered,
-          make.Paragraph(`${pageCounter}`)
+          Style.rounded(12),
+          Style.padding(8),
+          makeIt.centered,
+          makeIt.textCentered,
+          Paragraph(`${pageCounter}`)
         ).content(
-          make.it.flexColumn,
-          make.with.style({flex: "1 1 auto"}),
-          make.style.gap(6),
+          makeIt.flexColumn,
+          With.style({flex: "1 1 auto"}),
+          Style.gap(6),
           ...pageCards
         )
         pageCards = []
@@ -146,7 +150,7 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
   }
 
   const inputDateFrom = make.Input(
-    make.with.attr({type: "date", value: formatDateForInput(weekAgo)}),
+    With.attr({type: "date", value: formatDateForInput(weekAgo)}),
     make.on.change(getAndDraw),
     popup([
       "Дата начала выборки",
@@ -156,7 +160,7 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
   )
 
   const inputDateTo = make.Input(
-    make.with.attr({type: "date", value: formatDateForInput(today)}),
+    With.attr({type: "date", value: formatDateForInput(today)}),
     make.on.change(getAndDraw),
     popup([
       "Дата конца выборки",
@@ -166,25 +170,25 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
   )
 
   const sortElement = Row(
-    make.with.style({flex: 0}),
+    With.style({flex: 0}),
     Row(
       Column(
         Row(
-          make.Paragraph("Статус: ", make.with.style({alignSelf: "center"})),
+          Paragraph("Статус: ", With.style({alignSelf: "center"})),
           statusSort
         ),
         Row(
-          make.Paragraph("Исполнитель: ", make.with.style({alignSelf: "center"})),
+          Paragraph("Исполнитель: ", With.style({alignSelf: "center"})),
           executorSort
         )
       ),
       Column(
         Row(
-          make.Paragraph("от", make.with.style({alignSelf: "center"})),
+          Paragraph("от", With.style({alignSelf: "center"})),
           inputDateFrom
         ),
         Row(
-          make.Paragraph("по ", make.with.style({alignSelf: "center"})),
+          Paragraph("по ", With.style({alignSelf: "center"})),
           inputDateTo
         ),
       ),
@@ -192,7 +196,7 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
   )
 
   const handler = Column(
-    make.style.maxWidth('100%'),
+    Style.maxWidth('100%'),
     sortElement,
     appList
   )
@@ -206,10 +210,10 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
 
   function appCard(app) {
     const card = make.Card(
-      make.it.marginOnHover,
-      make.with.style({border: "3px solid #ddd", backgroundColor: "#f5f5f5"}),
-      make.style.padding(6),
-      make.style.rounded(12),
+      makeIt.marginOnHover,
+      With.style({border: "3px solid #ddd", backgroundColor: "#f5f5f5"}),
+      Style.padding(6),
+      Style.rounded(12),
     )
     card.status = app.status
     card.id = app.id
@@ -220,18 +224,18 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
     let btnHolder
     let fieldData
     card.header(
-      make.with.css(`have-status-${app.status}`),
+      With.css(`have-status-${app.status}`),
       Row(
         make.Div(
-          make.it.flexRow,
-          make.style.gap(9),
-          make.with.style({alignSelf: "center"}),
-          make.Paragraph(`№ ${app.id}`, make.it.textBold, make.with.style({flex: "0 1 auto"})),
-          make.Paragraph(
+          makeIt.flexRow,
+          Style.gap(9),
+          With.style({alignSelf: "center"}),
+          Paragraph(`№ ${app.id}`, makeIt.textBold, With.style({flex: "0 1 auto"})),
+          Paragraph(
             `${timeFormat(app.date)} -`,
-            make.with.style({flex: "0 1 auto"}),
+            With.style({flex: "0 1 auto"}),
           ),
-          make.Paragraph(app.form.label)
+          Paragraph(app.form.label)
         ),
       ),
       popup([
@@ -239,50 +243,50 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
         "Данные заявки подгружаются по клику, возможна небольшая задержка"
       ]),
       make.color.lgray,
-      make.style.margin(-8),
-      make.style.padding(6),
-      make.style.rounded(12),
-      make.with.style({border: "3px solid #ddd"}),
+      Style.margin(-8),
+      Style.padding(6),
+      Style.rounded(12),
+      With.style({border: "3px solid #ddd"}),
     ).content(
-      make.style.height('100%'),
+      Style.height('100%'),
       cardBody = Column(
         make.Separator(),
-        make.Paragraph(`От: ${app.user.fullname}`, make.it.marginOnHover,),
+        Paragraph(`От: ${app.user.fullname}`, makeIt.marginOnHover,),
         ...make.callif(app.user.department && app.user.role.name,
-          () => make.Paragraph(`Из: ${app.user.department.name} (${app.user.role.name})`, make.it.subtitleText, make.it.marginOnHover,),
+          () => Paragraph(`Из: ${app.user.department.name} (${app.user.role.name})`, makeIt.subtitleText, makeIt.marginOnHover,),
         ),
 		make.Separator(2,
-		  make.style.rounded(6),
-		  make.it.littleDarker,
+		  Style.rounded(6),
+		  makeIt.littleDarker,
 	    ), 
         ...make.callif(app.executor !== null,
-          () => make.Paragraph(`Исполнитель: ${app.executor.fullname}`,
-            make.it.marginOnHover
+          () => Paragraph(`Исполнитель: ${app.executor.fullname}`,
+            makeIt.marginOnHover
           )
         ),
         fieldData = Column(),
         ...make.if(app.msg,
-          make.Paragraph(
+          Paragraph(
             app.status === "REJECTED"
             ? `Причина отказа: ${app.msg}`
             : app.status === "CANCELLED"
             ? `Причина отмены: ${app.msg}`
             : "Этой надписи тут быть не должно - обратитесь в отдел программирования",
-            make.it.marginOnHover
+            makeIt.marginOnHover
           )
         ),
         ...make.if(
           ["SENDED", "IN_PROGRESS"].includes(card.status)
           && (app.executor === null || app.executor.id === me.id),
           btnHolder = Row(
-            make.style.margin(2),
+            Style.margin(2),
             btnProc = make.Button(
-              make.with.style({flex: 1}),
-              make.with.text("placeholder"),
-              make.it.action,
-              make.it.act.positive,
-              make.style.padding(3),
-              make.style.margin(-2),
+              With.style({flex: 1}),
+              With.text("placeholder"),
+              makeIt.action,
+              makeIt.act.positive,
+              Style.padding(3),
+              Style.margin(-2),
               popup(["Нажмите, чтобы изменить статус заявки"]),
               make.on.click(async (e) => {
                 e.stopPropagation();
@@ -295,8 +299,8 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
                 if (!card.executor) {
                   card.cardBody.addChild(
                     make.Div(
-                      make.it.marginOnHover,
-                      make.Paragraph(`Исполнитель: ${me.fullname}`),
+                      makeIt.marginOnHover,
+                      Paragraph(`Исполнитель: ${me.fullname}`),
                     )
                   )
                   card.executor = me
@@ -309,12 +313,12 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
               })
             ),
             btnCanc = make.Button(
-              make.with.style({flex: 1}),
-              make.with.text("Отклонить"),
-              make.it.action,
-              make.it.act.negative,
-              make.style.padding(3),
-              make.style.margin(-2),
+              With.style({flex: 1}),
+              With.text("Отклонить"),
+              makeIt.action,
+              makeIt.act.negative,
+              Style.padding(3),
+              Style.margin(-2),
               popup([
                 "Нажмите, чтобы отказать в выполнении заявки",
                 "Отказавая в выполнении заявки, вы обязаны указать причину отказа"
@@ -322,25 +326,25 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
               make.on.click(async (e) => {
                 e.stopPropagation();
                 const inp = make.TextArea(
-					make.with.style({
+					With.style({
 						resize: "vertical"
 					})
 				)
                 make.Notice([500, Infinity, 500, "actionNotice"],
                   Row(
-                    make.it.littleDarker,
-                    make.style.padding(2),
-                    make.style.rounded(12),
+                    makeIt.littleDarker,
+                    Style.padding(2),
+                    Style.rounded(12),
                     Column(
-                      make.it.contented,
-                      make.Paragraph("Для того чтобы отказать в заявке укажите причину отказа:"),
+                      makeIt.contented,
+                      Paragraph("Для того чтобы отказать в заявке укажите причину отказа:"),
                       inp,
                       Row(
                         make.Button(
-                          make.it.action,
-                          make.it.act.negative,
-                          make.with.text("Отказать"),
-                          make.with.style({flex: 1}),
+                          makeIt.action,
+                          makeIt.act.negative,
+                          With.text("Отказать"),
+                          With.style({flex: 1}),
                           make.on.click(async () => {
                             if (inp.element.value) {
                               qBase.at("applications").at(app.id).with({
@@ -356,9 +360,9 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
                               card.btnCanc.destroy()
                               card.btnHolder.destroy()
                               cardBody.addChild(
-                                make.Paragraph(
+                                Paragraph(
                                   `Причина отказа: ${inp.element.value}`,
-                                  make.it.marginOnHover
+                                  makeIt.marginOnHover
                                 )
                               )
                               make.other.closeCurrentNotice()
@@ -366,10 +370,10 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
                           })
                         ),
                         make.Button(
-                          make.it.action,
-                          make.it.act.alternative,
-                          make.with.text("Отмена"),
-                          make.with.style({flex: 1}),
+                          makeIt.action,
+                          makeIt.act.alternative,
+                          With.text("Отмена"),
+                          With.style({flex: 1}),
                           make.on.click(() => {
                             make.other.closeCurrentNotice()
                           })
@@ -434,9 +438,9 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
         if (!field.value) {
           fieldData.addChild(
             Row(
-              make.it.marginOnHover,
-              make.Paragraph(`${field.label}: <<< не указано >>>`),
-              make.it.subtitleText
+              makeIt.marginOnHover,
+              Paragraph(`${field.label}: <<< не указано >>>`),
+              makeIt.subtitleText
             )
           )
         }
@@ -444,12 +448,12 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
           if (field.type.name === "textarea") {
             fieldData.addChild(
               make.Card(
-                make.it.littleDarker,
-                make.style.rounded(12),
-                make.style.padding(4)
+                makeIt.littleDarker,
+                Style.rounded(12),
+                Style.padding(4)
               )
-              .header(make.Paragraph(field.label))
-              .content(make.Paragraph(field.value))
+              .header(Paragraph(field.label))
+              .content(Paragraph(field.value))
             )
           }
           else {
@@ -468,10 +472,10 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
             }
             fieldData.addChild(
               Row(
-                make.it.marginOnHover,
-                make.Paragraph(`${field.label}: ${value}`),
+                makeIt.marginOnHover,
+                Paragraph(`${field.label}: ${value}`),
                 ...make.if(field.tag !== null,
-                  make.Paragraph(`(${field.tag})`, make.it.subtitleText),
+                  Paragraph(`(${field.tag})`, makeIt.subtitleText),
                 ),
               )
             )
@@ -514,8 +518,8 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
           if (resp.msg) {
             card.cardBody.addChild(
               make.Div(
-                make.it.marginOnHover,
-                make.Paragraph(`Причина: ${resp.msg}`, make.it.textBold),
+                makeIt.marginOnHover,
+                Paragraph(`Причина: ${resp.msg}`, makeIt.textBold),
               )
             )
           }
@@ -523,8 +527,8 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
             if (!card.executor && resp.executor) {
               card.cardBody.addChild(
                 make.Div(
-                  make.it.marginOnHover,
-                  make.Paragraph(`Исполнитель: ${resp.executor.fullname, make.it.textBold}`),
+                  makeIt.marginOnHover,
+                  Paragraph(`Исполнитель: ${resp.executor.fullname, makeIt.textBold}`),
                 )
               )
               card.executor = resp.executor

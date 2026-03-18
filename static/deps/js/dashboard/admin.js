@@ -1,5 +1,7 @@
 export default (make) =>
 function(qBase) {
+  const Separator = make.Separator
+  const Paragraph = make.Paragraph
   const btns = [
     {
       text: 'Управление формами',
@@ -51,9 +53,9 @@ function(qBase) {
       make.with.style({flex: 0}),
       make.it.flexRow,
       make.style.gap(6),
-      make.Paragraph('С', make.with.style({alignSelf: "center"})),
+      Paragraph('С', make.with.style({alignSelf: "center"})),
       isoThis,
-      make.Paragraph('по', make.with.style({alignSelf: "center"})),
+      Paragraph('по', make.with.style({alignSelf: "center"})),
       isoNext,
     ),
     make.Button(
@@ -75,8 +77,8 @@ function(qBase) {
         a.remove();
       })
     ),
-    make.Separator(6, make.style.rounded(12), make.color.lgray),
-    make.Separator(0),
+    Separator(6, make.style.rounded(12), make.color.lgray),
+    Separator(0),
     make.h1("Управление"),
     ...btns.map(btn =>
       make.Div(
@@ -90,6 +92,6 @@ function(qBase) {
         )
       ),
     ),
-    make.Separator(6, make.style.rounded(12), make.color.lgray),
+    Separator(6, make.style.rounded(12), make.color.lgray),
   ]
 }

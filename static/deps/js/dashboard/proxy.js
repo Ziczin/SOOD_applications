@@ -1,5 +1,6 @@
 export default (make) =>
 async function dashboardProxy(me) {
+  const makeIt = make.it
   const csrfObj = await make.Query('/api/csrf-token').get()
   const qBase = make.Query('/api').via({"X-CSRFToken": csrfObj.csrfToken}).view();
   const rolesProm = await qBase.at('roles').get()
@@ -16,18 +17,18 @@ async function dashboardProxy(me) {
 
   const [roles, departments] = await Promise.all([rolesProm, departmentsProm])
   return [
-    make.it.flexColumn,
-    make.it.gap10px,
+    makeIt.flexColumn,
+    makeIt.gap10px,
     make.Div(
       make.h1('Панель управления'),
       make.h1('прокси-юзера'),
     ),
     make.Div(
-      make.it.flexRow,
-      make.it.gap10px,
-      make.it.centered,
-      make.it.textCentered,
-      make.it.leftAlign,
+      makeIt.flexRow,
+      makeIt.gap10px,
+      makeIt.centered,
+      makeIt.textCentered,
+      makeIt.leftAlign,
       make.Label("Роль: ",
         make.with.attr({for: "proxy-role"}),
         make.style.minWidth(60),
@@ -50,11 +51,11 @@ async function dashboardProxy(me) {
       ),
     ),
     make.Div(
-      make.it.flexRow,
-      make.it.gap10px,
-      make.it.centered,
-      make.it.textCentered,
-      make.it.leftAlign,
+      makeIt.flexRow,
+      makeIt.gap10px,
+      makeIt.centered,
+      makeIt.textCentered,
+      makeIt.leftAlign,
       make.Label("Отдел: ",
         make.with.attr({for: "proxy-department"}),
         make.style.minWidth(60),
@@ -78,9 +79,9 @@ async function dashboardProxy(me) {
     ),
     ...btns.map(btn =>
       make.Div(
-        make.it.marginOnHover,
+        makeIt.marginOnHover,
         make.Button(
-          make.it.redir,
+          makeIt.redir,
           make.with.text(btn.text),
           make.on.click(() => {
             window.location.href = btn.loc

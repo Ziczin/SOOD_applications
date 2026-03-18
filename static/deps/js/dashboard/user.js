@@ -1,32 +1,36 @@
 export default (make) =>
 function dashboardUser(qBase, deps, forms, paragraphNotice, popup, rebuildFoo, picButton) {
+    const Style = make.style
+    const Paragraph = make.Paragraph
+    const With = make.with
+    const makeIt = make.it
     const scrollbox = make.Scrollbox(
-        make.it.flexColumn,
-        make.style.gap(6),
+        makeIt.flexColumn,
+        Style.gap(6),
     )
     const cards = Object.fromEntries(
       Object.entries(deps).map(([key, value]) =>
         [key, make.Card(
-          make.it.marginOnHover,
-          make.with.style({border: "3px solid #ddd", backgroundColor: "#f5f5f5"}),
-          make.style.padding(6),
-          make.style.rounded(12),
+          makeIt.marginOnHover,
+          With.style({border: "3px solid #ddd", backgroundColor: "#f5f5f5"}),
+          Style.padding(6),
+          Style.rounded(12),
         ).header(
-          make.Paragraph(value),
+          Paragraph(value),
           popup("Нажмите чтобы развернуть список форм данного отдела"),
           make.color.lgray,
-          make.style.margin(-8),
-          make.style.padding(6),
-          make.style.rounded(12),
-          make.with.style({border: "3px solid #ddd"}),
+          Style.margin(-8),
+          Style.padding(6),
+          Style.rounded(12),
+          With.style({border: "3px solid #ddd"}),
         ).content(
           make.Separator(6),
-          make.style.height('100%'),
+          Style.height('100%'),
           make.Div(
-            make.with.style({paddingTop: "8px"}),
-            make.style.rounded(12),
-            make.it.flexColumn,
-            make.style.gap(6),
+            With.style({paddingTop: "8px"}),
+            Style.rounded(12),
+            makeIt.flexColumn,
+            Style.gap(6),
           )
         )]
       )
@@ -34,12 +38,12 @@ function dashboardUser(qBase, deps, forms, paragraphNotice, popup, rebuildFoo, p
     forms.forEach(form => {
       cards[form.department].cardContent.children[1].addChild(
         make.Div(
-          make.it.marginOnHover,
+          makeIt.marginOnHover,
           make.Button(
-            make.it.redir,
-            make.with.text(form.label || "Безымянная форма"),
-            make.with.style({color: "#333"}),
-            make.it.leftAlign,
+            makeIt.redir,
+            With.text(form.label || "Безымянная форма"),
+            With.style({color: "#333"}),
+            makeIt.leftAlign,
             make.on.click(async () => formModal(form.id)),
             popup(400, "Нажмите, чтобы открыть окно заполнения формы")
           )
@@ -49,20 +53,20 @@ function dashboardUser(qBase, deps, forms, paragraphNotice, popup, rebuildFoo, p
 
     function formFieldElem(field, type) {
       const wrapper = make.Div(
-        make.it.marginOnHover,
-        make.style.rounded(12),
-        make.style.padding(12),
+        makeIt.marginOnHover,
+        Style.rounded(12),
+        Style.padding(12),
         ...make.callif(
           field.required && field.type !== 'checkbox',
-          () => make.with.css("have-status-REJECTED")
+          () => With.css("have-status-REJECTED")
         ),
         ...make.callif(!field.required || field.type === 'checkbox', () => make.color.lgray)
       )
       if (type !== "checkbox") {
         wrapper.addModifiers(
-          make.it.flexColumn,
-          make.style.gap(6),
-          make.Paragraph(field.label),
+          makeIt.flexColumn,
+          Style.gap(6),
+          Paragraph(field.label),
           (() => {
             const map = {
               text: () => textFieldElem(field),
@@ -79,7 +83,7 @@ function dashboardUser(qBase, deps, forms, paragraphNotice, popup, rebuildFoo, p
 
             const fieldComp = map[type]()
             fieldComp.addModifiers(
-              make.with.attr({id: field.id}),
+              With.attr({id: field.id}),
               ...make.callif(field.required && field.type !== 'checkbox',
                 () => [
                   popup(100,
@@ -106,10 +110,10 @@ function dashboardUser(qBase, deps, forms, paragraphNotice, popup, rebuildFoo, p
       }
       else {
         wrapper.addModifiers(
-          make.it.flexRow,
-          make.style.gap(6),
-          make.Checkbox(make.with.attr({id: field.id})),
-          make.Paragraph(field.label, make.with.style({alignSelf: "center"})),
+          makeIt.flexRow,
+          Style.gap(6),
+          make.Checkbox(With.attr({id: field.id})),
+          Paragraph(field.label, With.style({alignSelf: "center"})),
         )
       }
       return wrapper
@@ -117,22 +121,22 @@ function dashboardUser(qBase, deps, forms, paragraphNotice, popup, rebuildFoo, p
 
     function dateFieldElem(type) {
       return make.Input(
-        make.with.attr({type: type})
+        With.attr({type: type})
       )
     }
 
     function textFieldElem(field) {
       return make.Input(
-        make.with.attr({placeholder: field.placeholder || ''})
+        With.attr({placeholder: field.placeholder || ''})
       )
     }
 
     function textareaFieldElem(field) {
       return make.TextArea(
-        make.with.attr({
+        With.attr({
 			placeholder: field.placeholder || ''
 		}),
-		make.with.style({
+		With.style({
 			resize: "vertical"
 		})
       )
@@ -140,15 +144,15 @@ function dashboardUser(qBase, deps, forms, paragraphNotice, popup, rebuildFoo, p
 
     function numberFieldElem(field) {
       return make.Input(
-        make.with.attr({type: "number"}),
+        With.attr({type: "number"}),
         ...make.callif(field.decimals,
           () => make.limit.decimalPrecision(field.decimals)
         ),
         ...make.callif(field.minimum,
-          () => make.with.attr({min: field.minimum})
+          () => With.attr({min: field.minimum})
         ),
         ...make.callif(field.maximum,
-          () => make.with.attr({max: field.maximum})
+          () => With.attr({max: field.maximum})
         ),
 
       )
@@ -156,16 +160,16 @@ function dashboardUser(qBase, deps, forms, paragraphNotice, popup, rebuildFoo, p
 
     function charsetFieldElem(field) {
       return make.Input(
-        make.with.attr({placeholder: field.placeholder || ''}),
+        With.attr({placeholder: field.placeholder || ''}),
         make.limit.charactersWhiteList(field.charset.preview),
         popup(2000, "Это ограниченное поле, доступные символы:",
           field.charset.humanized_preview
         ),
         ...make.callif(field.charset.min_length,
-          () => make.with.attr({minlength: field.charset.min_length})
+          () => With.attr({minlength: field.charset.min_length})
         ),  
         ...make.callif(field.charset.max_length,
-          () => make.with.attr({maxlength: field.charset.max_length})
+          () => With.attr({maxlength: field.charset.max_length})
         )
       )
     }
@@ -210,32 +214,32 @@ function dashboardUser(qBase, deps, forms, paragraphNotice, popup, rebuildFoo, p
       })
       let modalForm
       collector.pushModifiers(
-        make.style.height("auto"),
-        make.style.minHeight("0"),
-        make.with.style({overflow: "visible"}),
-        make.it.flexColumn,
-        make.with.attr({flex: "0"}),
-        make.style.gap(6),
+        Style.height("auto"),
+        Style.minHeight("0"),
+        With.style({overflow: "visible"}),
+        makeIt.flexColumn,
+        With.attr({flex: "0"}),
+        Style.gap(6),
         make.Div(
-          make.it.flexRow,
-          make.style.gap(6),
-          make.h1(data.form.label, make.with.style({alignSelf: "center", flex: 1})),
-          picButton("close", "Закрыть", make.it.act.negative, () => modalForm.close())
+          makeIt.flexRow,
+          Style.gap(6),
+          make.h1(data.form.label, With.style({alignSelf: "center", flex: 1})),
+          picButton("close", "Закрыть", makeIt.act.negative, () => modalForm.close())
         ),
         make.Scrollbox(
-          make.with.attr({flex: "999999"}),
-          make.style.gap(6),
-          make.it.flexColumn,
+          With.attr({flex: "999999"}),
+          Style.gap(6),
+          makeIt.flexColumn,
           ...data.fields.map(field =>
             formFieldElem(field, field.type)
           ),
         ),
         collector.btn = make.Button(
-          make.it.action,
-          make.it.act.positive,
-          make.with.attr({flex: "0"}),
-          make.with.text("Отправить"),
-          make.with.attr({type: 'button'}),
+          makeIt.action,
+          makeIt.act.positive,
+          With.attr({flex: "0"}),
+          With.text("Отправить"),
+          With.attr({type: 'button'}),
           make.on.click(async () => {
             const data = collector.collect()
             const res = data.map(({ tag, ...rest }) => rest);
@@ -261,13 +265,13 @@ function dashboardUser(qBase, deps, forms, paragraphNotice, popup, rebuildFoo, p
         )
       )
       modalForm = make.Modal({blur: 8, autoHeight: true},
-        make.it.flexColumn,
+        makeIt.flexColumn,
         make.Div(
-          make.it.flexColumn,
-          make.it.content,
-          make.with.style({border: "2px solid black", boxSizing: "border-box", overflow: "visible"}),
-          make.style.minHeight('0'),
-          make.style.height('auto'),
+          makeIt.flexColumn,
+          makeIt.content,
+          With.style({border: "2px solid black", boxSizing: "border-box", overflow: "visible"}),
+          Style.minHeight('0'),
+          Style.height('auto'),
           collector,
         )
       )
@@ -275,7 +279,7 @@ function dashboardUser(qBase, deps, forms, paragraphNotice, popup, rebuildFoo, p
     }
 
     scrollbox.addModifiers(
-      make.style.height("100%"),
+      Style.height("100%"),
       ...Object.values(
         Object.values(cards).filter(elem => {
           return elem.cardContent.children[1].children.length >= 1

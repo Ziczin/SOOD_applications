@@ -2,6 +2,11 @@ export default async () =>
 {
   await import(`${window.make_url}/make.js`);
 
+  const Style = make.style
+  const makeIt = make.it
+  const Paragraph = make.Paragraph
+  const With = make.with
+
   const csrfObj = await make.Query('/api/csrf-token').get()
   const imp = (await import(`${window.prefab_url}/import.js`)).default(make)
   const popup = await imp(`${window.prefab_url}/popup.js`)
@@ -42,19 +47,19 @@ export default async () =>
     }
   }
 
-  const tabs = make.Tabs({scroll: true}, make.style.height('100%'))
+  const tabs = make.Tabs({scroll: true}, Style.height('100%'))
   .menu(
-    make.with.style({flex: '0 0 auto'}),
-    make.it.flexRow,
-    make.it.gap10px,
-    make.style.rounded(12),
-    make.style.padding(8),
+    With.style({flex: '0 0 auto'}),
+    makeIt.flexRow,
+    makeIt.gap10px,
+    Style.rounded(12),
+    Style.padding(8),
   );
 
   const buildUserTabWrapper = () => {
     return [
-      make.Paragraph("Нажмите на панель с именем отдела, чтобы выбрать тип заявки",
-        make.it.subtitleText
+      Paragraph("Нажмите на панель с именем отдела, чтобы выбрать тип заявки",
+        makeIt.subtitleText
       ),
       ...buildUserTab(
         qBase, deps, forms, paragraphNotice, popup, window.getAndDrawUserApps, picButton)
@@ -62,10 +67,10 @@ export default async () =>
   }
   document.getElementById('center-content').appendChild(
     make.Div(
-      make.style.height("100%"),
-      make.it.flexColumn,
-      make.style.gap(6),
-      make.with.style({overflowY: "hidden"}),
+      Style.height("100%"),
+      makeIt.flexColumn,
+      Style.gap(6),
+      With.style({overflowY: "hidden"}),
       ...make.callif(permissions.length === 0,
         () => make.h1("Перед началом работы верифицируйте аккаунт у администратора отдела или в отделе программирования.")
       ),
@@ -75,13 +80,13 @@ export default async () =>
             tabs.tab()
             .header(...getHeaderComponent("Мои заявки"))
             .content(
-              make.it.flexColumn,
+              makeIt.flexColumn,
               userApps.handler
             );
             tabs.tab()
             .header(...getHeaderComponent("Создать заявку"))
             .content(
-              make.it.flexColumn,
+              makeIt.flexColumn,
               ...buildUserTabWrapper()
             );
           if (permissions.includes('moderator'))
@@ -114,12 +119,12 @@ export default async () =>
 
   function getHeaderComponent(text) {
     return [
-      make.style.rounded(12),
-      make.style.padding(8),
-      make.it.centered,
-      make.it.textCentered,
-      make.it.flex,
-      make.Paragraph(text)
+      Style.rounded(12),
+      Style.padding(8),
+      makeIt.centered,
+      makeIt.textCentered,
+      makeIt.flex,
+      Paragraph(text)
     ]
   }
 }

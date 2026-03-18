@@ -1,6 +1,13 @@
 export default async () =>
 {
   await import(`${window.make_url}/make.js`);
+
+  const Style = make.style
+  const makeIt = make.it
+  const Paragraph = make.Paragraph
+  const With = make.with
+  const Gap = Style.gap
+
   const imp = (await import(`${window.prefab_url}/import.js`)).default(make)
   const paragraphNotice = await imp(`${window.prefab_url}/paragraph_notice.js`)
   const backButton = await imp(`${window.prefab_url}/exit_button.js`)
@@ -17,14 +24,14 @@ export default async () =>
   document.getElementById('manual-button').appendChild(basicManual(mainManual).build())
 
   const leftBtns = make.Card(
-    make.style.rounded(12),
-    make.style.padding(6),
-    make.it.content
+    Style.rounded(12),
+    Style.padding(6),
+    makeIt.content
   )
-  .header(make.it.marginOnHover, make.h3("Перейти", make.it.subtitleText))
+  .header(makeIt.marginOnHover, make.h3("Перейти", makeIt.subtitleText))
   .content(
-    make.it.flexColumn,
-    make.style.gap(6),
+    makeIt.flexColumn,
+    Gap(6),
     make.Separator(),
     backButton(),
     backButton("Перечисления", '/applications/enums-manager/'),
@@ -67,8 +74,8 @@ export default async () =>
         paragraphNotice("Сохранено!", make.color.lgreen)
       }),
       popup("Нажмите на поле ввода, чтобы редактировать имя формы"),
-      make.with.attr({ value: form.label, placeholder: form.label ? form.label : 'Новая форма'}),
-      make.style.padding(6),
+      With.attr({ value: form.label, placeholder: form.label ? form.label : 'Новая форма'}),
+      Style.padding(6),
       make.on.click(async () => {
         if (!inp?.element?.classList?.contains('make-mark-selected-group')){
           selectedFormId = form.id
@@ -79,22 +86,22 @@ export default async () =>
     )
     out = make.Div(
       ...make.if(!form.visible,
-        make.with.css("make-mark-deactivated")
+        With.css("make-mark-deactivated")
       ),
-      make.it.flexRow, make.style.gap(6), make.it.marginOnHover, inp,
-      picButton("hide", "Сделать форму невидимой для пользователей", make.it.act.alternative,
+      makeIt.flexRow, Gap(6), makeIt.marginOnHover, inp,
+      picButton("hide", "Сделать форму невидимой для пользователей", makeIt.act.alternative,
       () => {
         out.element.classList.toggle("make-mark-deactivated")
         qForm.at(form.id).with({visible: !form.visible}).patch()
         paragraphNotice("Видимость изменена!", make.color.yellow)
       }),
-      picButton("trash", "Удалить форму", make.it.act.negative,
+      picButton("trash", "Удалить форму", makeIt.act.negative,
       () => {
         actionNotice({
           confirmText: "Удалить", cancelText: "Отмена",
           question: [
-            make.Paragraph(`Удалить ${inp.element.value || "*Новая форма*"}?`),
-            make.Paragraph(`Это действие невозможно отменить`, make.it.textBold),
+            Paragraph(`Удалить ${inp.element.value || "*Новая форма*"}?`),
+            Paragraph(`Это действие невозможно отменить`, makeIt.textBold),
 
           ],
           action: ()=>{
@@ -118,10 +125,10 @@ export default async () =>
 
   function formAddButton(acc) {
     return make.Button(
-      make.it.action,
-      make.it.act.neutral,
-      make.with.text("Добавить форму"),
-      make.style.maxHeight("fit-content"),
+      makeIt.action,
+      makeIt.act.neutral,
+      With.text("Добавить форму"),
+      Style.maxHeight("fit-content"),
       make.on.click(
         async () => {
           let newForm = await qForm.with({
@@ -148,13 +155,13 @@ export default async () =>
   function leftContent() {
     let acc
     let ret = make.Div(
-      make.it.flexColumn,
-      make.style.height("100%"),
-      make.style.gap(10),
+      makeIt.flexColumn,
+      Style.height("100%"),
+      Gap(10),
       make.h1("Формы"),
       acc = make.Scrollbox(
-        make.it.flexRow,
-        make.style.gap(6),
+        makeIt.flexRow,
+        Gap(6),
       ),
       formAddButton(acc)
     )
@@ -187,22 +194,22 @@ export default async () =>
       addit = ` "${field.charset.humanized_preview}"`
     }
     ret.addModifiers(
-      make.it.marginOnHover,
+      makeIt.marginOnHover,
       make.Div(
-        make.style.padding(2),
-        make.style.rounded(12),
-        make.with.css('recolor-on-hover'),
-        make.it.flexRow,
-        make.with.style({
+        Style.padding(2),
+        Style.rounded(12),
+        With.css('recolor-on-hover'),
+        makeIt.flexRow,
+        With.style({
           justifyContent: "space-between", alignItems: "center",
           paddingLeft: "8px", paddingRight: "8px",
         }),
         make.Div(
           make.Div(
-            make.it.flexColumn,
-            make.Paragraph(field.label),
-            make.Paragraph(
-			  field.type + addit, make.it.subtitleText,
+            makeIt.flexColumn,
+            Paragraph(field.label),
+            Paragraph(
+			  field.type + addit, makeIt.subtitleText,
 				...make.if(field.placeholder,
 				  popup(["Плейсхолдер:", `"${field.placeholder}"`])
 			  )
@@ -211,10 +218,10 @@ export default async () =>
         ),
         make.Div(
           make.Div(
-            make.it.flexRow,
-            make.style.gap(6),
+            makeIt.flexRow,
+            Gap(6),
             picButton(
-              "up", "Поднять поле на форме", make.it.act.neutral,
+              "up", "Поднять поле на форме", makeIt.act.neutral,
               () => {
                 if (ret.prevFormFieldElem !== null) {
                   let prev = ret.prevFormFieldElem
@@ -235,12 +242,12 @@ export default async () =>
               }
             ),
             picButton(
-              "trash", "Удалить", make.it.act.negative,
+              "trash", "Удалить", makeIt.act.negative,
               () => {
                 actionNotice({
                   confirmText: "Удалить", cancelText: "Отмена",
                   question: [
-                    make.Paragraph(`Вы уверены что хотите удалить это поле из формы?`),
+                    Paragraph(`Вы уверены что хотите удалить это поле из формы?`),
                   ],
                   action: async () => {
                     qFormField.at(ret.id).with({available: false}).view().patch()
@@ -254,7 +261,7 @@ export default async () =>
               }
             ),
             picButton(
-              "down", "Опустить поле на форме", make.it.act.neutral,
+              "down", "Опустить поле на форме", makeIt.act.neutral,
               () => {
                 if (ret.nextFormFieldElem !== null) {
                   let next = ret.nextFormFieldElem
@@ -278,7 +285,7 @@ export default async () =>
               const wrapper = make.Checkbox(
                 popup(200, "Является ли поле обязательным для заполнения"),
                 ...make.callif(formField.required,
-                  () => make.with.attrs('checked')
+                  () => With.attrs('checked')
                 ),
                 make.on.change((e) => {
                   qFormField.at(formField.id).with({required: wrapper.element.checked}).view().patch()
@@ -304,8 +311,8 @@ export default async () =>
   let formFieldLinkedList
   function centerElem(items) {
     formFieldLinkedList = make.Scrollbox(
-      make.it.flexColumn,
-      make.style.gap(6)
+      makeIt.flexColumn,
+      Gap(6)
     )
     for (const item of items) {
       formFieldLinkedList.addChild(formFieldElem(formFieldLinkedList, item))
@@ -316,62 +323,62 @@ export default async () =>
   function centerComponent(formFields) {
     let acc
     return make.Div(
-      make.h1("Поля формы", make.with.style({marginLeft: "6px", marginTop: "6px"})),
-      make.style.height('100%'),
-      make.it.flexColumn,
-      make.style.gap(6),
+      make.h1("Поля формы", With.style({marginLeft: "6px", marginTop: "6px"})),
+      Style.height('100%'),
+      makeIt.flexColumn,
+      Gap(6),
       acc = centerElem(formFields),
     ).build()
   }
 
   function rightContent() {
     return make.Div(
-      make.style.height('100%'),
-      make.it.flexColumn,
-      make.style.gap(6),
+      Style.height('100%'),
+      makeIt.flexColumn,
+      Gap(6),
       make.h1("Доступные шаблоны"),
       make.Scrollbox(
-        make.it.flexColumn,
-        make.style.gap(6),
+        makeIt.flexColumn,
+        Gap(6),
         ...fieldTypes.map((ft) => 
           make.Card(
-            make.style.rounded(12),
-            make.style.padding(4),
-            make.it.littleDarker,
+            Style.rounded(12),
+            Style.padding(4),
+            makeIt.littleDarker,
           )
           .header(
-            make.style.rounded(12),
-            make.style.padding(4),
-            make.with.css('recolor-on-hover'),
-            make.Paragraph(ft.label),
+            Style.rounded(12),
+            Style.padding(4),
+            With.css('recolor-on-hover'),
+            Paragraph(ft.label),
           )
           .content(
             make.Div(
-              make.style.padding(8),
-              make.style.rounded(12),
+              Style.padding(8),
+              Style.rounded(12),
               make.Div(
-                make.it.flexColumn,
-                make.style.gap(6),
+                makeIt.flexColumn,
+                Gap(6),
                 ...make.if(fields[ft.id].length,
                   ...fields[ft.id].map((f)=>
                     make.Div(
-                      make.with.style({alignItems: "center"}),
-                      make.it.marginOnHover,
-                      make.it.flexRow,
-                      make.style.gap(6),
-                      picButton("plus", "Добавить шаблон на форму", make.it.act.positive, async () => {
+                      With.style({alignItems: "center"}),
+                      makeIt.marginOnHover,
+                      makeIt.flexRow,
+                      Gap(6),
+                      picButton("plus", "Добавить шаблон на форму", makeIt.act.positive, async () => {
                         formFieldLinkedList.addChild(
                           formFieldElem(
                             formFieldLinkedList, (await qFormField.with({form: selectedFormId, field_id: f.id}).post())
                           )
                         )
                       }),
-                      make.Paragraph(f.label)
+                      Paragraph(f.label)
                     )
                   )
                 ),
                 ...make.if(!fields[ft.id].length,
-                  make.Paragraph("Не найдено шаблонов под данному типу")
+                  Paragraph("Не найдено шаблонов под данному типу")
                 )
               )
             )

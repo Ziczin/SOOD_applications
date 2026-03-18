@@ -1,6 +1,12 @@
 export default async () =>
 {
   await import(`${window.make_url}/make.js`);
+
+  const Style = make.style
+  const makeIt = make.it
+  const Paragraph = make.Paragraph
+  const With = make.with
+
   const imp = (await import(`${window.prefab_url}/import.js`)).default(make)
   const paragraphNoticePromise = imp(`${window.prefab_url}/paragraph_notice.js`)
   const backButtonPromise = imp(`${window.prefab_url}/exit_button.js`)
@@ -18,8 +24,8 @@ export default async () =>
   const qUsers = qBase.at('users').view()
   const users = await qUsers.get()
   
-  const Row = (...mods) => make.Div(make.it.flexRow, make.style.gap(6), ...mods)
-  const Column = (...mods) => make.Div(make.it.flexColumn, make.style.gap(6), ...mods)
+  const Row = (...mods) => make.Div(makeIt.flexRow, Style.gap(6), ...mods)
+  const Column = (...mods) => make.Div(makeIt.flexColumn, Style.gap(6), ...mods)
 
   document.getElementById("left-btns").appendChild(backButton().build());
 
@@ -42,7 +48,7 @@ export default async () =>
   function modUserInput(inp, user, depData) {
     inp.addModifiers(
       picButton(
-        "modify", "Изменить отдел", make.it.act.alternative,
+        "modify", "Изменить отдел", makeIt.act.alternative,
         async () => {
           let thisNotice
           let passwordField
@@ -52,19 +58,19 @@ export default async () =>
             make.Notice(
               [500, Infinity, 500, "change-dep-notice"],
               make.Div(
-                make.it.littleDarker,
-                make.style.padding(6),
-                make.style.rounded(18),
+                makeIt.littleDarker,
+                Style.padding(6),
+                Style.rounded(18),
                 Column(
-                  make.it.content,
+                  makeIt.content,
                   Row(
                     picButton(
-                      "close", "Закрыть меню смены отдела", make.it.act.negative,
+                      "close", "Закрыть меню смены отдела", makeIt.act.negative,
                       () => make.other.closeCurrentNotice()
                     ),
-                    make.Paragraph(
+                    Paragraph(
                       "Выберите новый отдел:",
-                      make.with.style({alignSelf: "center"})
+                      With.style({alignSelf: "center"})
                     ),
                   ),
                   make.Select(
@@ -81,18 +87,18 @@ export default async () =>
                         dep.id,
                         ...make.if(
                           dep.id === user.department.id,
-                          make.with.attrs("selected")
+                          With.attrs("selected")
                         )
                       )
                     )
                   ),
                   Column(
-                    make.style.padding(6),
-                    make.style.rounded(18),
+                    Style.padding(6),
+                    Style.rounded(18),
                     make.color.lgray,
-                    make.Paragraph("Логин:"),
+                    Paragraph("Логин:"),
                     make.Input(
-                      make.with.attr({
+                      With.attr({
                         value: user.username,
                         placeholder: user.username,
                       }),
@@ -117,17 +123,17 @@ export default async () =>
                     )
                   ),
                   Column(
-                    make.style.padding(6),
-                    make.style.rounded(18),
+                    Style.padding(6),
+                    Style.rounded(18),
                     make.color.lgray,
-                    make.Paragraph("Пароль:"),
+                    Paragraph("Пароль:"),
                     Row(
                       passwordField = make.Input(
-                        make.with.attr({
+                        With.attr({
                           placeholder: "Запишите новый пароль для пользователя",
                         }),
                       ),
-                      picButton("verify", "Подтвердить", make.it.act.alternative,
+                      picButton("verify", "Подтвердить", makeIt.act.alternative,
                         async () => {
                           make.other.closeCurrentNotice()
                           const status = await qUsers.at(user.id).at("change_password").with({
@@ -159,7 +165,7 @@ export default async () =>
   async function fillCenter(depData) {
     center.innerHTML = ``
     const users = await qUsers.where({department: depData.id}).view().get()
-    const scrollbox = make.Scrollbox(make.it.flexColumn, make.style.gap(6))
+    const scrollbox = make.Scrollbox(makeIt.flexColumn, Style.gap(6))
     if (users.length > 0) {
       center.appendChild(
         Column(
@@ -183,16 +189,16 @@ export default async () =>
     }
     else {
       center.appendChild(
-        make.Paragraph("В этом отделе нет пользователей").build()
+        Paragraph("В этом отделе нет пользователей").build()
       )
     }
   }
 
   function Input(fieldData, querySet, field, onClick=(()=>{})) {
-    const elem = Row(make.it.marginOnHover)
+    const elem = Row(makeIt.marginOnHover)
     elem.addModifiers(
       make.Input(
-        make.with.attr({
+        With.attr({
           value: fieldData[field],
           placeholder: fieldData[field]
         }),
@@ -218,7 +224,7 @@ export default async () =>
   function modDepInput(inp, dep) {
     inp.addModifiers(
       picButton(
-        "trash", "Удалить отдел", make.it.act.negative,
+        "trash", "Удалить отдел", makeIt.act.negative,
         async () => {
           const users = await qUsers.where({department: dep.id}).view().get()
           if (users.length > 0) {
@@ -243,9 +249,9 @@ export default async () =>
   document.getElementById("left-content").appendChild(
     Column(
       make.Div(
-        make.style.rounded(6),
+        Style.rounded(6),
         make.Input(
-          make.with.attr({
+          With.attr({
             placeholder: "Фильтр по отделу"
           }),
           make.on.input((e) => {
@@ -260,10 +266,10 @@ export default async () =>
           })
         ),
       ),
-      make.Separator(6, make.style.rounded(12), make.color.lgray),
-      make.style.height("100%"),
+      make.Separator(6, Style.rounded(12), make.color.lgray),
+      Style.height("100%"),
       scrollbox = make.Scrollbox(
-        make.style.gap(6),
+        Style.gap(6),
         ...depsList.map((dep) => {
           const thisRow = Input(
             dep, qDepartments, "name",
@@ -275,9 +281,9 @@ export default async () =>
       ),
 
       make.Button(
-        make.with.text("Добавить новый отдел"),
-        make.it.action,
-        make.it.act.positive,
+        With.text("Добавить новый отдел"),
+        makeIt.action,
+        makeIt.act.positive,
         make.on.click(async () => {
           const dep = await qDepartments.with({name: "Новый пустой отдел"}).post()
           const newDep = Input(
@@ -296,9 +302,9 @@ export default async () =>
   document.getElementById("right-content").appendChild(
     Column(
       make.Div(
-        make.style.rounded(6),
+        Style.rounded(6),
         make.Input(
-          make.with.attr({
+          With.attr({
             placeholder: "Поиск пользователя"
           }),
           make.on.input((e) => {
@@ -317,20 +323,20 @@ export default async () =>
           })
         ),
       ),
-      make.Separator(6, make.style.rounded(12), make.color.lgray),
-      make.style.height("100%"),
+      make.Separator(6, Style.rounded(12), make.color.lgray),
+      Style.height("100%"),
       scrollbox2 = make.Scrollbox(
-        make.style.gap(6),
+        Style.gap(6),
         ...users.map(user => 
           make.Div(
-            make.it.flexColumn,
-            make.it.littleDarker,
-            make.it.marginOnHover,
-            make.style.padding(6),
-            make.style.rounded(12),
-            make.Paragraph(user.fullname),
-            make.Paragraph(user.username, make.it.subtitleText),
-            make.Paragraph(user.department.name, make.it.subtitleText),
+            makeIt.flexColumn,
+            makeIt.littleDarker,
+            makeIt.marginOnHover,
+            Style.padding(6),
+            Style.rounded(12),
+            Paragraph(user.fullname),
+            Paragraph(user.username, makeIt.subtitleText),
+            Paragraph(user.department.name, makeIt.subtitleText),
             make.on.click(() => {
               searchingElement = user.fullname
               for (const el of scrollbox.children) {

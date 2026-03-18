@@ -1,6 +1,12 @@
 export default async () =>
 {
   await import(`${window.make_url}/make.js`);
+
+  const Style = make.style
+  const makeIt = make.it
+  const Paragraph = make.Paragraph
+  const With = make.with
+
   const imp = (await import(`${window.prefab_url}/import.js`)).default(make)
   const paragraphNotice = await imp(`${window.prefab_url}/paragraph_notice.js`)
   const backButton = await imp(`${window.prefab_url}/exit_button.js`)
@@ -13,11 +19,11 @@ export default async () =>
                     .via({"X-CSRFToken": csrfObj.csrfToken})
                     .on({405: () => make.Notice([500, 1500, 500],
                       make.Div(
-                        make.it.content,
-                        make.it.flexColumn,
-                        make.style.gap(6),
+                        makeIt.content,
+                        makeIt.flexColumn,
+                        Style.gap(6),
                         make.color.red,
-                        make.Paragraph("Ошибка создания! Попробуйте снова")
+                        Paragraph("Ошибка создания! Попробуйте снова")
                       )
                     )})
                     .view();
@@ -30,14 +36,14 @@ export default async () =>
   document.getElementById('manual-button').appendChild(basicManual(mainManual).build())
 
   const leftBtns = make.Card(
-    make.style.rounded(12),
-    make.style.padding(6),
-    make.it.content
+    Style.rounded(12),
+    Style.padding(6),
+    makeIt.content
   )
-  .header(make.it.marginOnHover, make.h3("Перейти", make.it.subtitleText))
+  .header(makeIt.marginOnHover, make.h3("Перейти", makeIt.subtitleText))
   .content(
-    make.it.flexColumn,
-    make.style.gap(6),
+    makeIt.flexColumn,
+    Style.gap(6),
     make.Separator(),
     backButton(),
     backButton("Формы", '/applications/forms-manager/'),
@@ -48,11 +54,11 @@ export default async () =>
 
   function enumElem({id, value, ph, enabled=true, container, visible, makeQuery}) {
     let acc;
-    let out = make.Div(make.it.marginOnHover)
+    let out = make.Div(makeIt.marginOnHover)
     out.id = id
     let inp
     inp = make.Input(
-      make.with.attr({
+     With.attr({
         value: value,
         placeholder: ph ? ph : value ? value : "Пустой элемент"
       }),
@@ -65,42 +71,42 @@ export default async () =>
         paragraphNotice("Сохранено!", make.color.lgreen)
       }),
       ...make.if(!enabled,
-        make.style.padding(6),
-        make.with.attrs("disabled"),
+        Style.padding(6),
+       With.attrs("disabled"),
         make.Annotation(1500, 
           make.Div(
-            make.it.popup,
-            make.Paragraph("Вы не можете редактировать этот элемент"),
+            makeIt.popup,
+            Paragraph("Вы не можете редактировать этот элемент"),
           )
         ),
       ),
       ...make.if(enabled,
         make.Annotation(1500, 
           make.Div(
-            make.it.popup,
-            make.Paragraph("Нажмите на поле ввода для редактирования"),
-            make.Paragraph("Если элемент подсвечен, то он сохранится через некоторое время"),
-            make.Paragraph("Если вы перейдёте на другой элемент, то этот так же сохранится автоматически"),
+            makeIt.popup,
+            Paragraph("Нажмите на поле ввода для редактирования"),
+            Paragraph("Если элемент подсвечен, то он сохранится через некоторое время"),
+            Paragraph("Если вы перейдёте на другой элемент, то этот так же сохранится автоматически"),
           )
         )
       )
     )
     acc = make.Div(
-      make.with.css("make-mark-filtered"),
+     With.css("make-mark-filtered"),
       ...make.if(!visible,
-        make.with.css("make-mark-deactivated")
+       With.css("make-mark-deactivated")
       ),
-      make.it.flexRow,
-      make.style.gap(6),
+      makeIt.flexRow,
+      Style.gap(6),
       inp,
       ...make.if(enabled,
-        picButton("hide", "Скрыть элемент от пользователя", make.it.act.alternative,
+        picButton("hide", "Скрыть элемент от пользователя", makeIt.act.alternative,
         () => {
           acc.element.classList.toggle("make-mark-deactivated")
           makeQuery.at(out.id).with({visible: !visible}).patch()
           paragraphNotice("Видимость изменена!", make.color.yellow)
         }),
-        picButton("trash", "Удалить элемент", make.it.act.negative,
+        picButton("trash", "Удалить элемент", makeIt.act.negative,
           () => actionNotice({
             confirmText: "Удалить", cancelText: "Отмена",
             question: `Удалить ${inp.element.value || "*пустой элемент*"}?`,
@@ -119,8 +125,8 @@ export default async () =>
 
   function createCollector(items, enabled=true) {
     let collector = make.Scrollbox(
-      make.it.flexColumn,
-      make.style.gap(6)
+      makeIt.flexColumn,
+      Style.gap(6)
     )
     collector.addModifiers(
       ...items.map((item) => 
@@ -139,10 +145,10 @@ export default async () =>
   
   function enumElemButtonAdd(enumCollector, qEnum, tag) {
     return make.Button(
-      make.it.action,
-      make.it.act.neutral,
-      make.with.text("Добавить элемент"),
-      make.with.style({flex: 1}),
+      makeIt.action,
+      makeIt.act.neutral,
+     With.text("Добавить элемент"),
+     With.style({flex: 1}),
       make.on.click(
         async () => {
           const newEnum = await qEnum.with({
@@ -166,16 +172,16 @@ export default async () =>
 
   function centerComponent(qEnumm, items, tag, me) {
     return make.Div(
-      make.style.height('100%'),
-      make.it.flexColumn,
-      make.style.gap(6),
+      Style.height('100%'),
+      makeIt.flexColumn,
+      Style.gap(6),
       enumCollector = createCollector(items, tag.department === me.department.id),
       ...make.if(
         tag.department === me.department.id,
         make.Div(
-          make.with.style({flex: 0}),
-          make.it.flexRow,
-          make.style.gap(6),
+         With.style({flex: 0}),
+          makeIt.flexRow,
+          Style.gap(6),
           enumElemButtonAdd(enumCollector, qEnum, tag)
         ),
       ),
@@ -224,8 +230,8 @@ export default async () =>
     let shareBtn
     inp = make.Input(
       ...make.if(tag.department !== me.department.id,
-        make.with.attrs('readonly'),
-        make.with.css('fake-disabled')
+       With.attrs('readonly'),
+       With.css('fake-disabled')
       ),
       make.on.input((e) =>
         out.element.classList.add("make-mark-changed")
@@ -236,8 +242,8 @@ export default async () =>
         paragraphNotice("Сохранено!", make.color.lgreen)
       }),
       enumTagPopup(tag.department === me.department.id),
-      make.with.attr({ value: tag.name, placeholder: tag.name ? tag.name : 'Пустая группа'}),
-      make.style.padding(6),
+     With.attr({ value: tag.name, placeholder: tag.name ? tag.name : 'Пустая группа'}),
+      Style.padding(6),
       make.on.click(async () => {
         if (!inp?.element?.classList?.contains('make-mark-selected-group')){
           selectedEnumTagId = tag.id
@@ -248,24 +254,24 @@ export default async () =>
     )
     out = make.Div(
       ...make.if(!tag.visible,
-        make.with.css("make-mark-deactivated")
+       With.css("make-mark-deactivated")
       ),
-      make.it.flexRow, make.style.gap(6), make.it.marginOnHover, inp,
+      makeIt.flexRow, Style.gap(6), makeIt.marginOnHover, inp,
       ...make.if(!tag.shared || tag.department === me.department.id,
-        picButton("hide", "Скрыть из вариантов при создании форм", make.it.act.alternative,
+        picButton("hide", "Скрыть из вариантов при создании форм", makeIt.act.alternative,
         () => {
           out.element.classList.toggle("make-mark-deactivated")
           qEnumTag.at(tag.id).with({visible: !tag.visible}).patch()
           paragraphNotice("Видимость изменена!", make.color.yellow)
         }),
         ...make.if(!tag.shared,
-          shareBtn = picButton("share", "Поделиться перечислением с другим отделом", make.it.act.neutral,
+          shareBtn = picButton("share", "Поделиться перечислением с другим отделом", makeIt.act.neutral,
           () => {
             actionNotice({
               confirmText: "Поделиться", cancelText: "Отмена",
               question: [
-                make.Paragraph(`Поделиться ${inp.element.value || "*пустая группа*"} с другими отделами?`),
-                make.Paragraph(`Это действие невозможно будет отменить`, make.it.textBold),
+                Paragraph(`Поделиться ${inp.element.value || "*пустая группа*"} с другими отделами?`),
+                Paragraph(`Это действие невозможно будет отменить`, makeIt.textBold),
               ],
               action: ()=>{
                 out.removeChild(shareBtn),
@@ -275,13 +281,13 @@ export default async () =>
             })
           })
         ),
-        picButton("trash", "Удалить группу", make.it.act.negative,
+        picButton("trash", "Удалить группу", makeIt.act.negative,
         () => {
           actionNotice({
             confirmText: "Удалить", cancelText: "Отмена",
             question: [
-              make.Paragraph(`Удалить ${inp.element.value || "*пустая группа*"}?`),
-              make.Paragraph(`Элементы перечисления так же будут удалены`, make.it.textBold),
+              Paragraph(`Удалить ${inp.element.value || "*пустая группа*"}?`),
+              Paragraph(`Элементы перечисления так же будут удалены`, makeIt.textBold),
 
             ],
             action: ()=>{
@@ -302,13 +308,13 @@ export default async () =>
     let acc;
 
     let res = make.Div(
-      make.it.flexColumn,
-      make.style.gap(10),
-      make.style.height("100%"),
+      makeIt.flexColumn,
+      Style.gap(10),
+      Style.height("100%"),
       make.h1(me.department.label),
       acc = make.Scrollbox(
-        make.it.flexColumn,
-        make.style.gap(6),
+        makeIt.flexColumn,
+        Style.gap(6),
       )
     )
     acc.addModifiers(
@@ -324,10 +330,10 @@ export default async () =>
 
   function enumTagElemButtonAdd(me, acc, qEnumTag, qEnum) {
     return make.Button(
-      make.it.action,
-      make.it.act.neutral,
-      make.style.maxHeight("fit-content"),
-      make.with.text("Добавить группу"),
+      makeIt.action,
+      makeIt.act.neutral,
+      Style.maxHeight("fit-content"),
+     With.text("Добавить группу"),
       make.on.click(
         async () => {
           document.activeElement?.blur()

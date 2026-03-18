@@ -1,6 +1,9 @@
 export default async () =>
 {
   await import(`${window.make_url}/make.js`);
+
+  const Paragraph = make.Paragraph
+
   const imp = (await import(`${window.prefab_url}/import.js`)).default(make)
   const paragraphNotice = await imp(`${window.prefab_url}/paragraph_notice.js`)
   const actionNotice = await imp(`${window.prefab_url}/action_notice.js`)
@@ -52,10 +55,10 @@ export default async () =>
         make.Annotation(1500, 
           make.Div(
             make.it.popup,
-            make.Paragraph("Нажмите на поле ввода для редактирования"),
-            make.Paragraph("Если элемент подсвечен, то он сохранится через некоторое время"),
-            make.Paragraph("Если вы перейдёте на другой элемент, то этот так же сохранится автоматически"),
-            make.Paragraph("Вы не можете редактировать свою роль", make.it.textBold),
+            Paragraph("Нажмите на поле ввода для редактирования"),
+            Paragraph("Если элемент подсвечен, то он сохранится через некоторое время"),
+            Paragraph("Если вы перейдёте на другой элемент, то этот так же сохранится автоматически"),
+            Paragraph("Вы не можете редактировать свою роль", make.it.textBold),
           )
         )
       ),
@@ -63,9 +66,9 @@ export default async () =>
         make.Annotation(1500, 
           make.Div(
             make.it.popup,
-            make.Paragraph("Нажмите на поле ввода для редактирования"),
-            make.Paragraph("Если элемент подсвечен, то он сохранится через некоторое время"),
-            make.Paragraph("Если вы перейдёте на другой элемент, то этот так же сохранится автоматически"),
+            Paragraph("Нажмите на поле ввода для редактирования"),
+            Paragraph("Если элемент подсвечен, то он сохранится через некоторое время"),
+            Paragraph("Если вы перейдёте на другой элемент, то этот так же сохранится автоматически"),
           )
         )
       ),
@@ -94,7 +97,7 @@ export default async () =>
           make.Annotation(1500, 
             make.Div(
               make.it.popup,
-              make.Paragraph("Нажмите чтобы выбрать роль пользователя"),
+              Paragraph("Нажмите чтобы выбрать роль пользователя"),
             )
           ),
           make.with.style({maxWidth: "max-content"}),

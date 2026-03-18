@@ -1,12 +1,16 @@
 export default (make) =>
 async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice) {
-  const Row = (...args) => make.Div(make.it.flexRow, make.style.gap(6), ...args)
-  const Column = (...args) => make.Div(make.it.flexColumn, make.style.gap(6), ...args)
+  const Style = make.style
+  const Paragraph = make.Paragraph
+  const With = make.with
+  const makeIt = make.it
+  const Row = (...args) => make.Div(makeIt.flexRow, Style.gap(6), ...args)
+  const Column = (...args) => make.Div(makeIt.flexColumn, Style.gap(6), ...args)
 
   const appList = make.Scrollbox(
-    make.it.flexColumn,
-    make.style.height("100%"),
-    make.style.gap(6),
+    makeIt.flexColumn,
+    Style.height("100%"),
+    Style.gap(6),
   )
 
   function setStatusStyle(element, style) {
@@ -29,16 +33,16 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
 
     const tabs = make.Tabs(
       {scroll: true, noAnimation: true, squareTabs: true},
-      make.style.margin(8),
-      make.it.flexColumn,
+      Style.margin(8),
+      makeIt.flexColumn,
     ).menu(
-      make.style.padding(8),
-      make.style.rounded(12),
-      make.it.flexRow,
-      make.with.style({flex: "0 0 auto"}),
-      make.style.gap(8)
+      Style.padding(8),
+      Style.rounded(12),
+      makeIt.flexRow,
+      With.style({flex: "0 0 auto"}),
+      Style.gap(8)
     ).content(
-      make.it.flexColumn
+      makeIt.flexColumn
     )
     let pageCounter = 0
     let pageCards = []
@@ -48,15 +52,15 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
         pageCounter++
         tabs.tab()
         .header(
-          make.style.rounded(12),
-          make.style.padding(8),
-          make.it.centered,
-          make.it.textCentered,
-          make.Paragraph(`${pageCounter}`)
+          Style.rounded(12),
+          Style.padding(8),
+          makeIt.centered,
+          makeIt.textCentered,
+          Paragraph(`${pageCounter}`)
         ).content(
-          make.it.flexColumn,
-          make.with.style({flex: "1 1 auto"}),
-          make.style.gap(6),
+          makeIt.flexColumn,
+          With.style({flex: "1 1 auto"}),
+          Style.gap(6),
           ...pageCards
         )
         pageCards = []
@@ -119,7 +123,7 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
   }
 
   const inputDateFrom = make.Input(
-    make.with.attr({type: "date", value: formatDateForInput(weekAgo)}),
+    With.attr({type: "date", value: formatDateForInput(weekAgo)}),
     make.on.change(getAndDraw),
     popup([
       "Дата начала выборки",
@@ -129,7 +133,7 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
   )
 
   const inputDateTo = make.Input(
-    make.with.attr({type: "date", value: formatDateForInput(today)}),
+    With.attr({type: "date", value: formatDateForInput(today)}),
     make.on.change(getAndDraw),
     popup([
       "Дата конца выборки",
@@ -139,21 +143,21 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
   )
 
   const sortElement = Row(
-    make.with.style({flex: 0}),
+    With.style({flex: 0}),
     Row(
       Column(
         Row(
-          make.Paragraph("Статус: ", make.with.style({alignSelf: "center"})),
+          Paragraph("Статус: ", With.style({alignSelf: "center"})),
           statusSort
         )
       ),
       Column(
         Row(
-          make.Paragraph("от", make.with.style({alignSelf: "center"})),
+          Paragraph("от", With.style({alignSelf: "center"})),
           inputDateFrom
         ),
         Row(
-          make.Paragraph("по ", make.with.style({alignSelf: "center"})),
+          Paragraph("по ", With.style({alignSelf: "center"})),
           inputDateTo
         ),
       ),
@@ -161,8 +165,8 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
   )
   
   const handler = Column(
-    make.style.minHeight(0),
-    make.with.style({flex: 1}),
+    Style.minHeight(0),
+    With.style({flex: 1}),
     sortElement,
     appList
   ).allowEvents().onBuild.once(getAndDraw)
@@ -219,10 +223,10 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
 
   function appCard(app) {
     const card = make.Card(
-      make.it.marginOnHover,
-      make.with.style({border: "3px solid #ddd", backgroundColor: "#f5f5f5"}),
-      make.style.padding(6),
-      make.style.rounded(12),
+      makeIt.marginOnHover,
+      With.style({border: "3px solid #ddd", backgroundColor: "#f5f5f5"}),
+      Style.padding(6),
+      Style.rounded(12),
     )
     card.status = app.status
     card.id = app.id
@@ -231,18 +235,18 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
     let cardBody
     let fieldData
     card.header(
-      make.with.css(`have-status-${app.status}`),
+      With.css(`have-status-${app.status}`),
       Row(
         make.Div(
-          make.it.flexRow,
-          make.style.gap(9),
-          make.with.style({alignSelf: "center"}),
-          make.Paragraph(`№ ${app.id}`, make.it.textBold, make.with.style({flex: "0 1 auto"})),
-          make.Paragraph(
+          makeIt.flexRow,
+          Style.gap(9),
+          With.style({alignSelf: "center"}),
+          Paragraph(`№ ${app.id}`, makeIt.textBold, With.style({flex: "0 1 auto"})),
+          Paragraph(
             `${timeFormat(app.date)} -`,
-            make.with.style({flex: "0 1 auto"}),
+            With.style({flex: "0 1 auto"}),
           ),
-          make.Paragraph(app.form.label)
+          Paragraph(app.form.label)
         ),
       ),
       popup([
@@ -250,40 +254,40 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
         "Данные заявки подгружаются по клику, возможна небольшая задержка"
       ]),
       make.color.lgray,
-      make.style.margin(-8),
-      make.style.padding(6),
-      make.style.rounded(12),
-      make.with.style({border: "3px solid #ddd"}),
+      Style.margin(-8),
+      Style.padding(6),
+      Style.rounded(12),
+      With.style({border: "3px solid #ddd"}),
     ).content(
-      make.style.height('100%'),
+      Style.height('100%'),
       cardBody = Column(
         make.Separator(),
         ...make.callif(app.executor !== null,
           () => Row(
-            make.it.marginOnHover,
-            make.Paragraph(`Исполнитель: ${app.executor.fullname}`),
-            make.Paragraph(`(${app.executor.department.name})`, make.it.subtitleText),
+            makeIt.marginOnHover,
+            Paragraph(`Исполнитель: ${app.executor.fullname}`),
+            Paragraph(`(${app.executor.department.name})`, makeIt.subtitleText),
           ),
         ),
         fieldData = Column(),
         ...make.if(app.msg,
-          make.Paragraph(
+          Paragraph(
             app.status === "REJECTED"
             ? `Причина отказа: ${app.msg}`
             : app.status === "CANCELLED"
             ? `Причина отмены: ${app.msg}`
             : "Этой надписи тут быть не должно - обратитесь в отдел программирования",
-            make.it.marginOnHover
+            makeIt.marginOnHover
           )
         ),
         ...make.if(
           ["SENDED", "IN_PROGRESS"].includes(card.status),
           btn2 = make.Button(
-            make.with.text("Отменить"),
-            make.it.action,
-            make.it.act.negative,
-            make.style.padding(3),
-            make.style.margin(-2),
+            With.text("Отменить"),
+            makeIt.action,
+            makeIt.act.negative,
+            Style.padding(3),
+            Style.margin(-2),
             popup([
               "Нажмите чтобы отменить заявку",
               "Отменить заявку можно только если она не была принята в работу"
@@ -304,21 +308,21 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
               make.on.click(async (e) => {
                 e.stopPropagation();
                 const inp = make.TextArea(
-					make.with.style({
+					With.style({
 						resize: "vertical"
 					})
 				)
                 make.Notice([500, Infinity, 500, "actionNotice"],
                   Column(
-                    make.it.contented,
-                    make.Paragraph("Для отмены заявки укажите причину:"),
+                    makeIt.contented,
+                    Paragraph("Для отмены заявки укажите причину:"),
                     inp,
                     Row(
                       make.Button(
-                        make.it.action,
-                        make.it.act.negative,
-                        make.with.text("Отменить"),
-                        make.with.style({flex: 1}),
+                        makeIt.action,
+                        makeIt.act.negative,
+                        With.text("Отменить"),
+                        With.style({flex: 1}),
                         make.on.click(async () => {
                           if (inp.element.value) {
                             qBase.at("applications").at(app.id).with({
@@ -331,17 +335,17 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
                             setVisibilityByStatus()
                             card.btn2.destroy()
                             cardBody.addChild(
-                              make.Paragraph(`Причина отмены: ${inp.element.value}`)
+                              Paragraph(`Причина отмены: ${inp.element.value}`)
                             )
                             make.other.closeCurrentNotice()
                           }
                         })
                       ),
                       make.Button(
-                        make.it.action,
-                        make.it.act.alternative,
-                        make.with.text("Не отменять"),
-                        make.with.style({flex: 1}),
+                        makeIt.action,
+                        makeIt.act.alternative,
+                        With.text("Не отменять"),
+                        With.style({flex: 1}),
                         make.on.click(() => {
                           make.other.closeCurrentNotice()
                         })
@@ -363,9 +367,9 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
       if (!field.value) {
         fieldData.addChild(
           Row(
-            make.it.marginOnHover,
-            make.Paragraph(`${field.label}: <<< не указано >>>`),
-            make.it.subtitleText
+            makeIt.marginOnHover,
+            Paragraph(`${field.label}: <<< не указано >>>`),
+            makeIt.subtitleText
           )
         )
       }
@@ -373,12 +377,12 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
         if (field.type.name === "textarea") {
           fieldData.addChild(
             make.Card(
-              make.it.littleDarker,
-              make.style.rounded(12),
-              make.style.padding(4)
+              makeIt.littleDarker,
+              Style.rounded(12),
+              Style.padding(4)
             )
-            .header(make.Paragraph(field.label))
-            .content(make.Paragraph(field.value))
+            .header(Paragraph(field.label))
+            .content(Paragraph(field.value))
           )
         }
         else {
@@ -397,10 +401,10 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
           }
           fieldData.addChild(
             Row(
-              make.it.marginOnHover,
-              make.Paragraph(`${field.label}: ${value}`),
+              makeIt.marginOnHover,
+              Paragraph(`${field.label}: ${value}`),
               ...make.if(field.tag !== null,
-                make.Paragraph(`(${field.tag})`, make.it.subtitleText),
+                Paragraph(`(${field.tag})`, makeIt.subtitleText),
               ),
             )
           )
@@ -429,13 +433,13 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
           card.status = resp.status
           setStatusStyle(card.cardHeader.element, card.status)
           card.cardBody.addChild(
-            make.Separator(4, make.style.rounded(12), make.color.lgray),
+            make.Separator(4, Style.rounded(12), make.color.lgray),
           )
           if (resp.msg) {
             card.cardBody.addChild(
               make.Div(
-                make.it.marginOnHover,
-                make.Paragraph(resp.status === "REJECTED"
+                makeIt.marginOnHover,
+                Paragraph(resp.status === "REJECTED"
                 ? `Причина отказа: ${resp.msg}`
                 : resp.status === "CANCELLED"
                 ? `Причина отмены: ${resp.msg}`
@@ -448,8 +452,8 @@ async function dashboardUserApps(qBase, userId, statuses, popup, paragraphNotice
             if (!card.executor && resp.executor) {
               card.cardBody.addChild(
                 make.Div(
-                  make.it.marginOnHover,
-                  make.Paragraph(`Исполнитель: ${resp.executor}`),
+                  makeIt.marginOnHover,
+                  Paragraph(`Исполнитель: ${resp.executor}`),
                 )
               )
               card.executor = resp.executor
