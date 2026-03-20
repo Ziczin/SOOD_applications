@@ -145,7 +145,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 COLLECTED_URL = "/collected/"
 COLLECTED_ROOT = BASE_DIR / "collected"
 
-SEND_MINIFIED_JS = True
+SEND_MINIFIED_JS = False
 
 TEMPLATES = [
     {

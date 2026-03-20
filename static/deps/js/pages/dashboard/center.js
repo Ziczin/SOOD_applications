@@ -26,6 +26,7 @@ export default async () =>
   const departments = await qBase.at('departments').view().get()
   const deps = buildDepartmentNameMap(departments)
   const forms = await qBase.at('forms/visible').view().get()
+  const allForms = await qBase.at('forms').where({department: me.department.id}).view().get()
   const statuses = await qBase.at('application-statuses').view().get()
 
   const permissions = me.permissions.filter(s => s !== 'proxy');
@@ -34,7 +35,7 @@ export default async () =>
   let onOpenFooContainer = []
   if (permissions.includes('moderator')) {
     resultModer = await buildModerTab(
-      qBase, me.department.id, statuses, popup, onOpenFooContainer, me, paragraphNotice);
+      qBase, me.department.id, statuses, popup, onOpenFooContainer, me, paragraphNotice, allForms);
   }
 
   const userApps = await buildUserAppsTab(qBase, me.id, statuses, popup, paragraphNotice)

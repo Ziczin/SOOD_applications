@@ -1,5 +1,5 @@
 export default (make) =>
-async function dashboardModer(qBase, department, statuses, popup, onOpenFooContainer, me, paragraphNotice) {
+async function dashboardModer(qBase, department, statuses, popup, onOpenFooContainer, me, paragraphNotice, allForms) {
   const Style = make.style
   const Paragraph = make.Paragraph
   const With = make.with
@@ -50,7 +50,7 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
     let pageCards = []
     cards.forEach((card, index) => {
       pageCards.push(card)
-      if (pageCards.length >= 20 || cards.length === index + 1) {
+      if (pageCards.length >= (pageSize.element.value ? pageSize.element.value : 20) || cards.length === index + 1) {
         pageCounter++
         tabs.tab()
         .header(
@@ -73,14 +73,11 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
   }
 
   async function fillApps(dateFrom, dateTo) {
-    paragraphNotice(["Заявки загружаются", "Это может занять некоторое время"], make.color.yellow, 2500)
     const apps = await qBase.at("applications").where({
       department: department,
       created_after: dateFrom,
       created_before: dateTo,
-      short: true
     }).view().get()
-    paragraphNotice(["Заявки загружены!", "Браузер занят отрисовкой, ожидайте"], make.color.green, 1000)
     appList.cards = apps.map((app) => appCard(app))
     redrawTabs(appList.cards)
   }
@@ -90,13 +87,15 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
     appList.cards.forEach(card => {
       const matchStatus = !statusSort.element.value || statusSort.element.value === card.status
       const matchExecutor = !executorSort.element.value || executorSort.element.value == card.executor?.id
+      const matchForm = !formSort.element.value || formSort.element.value == card.form?.id
+      const matchContent = !contentSort.element.value || card.textData.toLowerCase().includes(contentSort.element.value.toLowerCase())
       const sended = card.status === "SENDED"
       const in_progress = card.status === "IN_PROGRESS"
       const completed = card.status === "COMPLETED"
       const rejected = card.status === "REJECTED"
       const bntBuilded = card.element && card.btnProc && card.btnProc.element
       if (card.element) {
-        if (!matchStatus || !matchExecutor) {card.element.style.display = "none"}
+        if (!matchStatus || !matchExecutor || !matchForm || !matchContent) {card.element.style.display = "none"}
         else {
           cards.push(card)
           card.element.style.display = "block"
@@ -131,6 +130,46 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
       "Сервис отсортирует все заявки к вашему отделу по указанному исполнителю",
       'Обратите внимание, что у конкретного исполнителя не может быть заявок со статусом "Отправлена"'
     ])
+  )
+
+  const formSort = make.Select(
+    make.OptionPlaceholder("Все"),
+    ...allForms.map(f => make.Option(f.label, f.id)),
+    make.on.change(setVisibilityByStatus),
+    popup([
+      "Укажите форму",
+      "Сервис отсортирует все заявки к вашему отделу по указанной форму",
+    ])
+  )
+
+  const contentSort = make.Input(
+    With.attr({
+      placeholder: "Поиск по содержанию..."
+    }),
+    popup([
+      "Введите то, что потенциально может находиться в карточке заявки",
+      "Не вводите полностью скопированную заявку или разные части по памяти, это упрощённый поиск"
+    ]),
+    make.on.input((e) => e.target.parentNode.classList.add("make-mark-changed")),
+    make.on.inputTimeOut(500, (e) => {
+      e.target.parentNode.classList.remove("make-mark-changed")
+      setVisibilityByStatus()
+    })
+  )
+
+  const pageSize = make.Input(
+    With.attr({
+      placeholder: 20
+    }),
+    Style.maxWidth('20%'),
+    popup([
+      "Введите количество заявок на странице",
+    ]),
+    make.on.input((e) => e.target.parentNode.classList.add("make-mark-changed")),
+    make.on.inputTimeOut(500, (e) => {
+      e.target.parentNode.classList.remove("make-mark-changed")
+      setVisibilityByStatus()
+    })
   )
 
   function formatDateForInput(date){
@@ -169,29 +208,50 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
     ])
   )
 
-  const sortElement = Row(
-    With.style({flex: 0}),
+  const sortElement = make.Card(
+    makeIt.littleDarker,
+    Style.padding(6),
+    Style.rounded(12)
+  )
+  .header(
+    Paragraph("Показать/Скрыть фильтры", makeIt.subtitleText)
+  )
+  .content(
     Row(
-      Column(
-        Row(
-          Paragraph("Статус: ", With.style({alignSelf: "center"})),
-          statusSort
+      With.style({flex: 0}),
+      Row(
+        Column(
+          Row(
+            Paragraph("Статус: ", With.style({alignSelf: "center"})),
+            statusSort
+          ),
+          Row(
+            Paragraph("Исполнитель: ", With.style({alignSelf: "center"})),
+            executorSort
+          ),
+          Row(
+            Paragraph("Форма: ", With.style({alignSelf: "center"})),
+            formSort
+          ),
+          Row(
+            Paragraph("Заявок на странице: ", With.style({alignSelf: "center"})),
+            pageSize
+          )
         ),
-        Row(
-          Paragraph("Исполнитель: ", With.style({alignSelf: "center"})),
-          executorSort
-        )
-      ),
-      Column(
-        Row(
-          Paragraph("от", With.style({alignSelf: "center"})),
-          inputDateFrom
+        Column(
+          Row(
+            Paragraph("от", With.style({alignSelf: "center"})),
+            inputDateFrom
+          ),
+          Row(
+            Paragraph("по ", With.style({alignSelf: "center"})),
+            inputDateTo
+          ),
+          Row(
+            contentSort
+          )
         ),
-        Row(
-          Paragraph("по ", With.style({alignSelf: "center"})),
-          inputDateTo
-        ),
-      ),
+      )
     )
   )
 
@@ -218,6 +278,8 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
     card.status = app.status
     card.id = app.id
     card.executor = app.executor
+    card.form = app.form
+    card.textData = app.user.fullname + app.user.department.name + app.form.label
     let btnProc
     let btnCanc
     let cardBody
@@ -240,7 +302,6 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
       ),
       popup([
         "Нажмите чтобы увидеть подробности заявки",
-        "Данные заявки подгружаются по клику, возможна небольшая задержка"
       ]),
       make.color.lgray,
       Style.margin(-8),
@@ -326,10 +387,10 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
               make.on.click(async (e) => {
                 e.stopPropagation();
                 const inp = make.TextArea(
-					With.style({
-						resize: "vertical"
-					})
-				)
+                  With.style({
+                    resize: "vertical"
+                  })
+                )
                 make.Notice([500, Infinity, 500, "actionNotice"],
                   Row(
                     makeIt.littleDarker,
@@ -433,14 +494,14 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
 
         return `${year}  Неделя №${week} с ${formatDateRus(monday)} по ${formatDateRus(sunday)}`;
       }
-      const _app = await qBase.at("applications").at(app.id).view().get()
-      _app.application_fields.forEach(field => {
+      app.application_fields.forEach(field => {
         if (!field.value) {
           fieldData.addChild(
             Row(
               makeIt.marginOnHover,
               Paragraph(`${field.label}: <<< не указано >>>`),
-              makeIt.subtitleText
+              makeIt.subtitleText,
+              make.call(() => {card.textData += `${field.label} <<< не указано >>>\n`})
             )
           )
         }
@@ -453,7 +514,8 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
                 Style.padding(4)
               )
               .header(Paragraph(field.label))
-              .content(Paragraph(field.value))
+              .content(Paragraph(field.value)),
+              make.call(() => {card.textData += `${field.label}\n ${field.value}\n`})
             )
           }
           else {
@@ -476,16 +538,18 @@ async function dashboardModer(qBase, department, statuses, popup, onOpenFooConta
                 Paragraph(`${field.label}: ${value}`),
                 ...make.if(field.tag !== null,
                   Paragraph(`(${field.tag})`, makeIt.subtitleText),
+                  make.call(() => {card.textData += `${field.tag}\n`})
+
                 ),
+                make.call(() => {card.textData += `${field.label}\n ${value}\n`})
               )
             )
           }
         }
         
       })
-      card.onOpenStart.unsub(drawFields)
     }
-    card.onOpenStart.sub(drawFields)
+    drawFields()
     card.btnProc = btnProc
     card.btnCanc = btnCanc
     card.btnHolder = btnHolder

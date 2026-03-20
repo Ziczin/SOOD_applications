@@ -1,3 +1,6 @@
+# https://lichess.org/YoYCq1WG/white
+# Это крутая партия на личес, но телега не работает
+
 import os
 import sys
 import glob
